@@ -1,0 +1,41 @@
+package com.example.dacs_3.viewmodel
+
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.dacs_3.repository.AuthRepository
+import kotlinx.coroutines.launch
+
+class AuthViewModel : ViewModel() {
+    private val authRepository = AuthRepository()
+
+    private val _authResult = MutableLiveData<Pair<Boolean, String?>>()
+    val authResult: LiveData<Pair<Boolean, String?>> = _authResult
+
+    fun signUp(email: String, password: String) {
+        viewModelScope.launch {
+            val result = authRepository.signUp(email, password)
+            _authResult.postValue(result)
+        }
+    }
+
+    fun login(email: String, password: String) {
+        Log.d("AuthViewModel", "Attempting login with email: $email")
+
+        viewModelScope.launch {
+            val result = authRepository.login(email, password)
+            Log.d("AuthViewModel", "Login result: Success=${result.first}, Message=${result.second}")
+            _authResult.postValue(result)
+        }
+    }
+
+    fun logout() {
+        authRepository.logout()
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return authRepository.isUserLoggedIn()
+    }
+}
