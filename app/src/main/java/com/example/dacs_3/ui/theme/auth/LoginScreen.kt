@@ -250,6 +250,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
         DACS_3Theme {
             val navController = rememberNavController() // Mock NavController for preview
             LoginScreen(navController)
+     
         }
     }
 

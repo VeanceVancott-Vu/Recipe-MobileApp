@@ -83,7 +83,7 @@ fun SignupScreen(navController: NavController) {
                 onClick = { /* Handle signup */
                 Log.d("Sign up info","Full Name: $fullName" + "Email: $email"+"Password: $password")
 
-                    AuthViewModel().signUp(email, password)
+                    AuthViewModel().signUp(email, password,fullName)
 
                 },
                 colors = ButtonDefaults.buttonColors(Color(0xe83f764e)),

@@ -97,8 +97,8 @@ fun RecipeRow() {
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        RecipeCard(modifier = Modifier.weight(1f)) // ✅ Ensures even spacing
-        Spacer(modifier = Modifier.width(8.dp))   // ✅ Spacing between items
+        RecipeCard(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(8.dp))
         RecipeCard(modifier = Modifier.weight(1f))
     }
 }

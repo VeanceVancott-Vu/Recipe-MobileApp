@@ -1,18 +1,36 @@
 package com.example.dacs_3.repository
 
 import android.util.Log
+import com.example.dacs_3.model.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class AuthRepository {
 
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    suspend fun signUp(email: String, password: String): Pair<Boolean, String?> {
+    suspend fun signUp(email: String, password: String, username: String): Pair<Boolean, String?> {
         return try {
-            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            Log.d("AuthRepository", "Sign up successful for $email")
-            Pair(true, "Sign up successful!")
+            val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val userId = authResult.user?.uid
+
+            if (userId != null) {
+                val user = User(userId, email, username, profileImageUrl = "")
+
+                // Store user details in Firestore
+                firestore.collection("users").document(userId).set(user).await()
+
+                Log.d("AuthRepository", "Sign up successful and user data stored for $email")
+                Pair(true, "Sign up successful!")
+            } else {
+                Pair(false, "Sign up failed: No user ID")
+            }
+
+
+
+
         } catch (e: Exception) {
             Log.e("AuthRepository", "Sign up failed: ${e.localizedMessage}", e)
             Pair(false, e.localizedMessage ?: "Sign up failed")
