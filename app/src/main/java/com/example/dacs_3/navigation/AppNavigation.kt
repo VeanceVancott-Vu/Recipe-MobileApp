@@ -14,5 +14,7 @@ fun AppNavigation(navController: NavHostController) {
         composable("login") { LoginScreen(navController) }
         composable("signup") { SignupScreen(navController) }
         composable("homepage") { HomePageScreen(navController) }
+        composable("addRecipe") { SignupScreen(navController) }
+
     }
 }

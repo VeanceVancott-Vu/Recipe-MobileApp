@@ -184,7 +184,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
             )
         }
 
-        // ✅ React to authentication state changes asynchronously
+        // React to authentication state changes asynchronously
         LaunchedEffect(authResult) {
             authResult?.let {
                 if (it.first) {

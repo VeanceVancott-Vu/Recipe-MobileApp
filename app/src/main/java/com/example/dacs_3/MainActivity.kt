@@ -1,6 +1,7 @@
 package com.example.dacs_3
 
 import DACS_3Theme
+import ai.codia.x.composeui.demo.AddRecipeScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,16 +37,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DACS_3Theme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
+//            DACS_3Theme {
+//                Surface(
+//                    modifier = Modifier.fillMaxSize(),
+//                    color = MaterialTheme.colorScheme.background
+//                ) {
+//
+//                    val navController = rememberNavController()
+//                    AppNavigation(navController)
+//                }
+//            }
 
-                    val navController = rememberNavController()
-                    AppNavigation(navController)
-                }
-            }
+            AddRecipeScreen()
         }
     }
 }
