@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,13 +34,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +54,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.io.Files.append
 import kotlin.math.log
 
 
@@ -123,9 +130,11 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                         checkedColor = Color(0xff3f764e),
                         uncheckedColor = Color(0xff9ab0a3),
                         checkmarkColor = Color.White
-                    )
+                    ),
+                    modifier = Modifier
+                        .scale(0.7f)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(5.dp))
                 Text("Show Password", fontSize = 16.sp, color = Color(0xff9ab0a3))
             }
 
@@ -146,17 +155,20 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                             checkedColor = Color(0xff3f764e),
                             uncheckedColor = Color(0xff9ab0a3),
                             checkmarkColor = Color.White
-                        )
+                        ),
+                        modifier = Modifier
+                            .scale(0.7f)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text("Remember me", fontSize = 16.sp, color = Color(0xff9ab0a3))
                     Spacer(modifier = Modifier.width(20.dp))
 
+                    Spacer(modifier = Modifier.weight(1f))
                     Text("Forgot Password?", fontSize = 16.sp, color = Color(0xff3b684d))
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
             Box(
                 modifier = Modifier
@@ -175,7 +187,18 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Don’t have an account? Sign up",
+                text = buildAnnotatedString {
+                    append("Don’t have an account? ")
+                    withStyle(
+                        style = SpanStyle(
+                            fontWeight = FontWeight.Bold, // In đậm
+                            textDecoration = TextDecoration.Underline, // Gạch chân
+                            color = Color(0xff3b684d) // Giữ nguyên màu
+                        )
+                    ) {
+                        append("Sign up")
+                    }
+                },
                 fontSize = 16.sp,
                 color = Color(0xff3b684d),
                 modifier = Modifier.clickable {
@@ -237,7 +260,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     Icon(
                         painter = painterResource(id = it),
                         contentDescription = null,
-                        tint = Color(0xff9ab0a3)
+                        tint = Color(0xFF3B684D),
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }

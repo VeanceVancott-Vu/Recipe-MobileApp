@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,11 +21,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,15 +38,19 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.io.Files.append
 
 @Composable
 fun SignupScreen(navController: NavController) {
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
-    
     val authResult by AuthViewModel().authResult.observeAsState()
+
+
+    // Q: Remember me
+    var rememberMe by remember { mutableStateOf(false) }
+
 
     Box(
         modifier = Modifier
@@ -53,6 +65,7 @@ fun SignupScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(80.dp))
 
+
             Text(
                 text = "Register",
                 color = Color(0xff3f764e),
@@ -61,6 +74,7 @@ fun SignupScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
 
+
             Text(
                 text = "Create your new account",
                 color = Color(0xff9ab0a3),
@@ -68,22 +82,36 @@ fun SignupScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
 
-            InputField(label = "Full Name",text = fullName ,onTextChange = { fullName = it }, icon = R.drawable.fullname)
+            Spacer(modifier = Modifier.height(62.dp))
+
+
+            InputField(
+                label = "Full Name",
+                text = fullName,
+                onTextChange = { fullName = it },
+                icon = R.drawable.fullname
+            )
+
+
             Spacer(modifier = Modifier.height(16.dp))
+
 
             InputField(label = "Email", text = email ,onTextChange = { email = it }, icon = R.drawable.email)
             Spacer(modifier = Modifier.height(16.dp))
 
-            InputField(label = "Password",text = password ,onTextChange = { password = it }, icon = R.drawable.check)
+
+            InputField(label = "Password",text = password ,onTextChange = { password = it }, icon = R.drawable.password)
             Spacer(modifier = Modifier.height(32.dp))
+
 
             Button(
                 onClick = { /* Handle signup */
-                Log.d("Sign up info","Full Name: $fullName" + "Email: $email"+"Password: $password")
+                    Log.d("Sign up info","Full Name: $fullName" + "Email: $email"+"Password: $password")
+
 
                     AuthViewModel().signUp(email, password,fullName)
+
 
                 },
                 colors = ButtonDefaults.buttonColors(Color(0xe83f764e)),
@@ -95,16 +123,74 @@ fun SignupScreen(navController: NavController) {
                 Text(text = "Sign Up", color = Color.White, fontSize = 18.sp)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Or continue with",
-                color = Color(0xff3b684d),
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+
+            // Q: Remember me
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = rememberMe,
+                    onCheckedChange = { rememberMe = it },
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xff3f764e)),
+                    modifier = Modifier
+                        .scale(0.7f) // Giảm kích thước checkbox
+                )
+
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+
+                Text(
+                    text = "Remember Me",
+                    fontSize = 14.sp,
+                    color = Color(0xff3b684d),
+                    modifier = Modifier.clickable { rememberMe = !rememberMe }
+                )
+            }
+
+
+            Spacer(modifier = Modifier.height(64.dp))
+
+
+
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Divider(
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(1.dp)
+                )
+
+
+                Text(
+                    text = "Or continue with",
+                    color = Color(0xff3b684d),
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp) // Tạo khoảng cách giữa text và hr
+                )
+
+
+                Divider(
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(1.dp)
+                )
+            }
+
+
+            Spacer(modifier = Modifier.height(32.dp))
+
 
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -115,17 +201,33 @@ fun SignupScreen(navController: NavController) {
                 SocialLoginIcon(R.drawable.apple)
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+
+            Spacer(modifier = Modifier.height(64.dp))
+
 
             Text(
-                text = "Already have an account? Sign in",
-                color = Color(0xff9ab0a3),
+                buildAnnotatedString {
+                    append("Already have an account? ")
+                    withStyle(
+                        style = SpanStyle(
+                            fontWeight = FontWeight.Bold, // In đậm
+                            textDecoration = TextDecoration.Underline, // Gạch chân
+                            color = Color(0xff3b684d) // Màu nổi bật hơn cho dễ nhìn
+                        )
+                    ) {
+                        append("Sign in")
+                    }
+                },
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
+                color = Color(0xff9ab0a3),
                 modifier = Modifier.clickable {
                     navController.navigate("login")
                 }
             )
+
+
+
 
             authResult?.let { (success, message) ->
                 if (message != null) {
@@ -137,12 +239,19 @@ fun SignupScreen(navController: NavController) {
                 }
             }
 
+
         }
     }
 }
 
+
 @Composable
-fun InputField(label: String, icon: Int) {
+fun InputField(
+    label: String,
+    text: String,
+    onTextChange: (String) -> Unit,
+    icon: Int
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -155,10 +264,12 @@ fun InputField(label: String, icon: Int) {
             painter = painterResource(id = icon),
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(16.dp)
         )
 
+
         Spacer(modifier = Modifier.width(16.dp))
+
 
         Text(
             text = label,
@@ -168,6 +279,7 @@ fun InputField(label: String, icon: Int) {
         )
     }
 }
+
 
 @Composable
 fun SocialLoginIcon(icon: Int) {
@@ -179,9 +291,11 @@ fun SocialLoginIcon(icon: Int) {
     )
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewSignUpView() {
     val navController = rememberNavController() // Mock NavController for preview
     SignupScreen(navController)
 }
+
