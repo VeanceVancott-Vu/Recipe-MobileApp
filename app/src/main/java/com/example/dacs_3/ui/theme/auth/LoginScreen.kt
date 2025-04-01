@@ -105,6 +105,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 isPassword = false,
                 icon = R.drawable.email
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             InputField(
@@ -164,7 +165,15 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     Spacer(modifier = Modifier.width(20.dp))
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Text("Forgot Password?", fontSize = 16.sp, color = Color(0xff3b684d))
+                    Text(
+                        text = "Forgot Password?",
+                        fontSize = 16.sp,
+                        color = Color(0xff3b684d),
+                        modifier = Modifier.clickable {
+                            navController.navigate("forgot_password")
+                        }
+                    )
+
                 }
             }
 
