@@ -38,4 +38,17 @@ class AuthViewModel : ViewModel() {
     fun isUserLoggedIn(): Boolean {
         return authRepository.isUserLoggedIn()
     }
+
+    // Q:
+    // Phương thức gửi OTP
+    fun sendOtpToEmail(email: String, onResult: (Boolean, String?) -> Unit) {
+        authRepository.sendOtpToEmail(email, onResult)
+    }
+
+    // Q:
+    // Lụm UID
+    fun getCurrentUserId(): String? {
+        return authRepository.getCurrentUserId()
+    }
+
 }

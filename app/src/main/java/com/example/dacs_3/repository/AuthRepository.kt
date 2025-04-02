@@ -7,11 +7,19 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class AuthRepository {
-
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     suspend fun signUp(email: String, password: String, username: String): Pair<Boolean, String?> {
+        // Q:
+        // Kiểm tra đầu vào trước khi gọi Firebase
+        if (email.isBlank() || password.isBlank() || username.isBlank()) {
+            return Pair(false, "Email, mật khẩu và tên người dùng không được để trống")
+        }
+        if (password.length < 6) {
+            return Pair(false, "Mật khẩu phải có ít nhất 6 ký tự")
+        }
+
         return try {
             val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             val userId = authResult.user?.uid
@@ -60,4 +68,26 @@ class AuthRepository {
     fun isUserLoggedIn(): Boolean {
         return firebaseAuth.currentUser != null
     }
+
+    // Q:
+    // Reset mật khẩu qua link 
+    fun sendOtpToEmail(email: String, onResult: (Boolean, String?) -> Unit) {
+        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Nếu gửi thành công
+                    onResult(true, null)
+                } else {
+                    // Nếu có lỗi, trả về thông báo lỗi
+                    onResult(false, task.exception?.message)
+                }
+            }
+    }
+
+    // Q:
+    // Lụm UID
+    fun getCurrentUserId(): String? {
+        return firebaseAuth.currentUser?.uid
+    }
+
 }

@@ -3,15 +3,20 @@ package com.example.dacs_3.ui.theme.auth
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -26,8 +31,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
@@ -252,32 +261,36 @@ fun InputField(
     onTextChange: (String) -> Unit,
     icon: Int
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    TextField(
+        value = text,
+        onValueChange = onTextChange,
+        placeholder = { Text(label, fontSize = 18.sp, color = Color(0xff9ab0a3)) },
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xa8dbe6de))
-            .padding(16.dp)
-    ) {
-        Image(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(16.dp)
-        )
-
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-
-        Text(
-            text = label,
-            color = Color(0xff9ab0a3),
-            fontSize = 16.sp,
-            textAlign = TextAlign.Start
-        )
-    }
+            .background(Color(0xa8dbe6de), RoundedCornerShape(16.dp)),
+        singleLine = true,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color(0xa8dbe6de),
+            unfocusedContainerColor = Color(0xa8dbe6de),
+            disabledContainerColor = Color(0xa8dbe6de),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            cursorColor = Color.Black,
+            disabledTextColor = Color.Black,
+            errorContainerColor = Color(0xa8dbe6de)
+        ),
+        leadingIcon = icon?.let {
+            {
+                Icon(
+                    painter = painterResource(id = it),
+                    contentDescription = null,
+                    tint = Color(0xFF3B684D),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    )
 }
 
 

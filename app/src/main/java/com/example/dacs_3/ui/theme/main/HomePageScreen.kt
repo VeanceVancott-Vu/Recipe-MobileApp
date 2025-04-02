@@ -27,13 +27,25 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 
 @Composable
-fun HomePageScreen(navController: NavController) {
-    LazyColumn( // ✅ Replace Column with LazyColumn
+fun HomePageScreen(navController: NavController, userId: String?) {
+    LazyColumn( // Replace Column with LazyColumn
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Q:
+        // Hiển thị UID
+        item {
+            Text(
+                text = "User ID: ${userId ?: "Not logged in"}",
+                fontSize = 16.sp,
+                color = Color.Red,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
         // Search Box
         item {
             Box(
@@ -153,7 +165,9 @@ fun BottomNavItem(iconId: Int) {
 @Composable
 fun HomePageScreenPreview() {
     DACS_3Theme {
-        val navController = rememberNavController() // Mock NavController for preview
-        HomePageScreen(navController)
+        val navController = rememberNavController() // Mock NavController
+        val fakeUserId = "1234567890" // Fake user ID để test preview
+        HomePageScreen(navController, fakeUserId)
     }
 }
+

@@ -15,16 +15,21 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
+import com.example.dacs_3.repository.AuthRepository
+import com.example.dacs_3.viewmodel.AuthViewModel
 
 @Composable
 fun ForgotPasswordScreen(
-    navController: NavController
-
+    navController: NavController,
+    authViewModel: AuthViewModel = viewModel()  // Sử dụng AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -73,6 +78,14 @@ fun ForgotPasswordScreen(
             Text("Send Code", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold)
         }
 
+        message?.let {
+            Text(
+                text = it,
+                color = if (it.startsWith("Success")) Color.Green else Color.Red,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -91,7 +104,21 @@ fun ForgotPasswordScreen(
                     }
             )
 
+        }
+    }
 
+    // Khi người dùng nhấn nút Send Code
+    LaunchedEffect(email) {
+        if (email.isNotEmpty()) {
+            isLoading = true
+            authViewModel.sendOtpToEmail(email) { success, errorMessage ->
+                isLoading = false
+                message = if (success) {
+                    "Success: Password reset link sent to $email"
+                } else {
+                    "Error: $errorMessage"
+                }
+            }
         }
     }
 }
@@ -99,7 +126,10 @@ fun ForgotPasswordScreen(
 @Preview(showBackground = true)
 @Composable
 fun ForgotPasswordScreenPreview() {
-    val navController = rememberNavController()  // Thêm dòng này
-    ForgotPasswordScreen(navController = navController)
+    val navController = rememberNavController()
+    val authViewModel = AuthViewModel()  // Tạo đối tượng AuthViewModel
+
+    ForgotPasswordScreen(navController = navController, authViewModel = authViewModel)
 }
+
 

@@ -26,9 +26,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.ui.theme.auth.LoginScreen
+import com.example.dacs_3.viewmodel.AuthViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +45,11 @@ class MainActivity : ComponentActivity() {
                 ) {
 
                     val navController = rememberNavController()
-                    AppNavigation(navController)
+
+                    // Q:
+                    val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
+
+                    AppNavigation(navController, authViewModel)
                 }
             }
         }
