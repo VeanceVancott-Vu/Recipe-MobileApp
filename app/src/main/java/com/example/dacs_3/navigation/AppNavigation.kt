@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.dacs_3.ui.theme.auth.ForgotPasswordScreen
 import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
@@ -15,6 +14,7 @@ fun AppNavigation(navController: NavHostController) {
         composable("login") { LoginScreen(navController) }
         composable("signup") { SignupScreen(navController) }
         composable("homepage") { HomePageScreen(navController) }
-        composable("forgot_password") { ForgotPasswordScreen(navController) }
+        composable("addRecipe") { SignupScreen(navController) }
+
     }
 }
