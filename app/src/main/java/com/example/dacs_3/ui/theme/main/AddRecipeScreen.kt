@@ -42,6 +42,12 @@ fun AddRecipeScreen() {
     }
 
     var title:String by remember { mutableStateOf("") }
+    var description:String by remember { mutableStateOf("") }
+    var servingSize:String by remember { mutableStateOf("") }
+    var cookingTime:String by remember { mutableStateOf("") }
+
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,7 +62,7 @@ fun AddRecipeScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { /*TODO: Back action */
-                     //  navController.navigate("homepage")
+                //  navController.navigate("homepage")
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.arrowback),
@@ -84,8 +90,8 @@ fun AddRecipeScreen() {
             contentAlignment = Alignment.TopStart
         ) {
             Image(
-              //  painter =  painterResource(id = R.drawable.mockrecipeimage),
-                painter =   rememberAsyncImagePainter(imageUri),
+                //  painter =  painterResource(id = R.drawable.mockrecipeimage),
+                painter = rememberAsyncImagePainter(imageUri),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
@@ -136,14 +142,22 @@ fun AddRecipeScreen() {
         TextField(
             value = title,
             onValueChange = { title = it },
-            placeholder = { Text("Example: The Best Sweet and Sour Fish Soup", color = Color(0xFF9AB0A3)) },
+            placeholder = {
+                Text(
+                    "Example: The Best Sweet and Sour Fish Soup",
+                    color = Color(0xFF9AB0A3)
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(67.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color(0xFFE8F0E8))
                 .padding(8.dp)
-                .heightIn(min = 56.dp, max = 200.dp), //  Automatically expands but limits max height
+                .heightIn(
+                    min = 56.dp,
+                    max = 200.dp
+                ), //  Automatically expands but limits max height
             maxLines = Int.MAX_VALUE, // Allows unlimited lines
             minLines = 1, // Starts with one line,
             colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent)
@@ -153,46 +167,85 @@ fun AddRecipeScreen() {
 
         // **Story Input**
         TextField(
-            value = "",
-            onValueChange = { /* Handle text change */ },
-            placeholder = { Text("Share the story behind this dish...", color = Color(0xFF9AB0A3)) },
+            value = description,
+            onValueChange = { description = it },
+            placeholder = {
+                Text(
+                    "Share the story behind this dish...",
+                    color = Color(0xFF9AB0A3)
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color(0xFFE8F0E8))
                 .padding(8.dp)
-                .heightIn(min = 56.dp, max = 200.dp), // ✅ Automatically expands but limits max height
+                .heightIn(
+                    min = 56.dp,
+                    max = 200.dp
+                ), // ✅ Automatically expands but limits max height
             colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
 
-        )
+            )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // **Serving Size & Cooking Time**
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically // Align columns properly
         ) {
-            Column {
-                Text("Serving Size", fontWeight = FontWeight.Bold, color = Color(0xFF4A7C59))
-                Box(
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally // Center text above the TextField
+            ) {
+                Text(
+                    "Serving Size",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4A7C59),
+                    textAlign = TextAlign.Center
+                )
+                TextField(
+                    value = servingSize,
+                    onValueChange = { servingSize = it },
+                    placeholder = { Text("e.g. 4 servings", color = Color(0xFF9AB0A3)) },
                     modifier = Modifier
-                        .size(100.dp, 50.dp)
+                        .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFFE8F0E8))
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent)
                 )
             }
-            Column {
-                Text("Cooking Time", fontWeight = FontWeight.Bold, color = Color(0xFF4A7C59))
-                Box(
+
+            Spacer(modifier = Modifier.width(16.dp)) // Space between columns
+
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally // Center text above the TextField
+            ) {
+                Text(
+                    "Cooking Time",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4A7C59),
+                    textAlign = TextAlign.Center
+                )
+                TextField(
+                    value = cookingTime,
+                    onValueChange = { cookingTime = it },
+                    placeholder = { Text("e.g. 30 min", color = Color(0xFF9AB0A3)) },
                     modifier = Modifier
-                        .size(100.dp, 50.dp)
+                        .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFFE8F0E8))
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent)
                 )
             }
         }
+
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
