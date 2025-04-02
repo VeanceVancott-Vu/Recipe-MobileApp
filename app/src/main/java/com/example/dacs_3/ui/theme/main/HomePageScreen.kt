@@ -4,6 +4,7 @@ import DACS_3Theme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -78,14 +79,14 @@ fun HomePageScreen(navController: NavController, userId: String?) {
             SectionTitle("Trending Recipes")
         }
 
-        items(2) {  // ✅ Using 'items' instead of manually repeating
+        items(1) {  // ✅ Using 'items' instead of manually repeating
             RecipeRow()
         }
 
         // Bottom Navigation
         item {
             Spacer(modifier = Modifier.height(50.dp))
-            BottomNavBar()
+            BottomNavBar(navController)
         }
     }
 }
@@ -124,7 +125,7 @@ fun RecipeCard(modifier: Modifier = Modifier) {
             .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
     ) {
         Image(
-            painter = painterResource(id = R.drawable.img),
+            painter = painterResource(id = R.drawable.mockrecipeimage),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -135,7 +136,7 @@ fun RecipeCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BottomNavBar() {
+fun BottomNavBar(navController: NavController ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -144,9 +145,13 @@ fun BottomNavBar() {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        repeat(5) {
-            BottomNavItem(R.drawable.img)
-        }
+
+            BottomNavItem(R.drawable.password)
+        BottomNavItem(R.drawable.email)
+        BottomSearchNavItem(R.drawable.add, navController)
+        BottomNavItem(R.drawable.google)
+        BottomNavItem(R.drawable.facebook)
+
     }
 }
 
@@ -161,6 +166,24 @@ fun BottomNavItem(iconId: Int) {
     )
 }
 
+@Composable
+fun BottomSearchNavItem(iconId: Int, navController: NavController) {
+    Image(
+        painter = painterResource(id = iconId),
+        contentDescription = null,
+        modifier = Modifier
+            .size(40.dp)
+            .clipToBounds()
+           .clickable(onClick = {
+              /* Handle click */
+               navController.navigate("addRecipe")
+
+           })
+
+
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun HomePageScreenPreview() {
@@ -170,4 +193,3 @@ fun HomePageScreenPreview() {
         HomePageScreen(navController, fakeUserId)
     }
 }
-

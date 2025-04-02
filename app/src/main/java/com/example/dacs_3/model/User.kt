@@ -6,6 +6,6 @@ data class User(
     val email: String = "",
     val username: String = "",
     val profileImageUrl: String = "",
-    val dayJoin: Long = System.currentTimeMillis()
+    val dayJoin: Long = System.currentTimeMillis() // get time when created
 
 )
