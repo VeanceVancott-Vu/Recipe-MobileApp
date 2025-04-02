@@ -1,6 +1,11 @@
 package ai.codia.x.composeui.demo
 
 
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -16,11 +22,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen() {
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        // Callback is invoked after the user selects a media item or closes the
+        // photo picker.
+        if (uri != null) {
+            imageUri = uri
+            Log.d("PhotoPicker", "Selected URI: $uri")
+        } else {
+            Log.d("PhotoPicker", "No media selected")
+        }
+    }
+
     var title:String by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
@@ -35,7 +55,9 @@ fun AddRecipeScreen() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* TODO: Back action */ }) {
+            IconButton(onClick = { /*TODO: Back action */
+                     //  navController.navigate("homepage")
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.arrowback),
                     contentDescription = "Back",
@@ -61,12 +83,22 @@ fun AddRecipeScreen() {
                 .background(Color(0xFFBCC6C0)),
             contentAlignment = Alignment.TopStart
         ) {
+            Image(
+              //  painter =  painterResource(id = R.drawable.mockrecipeimage),
+                painter =   rememberAsyncImagePainter(imageUri),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
             Row(
                 modifier = Modifier.padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { /* TODO: Edit action */ },
+                    onClick = { /* TODO: Edit action */
+                        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        println("Add Photo")
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                 ) {
                     Icon(
@@ -80,7 +112,11 @@ fun AddRecipeScreen() {
 
                 }
                 Button(
-                    onClick = { /* TODO: Add Photo */ },
+                    onClick = { /* TODO: Add Photo */
+
+                        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        println("Add Photo")
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                 ) {
                     Icon(
