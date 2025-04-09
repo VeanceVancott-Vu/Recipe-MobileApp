@@ -43,6 +43,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
@@ -50,11 +51,11 @@ import com.example.dacs_3.viewmodel.AuthViewModel
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.io.Files.append
 
 @Composable
-fun SignupScreen(navController: NavController) {
+fun SignupScreen(navController: NavController,  authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
-    val authResult by AuthViewModel().authResult.observeAsState()
+    val authResult by authViewModel.authResult.observeAsState()
 
 
     // Q: Remember me
@@ -119,7 +120,7 @@ fun SignupScreen(navController: NavController) {
                     Log.d("Sign up info","Full Name: $fullName" + "Email: $email"+"Password: $password")
 
 
-                    AuthViewModel().signUp(email, password,fullName)
+                    authViewModel.signUp(email, password,fullName)
 
 
                 },
