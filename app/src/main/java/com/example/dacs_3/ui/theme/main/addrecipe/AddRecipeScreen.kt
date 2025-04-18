@@ -111,133 +111,133 @@ fun AddRecipeScreenn(
 
         }
 
-//        Row() {
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))  // Bo góc
-//                    .background(Color.LightGray)
-//            ) {
-//                if (selectedImageUri != null) {
-//                    Image(
-//                        painter = rememberAsyncImagePainter(selectedImageUri),
-//                        contentDescription = null,
-//                        modifier = Modifier.fillMaxSize(),
-//                        contentScale = ContentScale.Crop
-//                    )
-//                }
-//
-//                Row(
-//                    modifier = Modifier
-//                        .align(Alignment.TopStart)
-//                        .padding(dimensionResource(R.dimen.spacing_s))
-//                ) {
-//                    DeleteButton()
-//                    Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_s)))
-//                    AddPhotoButton()
-//                }
-//            }
-//        }
-//
-//        Column (
-//            modifier = Modifier.fillMaxWidth(),
-//            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
-//        ) {
-//            OutlinedTextField(
-//                value = "",
-//                onValueChange = {},
-//                placeholder = { Text("Example: The Best Sweet and Sour Fish Soup")},
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
-//                    .background(colorResource(R.color.text_field_background))
-//                    .bottomShadow(),
-//                colors = TextFieldDefaults.outlinedTextFieldColors(
-//                    unfocusedBorderColor = Color.Transparent,
-//                    focusedBorderColor = Color.Transparent,
-//                )
-//            )
-//
-//            OutlinedTextField(
-//                value = "",
-//                onValueChange = {},
-//                placeholder = { Text("Share the story behind this dish ...") },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(dimensionResource(R.dimen.spacing_s) * 15)
-//                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
-//                    .background(colorResource(R.color.text_field_background))
-//                    .bottomShadow(),
-//                colors = TextFieldDefaults.outlinedTextFieldColors(
-//                    unfocusedBorderColor = Color.Transparent,
-//                    focusedBorderColor = Color.Transparent,
-//                )
-//            )
-//        }
-//
-//        // Q:
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(top = dimensionResource(R.dimen.spacing_s))
-//        ) {
-//            Column(
-//                modifier = Modifier.weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
-//            ) {
-//                Text("Serving size")
-//
-//                OutlinedTextField(
-//                    value = "",
-//                    onValueChange = {},
-//                    modifier = Modifier
-//                        .fillMaxWidth(0.75f)
-//                        .height(dimensionResource(R.dimen.spacing_xll))
-//                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
-//                        .background(colorResource(R.color.text_field_background))
-//                        .bottomShadow(),
-//                    colors = TextFieldDefaults.outlinedTextFieldColors(
-//                        unfocusedBorderColor = Color.Transparent,
-//                        focusedBorderColor = Color.Transparent,
-//                    )
-//                )
-//            }
-//
-//
-//            Column(
-//                modifier = Modifier.weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
-//            ) {
-//                Text("Cooking time")
-//
-//                OutlinedTextField(
-//                    value = "",
-//                    onValueChange = {},
-//                    modifier = Modifier
-//                        .fillMaxWidth(0.75f)
-//                        .height(dimensionResource(R.dimen.spacing_xll))
-//                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
-//                        .background(colorResource(R.color.text_field_background))
-//                        .bottomShadow(),
-//                    colors = TextFieldDefaults.outlinedTextFieldColors(
-//                        unfocusedBorderColor = Color.Transparent,
-//                        focusedBorderColor = Color.Transparent,
-//                    )
-//                )
-//            }
-//        }
-//
-//        //Q:
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(top = dimensionResource(R.dimen.spacing_s)),
-//            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
-//        ) {
-//            Text("Ingredients")
-//            IngredientInputList()
-//        }
+        Row() {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))  // Bo góc
+                    .background(Color.LightGray)
+            ) {
+                if (selectedImageUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(selectedImageUri),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(dimensionResource(R.dimen.spacing_s))
+                ) {
+                    DeleteButton()
+                    Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_s)))
+                    AddPhotoButton()
+                }
+            }
+        }
+
+        Column (
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
+        ) {
+            OutlinedTextField(
+                value = "",
+                onValueChange = {},
+                placeholder = { Text("Example: The Best Sweet and Sour Fish Soup")},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                    .background(colorResource(R.color.text_field_background))
+                    .bottomShadow(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent,
+                )
+            )
+
+            OutlinedTextField(
+                value = "",
+                onValueChange = {},
+                placeholder = { Text("Share the story behind this dish ...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(dimensionResource(R.dimen.spacing_s) * 15)
+                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                    .background(colorResource(R.color.text_field_background))
+                    .bottomShadow(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent,
+                )
+            )
+        }
+
+        // Q:
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = dimensionResource(R.dimen.spacing_s))
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
+            ) {
+                Text("Serving size")
+
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f)
+                        .height(dimensionResource(R.dimen.spacing_xll))
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                        .background(colorResource(R.color.text_field_background))
+                        .bottomShadow(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = Color.Transparent,
+                    )
+                )
+            }
+
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
+            ) {
+                Text("Cooking time")
+
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f)
+                        .height(dimensionResource(R.dimen.spacing_xll))
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                        .background(colorResource(R.color.text_field_background))
+                        .bottomShadow(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = Color.Transparent,
+                    )
+                )
+            }
+        }
+
+        //Q:
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = dimensionResource(R.dimen.spacing_s)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
+        ) {
+            Text("Ingredients")
+            IngredientInputList()
+        }
 
         Column(
             modifier = Modifier
