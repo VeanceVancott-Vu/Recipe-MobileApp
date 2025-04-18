@@ -16,6 +16,12 @@
       <SelectionState runConfigName="MainActivity">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="ARecipeScreenPreview">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="IconDropdownExamplePreview">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
       <SelectionState runConfigName="AddRecipeScreenPreview">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

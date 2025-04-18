@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.dacs_3.ui.theme.auth.ForgotPasswordScreen
 import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
+import com.example.dacs_3.ui.theme.main.DetailScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
 import com.example.dacs_3.viewmodel.AuthViewModel
 
@@ -22,6 +23,10 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         composable("homepage") { HomePageScreen(navController, userId) }
         composable("forgot_password") { ForgotPasswordScreen(navController) }
         composable("addRecipe") { SignupScreen(navController) }
+        composable("detail/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            DetailScreen(id)
+        }
     }
 }
 

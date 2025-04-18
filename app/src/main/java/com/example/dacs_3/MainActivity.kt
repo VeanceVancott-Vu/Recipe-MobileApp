@@ -1,6 +1,7 @@
 package com.example.dacs_3
 
 import DACS_3Theme
+import ai.codia.x.composeui.demo.AddRecipeScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,8 +29,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.example.dacs_3.navigation.AppNavigation
-import com.example.dacs_3.ui.theme.auth.LoginScreen
+import com.example.dacs_3.ui.theme.main.FileAttachSection
+import com.example.dacs_3.ui.theme.main.IconDropdownMenuSample
+import com.example.dacs_3.ui.theme.main.InstructionItem
+import com.example.dacs_3.ui.theme.main.addrecipe.AddRecipeScreenn
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
@@ -38,20 +41,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+//            DACS_3Theme {
+//                Surface(
+//                    modifier = Modifier.fillMaxSize(),
+//                    color = MaterialTheme.colorScheme.background
+//                ) {
+//
+//                    val navController = rememberNavController()
+//
+//                    // Q:
+//                    // val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
+//
+//                    // AppNavigation(navController, authViewModel)
+//
+//                    IconDropdownMenuSample()
+//                }
+//            }
+
             DACS_3Theme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
+                Surface(modifier = Modifier.fillMaxSize()) {
 
-                    val navController = rememberNavController()
-
-                    // Q:
-                    val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
-
-                    AppNavigation(navController, authViewModel)
                 }
             }
+
         }
     }
 }

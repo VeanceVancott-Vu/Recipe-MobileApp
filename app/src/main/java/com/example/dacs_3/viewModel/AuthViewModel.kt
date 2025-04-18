@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.repository.AuthRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
@@ -50,5 +51,11 @@ class AuthViewModel : ViewModel() {
     fun getCurrentUserId(): String? {
         return authRepository.getCurrentUserId()
     }
+
+
+    // Q:
+    // Thử nghiệm
+    val currentUserUid: String?
+        get() = FirebaseAuth.getInstance().currentUser?.uid
 
 }
