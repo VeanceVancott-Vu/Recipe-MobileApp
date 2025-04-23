@@ -60,7 +60,7 @@ import kotlin.math.log
 
 @Composable
 
-fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -282,7 +282,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     fun PreviewLoginView() {
         DACS_3Theme {
             val navController = rememberNavController() // Mock NavController for preview
-            LoginScreen(navController)
+            val authViewModel = remember { AuthViewModel() } // Mock AuthViewModel for preview() // Mock NavController for preview
+            LoginScreen(navController,authViewModel)
      
         }
     }

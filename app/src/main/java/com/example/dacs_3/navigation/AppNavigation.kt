@@ -1,5 +1,6 @@
 package com.example.dacs_3.navigation
 
+import ai.codia.x.composeui.demo.AddRecipeScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -18,11 +19,11 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
     val userId = authViewModel.getCurrentUserId() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
-        composable("login") { LoginScreen(navController) }
-        composable("signup") { SignupScreen(navController) }
+        composable("login") { LoginScreen(navController,authViewModel) }
+        composable("signup") { SignupScreen(navController,authViewModel) }
         composable("homepage") { HomePageScreen(navController, userId) }
         composable("forgot_password") { ForgotPasswordScreen(navController) }
-        composable("addRecipe") { SignupScreen(navController) }
+        composable("addRecipe") { AddRecipeScreen() }
         composable("detail/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
             DetailScreen(id)

@@ -63,6 +63,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 
     implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.1")
 }

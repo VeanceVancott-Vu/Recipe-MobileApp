@@ -51,7 +51,7 @@ import com.example.dacs_3.viewmodel.AuthViewModel
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.io.Files.append
 
 @Composable
-fun SignupScreen(navController: NavController,  authViewModel: AuthViewModel = viewModel()) {
+fun SignupScreen(navController: NavController,  authViewModel: AuthViewModel ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
@@ -310,6 +310,8 @@ fun SocialLoginIcon(icon: Int) {
 @Composable
 fun PreviewSignUpView() {
     val navController = rememberNavController() // Mock NavController for preview
-    SignupScreen(navController)
+    val authViewModel = remember { AuthViewModel() } // Mock AuthViewModel for preview() // Mock NavController for preview
+
+    SignupScreen(navController,authViewModel)
 }
 
