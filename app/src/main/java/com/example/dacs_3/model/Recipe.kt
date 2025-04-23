@@ -14,12 +14,14 @@ package com.example.dacs_3.model
 
 // Q:
 data class Recipe(
+    val recipeId: String = "",           // Thêm ID để quản lý công thức
     val title: String = "",
     val story: String = "",
     val servingSize: String = "",
     val cookingTime: String = "",
     val resultImages: List<String> = emptyList(),
     val ingredients: List<String> = emptyList(),
-    val instructions: List<Instruction> = emptyList()
+    val instructions: List<Instruction> = emptyList(),
+    val userId: String = ""              // Thêm userId để liên kết với tác giả
 )
 

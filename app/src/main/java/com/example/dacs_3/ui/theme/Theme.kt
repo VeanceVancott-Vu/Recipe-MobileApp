@@ -20,6 +20,7 @@ import com.example.dacs_3.ui.theme.Purple40
 import com.example.dacs_3.ui.theme.Purple80
 import com.example.dacs_3.ui.theme.PurpleGrey40
 import com.example.dacs_3.ui.theme.PurpleGrey80
+import com.example.dacs_3.ui.theme.Shapes
 import com.example.dacs_3.ui.theme.Typography
 
 private val DarkColorScheme = darkColorScheme(
@@ -71,6 +72,7 @@ fun DACS_3Theme(
 
     MaterialTheme(
         colorScheme = colorScheme,
+        shapes = Shapes,
         typography = Typography,
         content = content
     )

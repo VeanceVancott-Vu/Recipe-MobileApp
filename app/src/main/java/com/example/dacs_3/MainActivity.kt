@@ -1,39 +1,14 @@
 package com.example.dacs_3
 
 import DACS_3Theme
-import ai.codia.x.composeui.demo.AddRecipeScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import com.example.dacs_3.ui.theme.main.FileAttachSection
-import com.example.dacs_3.ui.theme.main.IconDropdownMenuSample
-import com.example.dacs_3.ui.theme.main.InstructionItem
-import com.example.dacs_3.ui.theme.main.addrecipe.AddRecipeScreenn
-import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -58,11 +33,12 @@ class MainActivity : ComponentActivity() {
 //                }
 //            }
 
-            DACS_3Theme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-
-                }
-            }
+//            DACS_3Theme {
+//                Surface(modifier = Modifier.fillMaxSize()) {
+//
+//                }
+//            }
+            RecipeDetailScreen(imageUrl = "") { }
 
         }
     }

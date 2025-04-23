@@ -20,6 +20,12 @@
     <dimen name="icon_size_small">16dp</dimen>
     <dimen name="icon_size_medium">24dp</dimen>
     <dimen name="icon_size_large">32dp</dimen>
+    <dimen name="icon_size_lg_medium">40dp</dimen>
     <dimen name="icon_size_xl">48dp</dimen>
+
+    <!-- Image Sizes -->
+    <dimen name="image_size_small">64dp</dimen>
+    <dimen name="image_size_medium">128dp</dimen>
+    <dimen name="image_size_large">192dp</dimen>
 
 </resources>

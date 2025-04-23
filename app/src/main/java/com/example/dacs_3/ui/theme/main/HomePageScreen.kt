@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -91,16 +90,6 @@ fun HomePageScreen(navController: NavController, userId: String?) {
     }
 }
 
-@Composable
-fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color(0xff3b684d),
-        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-    )
-}
 
 @Composable
 fun RecipeRow() {
