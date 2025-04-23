@@ -8,13 +8,17 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -25,58 +29,48 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dacs_3.R
+import com.example.dacs_3.utils.TopBar
 
 @Composable
 fun MyProfileScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TopBar()
-        ProfileHeader()
-        BioCard()
-        SectionCard(
-            iconRes = R.drawable.image5_368212,
-            title = "Personal Information"
-        )
-        SectionCard(
-            iconRes = R.drawable.image7_368216,
-            title = "My Statistics"
-        )
-        SectionCard(
-            iconRes = R.drawable.image9_368210,
-            title = "My Recipes"
-        )
-    }
+    Scaffold(
+        topBar = {
+            TopBar("My profile", showRightIcon = false)
+        },
+        content = { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(top = innerPadding.calculateTopPadding()-35.dp)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ProfileHeader()
+                BioCard()
+                Spacer(modifier = Modifier.height(40.dp))
+                SectionCard(
+                    iconRes = R.drawable.person,
+                    title = "Personal Information"
+                )
+                SectionCard(
+                    iconRes = R.drawable.settings,
+                    title = "Setting"
+                )
+                SectionCard(
+                    iconRes = R.drawable.bookmark,
+                    title = "My Recipes"
+                )
+                SectionCard(
+                    iconRes = R.drawable.person,
+                    title = "My Statistics"
+                )
+            }
+        }
+    )
 }
 
-@Composable
-fun TopBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = { /* Back */ }) {
-            Image(painterResource(id = R.drawable.image1_367148), contentDescription = "Back")
-        }
-        Text(
-            text = "My Profile",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xff3b684d)
-        )
-        IconButton(onClick = { /* Settings */ }) {
-            Image(painterResource(id = R.drawable.image2_367155), contentDescription = "Settings")
-        }
-    }
-}
 
 @Composable
 fun ProfileHeader() {
@@ -85,34 +79,39 @@ fun ProfileHeader() {
         modifier = Modifier.padding(vertical = 24.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.image3_367159),
+            painter = painterResource(id = R.drawable.mockrecipeimage),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(100.dp)
-                .clip(RoundedCornerShape(50.dp))
+                .size(150.dp)
+                .clip(RoundedCornerShape(70.dp))
         )
-        Spacer(modifier = Modifier.width(16.dp))
-        Column {
+        Spacer(modifier = Modifier.width(30.dp))
+        Column(modifier = Modifier.padding(8.dp)) {
             Text(
                 text = "Léonie Diane",
-                fontSize = 20.sp,
+                fontSize = 25.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xff3b684d)
             )
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
                 text = "@2510lenie",
                 color = Color(0xff9ab0a3),
-                fontSize = 14.sp
+                fontSize = 15.sp
             )
+            Spacer(modifier = Modifier.height(10.dp))
+
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.image4_368223),
+                Icon(
+                    painter = painterResource(id = R.drawable.pin_drop),
                     contentDescription = "Location",
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(18.dp),
+                    tint = Color(0xff3b684d)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Viet Nam", color = Color(0xff3b684d), fontSize = 14.sp)
+                Text(text = "Viet Nam", color = Color(0xff3b684d), fontSize = 16.sp)
             }
         }
     }
@@ -120,20 +119,77 @@ fun ProfileHeader() {
 
 @Composable
 fun BioCard() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?",
-            fontSize = 16.sp,
-            color = Color(0xff0a3d1f)
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
+                .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+                .padding(16.dp)
+
+        ) {
+            Text(
+                text = "Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?",
+                fontSize = 15.sp,
+                color = Color(0xff0a3d1f)
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         )
+        {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
+
+                    .width(160.dp)
+                    .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+
+
+            )
+            {
+                Text(
+                    text = "Kitchen Buddy: 01",
+                    fontSize = 14.sp,
+                    color = Color(0xff0a3d1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(24.dp)) // Adds space between the two boxes
+
+
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
+
+                    .width(160.dp)
+                    .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+
+
+            )
+            {
+                Text(
+                    text = "Follower : 01",
+                    fontSize = 14.sp,
+                    color = Color(0xff0a3d1f)
+                )
+            }
+
+        }
     }
-}
+
 
 @Composable
 fun SectionCard(iconRes: Int, title: String) {
@@ -141,6 +197,8 @@ fun SectionCard(iconRes: Int, title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
+            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
+
             .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
@@ -156,7 +214,7 @@ fun SectionCard(iconRes: Int, title: String) {
                         .background(Color(0xff98b4a2), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
+                    Icon(
                         painter = painterResource(id = iconRes),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp)
@@ -170,11 +228,21 @@ fun SectionCard(iconRes: Int, title: String) {
                     color = Color(0xff3b684d)
                 )
             }
-            Image(
-                painter = painterResource(id = R.drawable.image8_368218),
+            Icon(
+                painter = painterResource(id = R.drawable.arrow_forward),
                 contentDescription = "Expand",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                tint = Color(0xff3b684d)
+
+
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun preview()
+{
+    MyProfileScreen()
 }
