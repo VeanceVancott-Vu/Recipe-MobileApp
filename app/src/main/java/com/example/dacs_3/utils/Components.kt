@@ -39,7 +39,8 @@ import com.example.dacs_3.R
                 IconButton(onClick = { /* Back */ }) {
                     Icon(
                         painter = painterResource(id = R.drawable.arrowback),
-                        contentDescription = "Back"
+                        contentDescription = "Back",
+                        tint = Color(0xff3b684d)
                     )
                 }
                 Text(
