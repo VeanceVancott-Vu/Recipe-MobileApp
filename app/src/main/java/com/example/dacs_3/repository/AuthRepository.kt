@@ -13,6 +13,10 @@ class AuthRepository {
     suspend fun signUp(email: String, password: String, username: String): Pair<Boolean, String?> {
         // Q:
         // Kiểm tra đầu vào trước khi gọi Firebase
+
+        Log.d("AuthRepository", "Sign up for user and data: $email, $username,$password")
+
+
         if (email.isBlank() || password.isBlank() || username.isBlank()) {
             return Pair(false, "Email, mật khẩu và tên người dùng không được để trống")
         }

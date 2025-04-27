@@ -221,7 +221,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             authResult?.let {
                 if (it.first) {
                     Log.d("LoginScreen", "Login successful, navigating to homepage...")
-                    navController.navigate("thunghiem") {
+                    navController.navigate("homepage") {
                         popUpTo("login") { inclusive = true }
                     }
                 }

@@ -9,7 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.example.dacs_3.navigation.AppNavigation
+import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
+import com.example.dacs_3.viewmodel.AuthViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -23,12 +28,12 @@ class MainActivity : ComponentActivity() {
 //                    color = MaterialTheme.colorScheme.background
 //                ) {
 //
-//                    val navController = rememberNavController()
+                    val navController = rememberNavController()
 //
 //                    // Q:
-//                    // val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
+                     val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
 //
-//                    // AppNavigation(navController, authViewModel)
+                            AppNavigation(navController, authViewModel)
 //
 //                    IconDropdownMenuSample()
 //                }
@@ -39,8 +44,7 @@ class MainActivity : ComponentActivity() {
 //
 //                }
 //            }
-            RecipeDetailScreen(imageUrl = "") { }
-
+          //  RecipeDetailScreen(imageUrl = "") { }
         }
     }
 }

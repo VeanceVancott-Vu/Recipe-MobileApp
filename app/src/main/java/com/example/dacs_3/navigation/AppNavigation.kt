@@ -19,15 +19,27 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
     val userId = authViewModel.getCurrentUserId() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
-        composable("login") { LoginScreen(navController,authViewModel) }
-        composable("signup") { SignupScreen(navController,authViewModel) }
-        composable("homepage") { HomePageScreen(navController, userId) }
-        composable("forgot_password") { ForgotPasswordScreen(navController) }
-        composable("addRecipe") { AddRecipeScreen() }
-        composable("detail/{id}") { backStackEntry ->
+        composable("login")
+        { LoginScreen(navController,authViewModel) }
+
+        composable("signup")
+        { SignupScreen(navController,authViewModel) }
+
+        composable("homepage")
+        { HomePageScreen(navController, userId) }
+
+        composable("forgot_password")
+        { ForgotPasswordScreen(navController) }
+
+        composable("addRecipe")
+        { AddRecipeScreen() }
+
+        composable("detail/{id}")
+        { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
             DetailScreen(id)
         }
+
     }
 }
 

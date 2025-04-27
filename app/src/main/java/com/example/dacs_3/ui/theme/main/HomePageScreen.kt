@@ -25,9 +25,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
+import com.example.dacs_3.utils.BottomNavBar
 
 @Composable
 fun HomePageScreen(navController: NavController, userId: String?) {
+
     LazyColumn( // Replace Column with LazyColumn
         modifier = Modifier
             .fillMaxSize()
@@ -36,15 +38,15 @@ fun HomePageScreen(navController: NavController, userId: String?) {
     ) {
         // Q:
         // Hiển thị UID
-        item {
-            Text(
-                text = "User ID: ${userId ?: "Not logged in"}",
-                fontSize = 16.sp,
-                color = Color.Red,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
+//        item {
+//            Text(
+//                text = "User ID: ${userId ?: "Not logged in"}",
+//                fontSize = 16.sp,
+//                color = Color.Red,
+//                fontWeight = FontWeight.Bold,
+//                modifier = Modifier.padding(16.dp)
+//            )
+//        }
 
         // Search Box
         item {
@@ -124,36 +126,7 @@ fun RecipeCard(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun BottomNavBar(navController: NavController ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .background(Color(0xa8dbe6de)),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
 
-            BottomNavItem(R.drawable.password)
-        BottomNavItem(R.drawable.email)
-        BottomSearchNavItem(R.drawable.add, navController)
-        BottomNavItem(R.drawable.google)
-        BottomNavItem(R.drawable.facebook)
-
-    }
-}
-
-@Composable
-fun BottomNavItem(iconId: Int) {
-    Image(
-        painter = painterResource(id = iconId),
-        contentDescription = null,
-        modifier = Modifier
-            .size(40.dp)
-            .clipToBounds()
-    )
-}
 
 @Composable
 fun BottomSearchNavItem(iconId: Int, navController: NavController) {
