@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -27,71 +28,90 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.utils.BottomNavBar
 
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+
 @Composable
 fun HomePageScreen(navController: NavController, userId: String?) {
-
-    LazyColumn( // Replace Column with LazyColumn
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Q:
-        // Hiển thị UID
-//        item {
-//            Text(
-//                text = "User ID: ${userId ?: "Not logged in"}",
-//                fontSize = 16.sp,
-//                color = Color.Red,
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier.padding(16.dp)
-//            )
-//        }
-
-        // Search Box
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .height(73.dp)
-                    .background(Color(0xa8dbe6de), RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Search for recipes...",
-                    color = Color(0xff9ab0a3),
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
-        // Featured Recipes Section
-        item {
-            SectionTitle("Featured Recipes")
-        }
-
-        items(2) {  // ✅ Using 'items' instead of manually repeating
-            RecipeRow()
-        }
-
-        // Trending Recipes Section
-        item {
-            SectionTitle("Trending Recipes")
-        }
-
-        items(1) {  // ✅ Using 'items' instead of manually repeating
-            RecipeRow()
-        }
-
-        // Bottom Navigation
-        item {
-            Spacer(modifier = Modifier.height(50.dp))
+    Scaffold(
+        bottomBar = {
             BottomNavBar(navController)
+        },
+        containerColor = Color(0xFFF7F7F7)
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding) // Important: respect Scaffold's inner padding
+                .background(Color(0xFFF7F7F7)),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            contentPadding = PaddingValues(vertical = 24.dp)
+        ) {
+            item {
+                SearchBox()
+            }
+
+            item {
+                SectionTitle(title = "Featured Recipes")
+            }
+
+            items(2) {
+                RecipeRow()
+            }
+
+            item {
+                SectionTitle(title = "Trending Recipes")
+            }
+
+            items(1) {
+                RecipeRow()
+            }
         }
     }
 }
 
+
+@Composable
+fun SearchBox() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .height(56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFD7ECE2))
+            .clickable { /* handle click */ },
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.search), // Replace with your search icon
+                contentDescription = "Search Icon",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Search for recipes...",
+                color = Color(0xFF9AB0A3),
+                fontSize = 18.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF333333),
+        modifier = Modifier.padding(horizontal = 16.dp)
+    )
+}
 
 @Composable
 fun RecipeRow() {
@@ -99,10 +119,9 @@ fun RecipeRow() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RecipeCard(modifier = Modifier.weight(1f))
-        Spacer(modifier = Modifier.width(8.dp))
         RecipeCard(modifier = Modifier.weight(1f))
     }
 }
@@ -111,40 +130,39 @@ fun RecipeRow() {
 fun RecipeCard(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .size(160.dp)
-            .background(Color.White, RoundedCornerShape(16.dp))
-            .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
+            .clickable { /* Navigate to recipe detail */ }
     ) {
         Image(
             painter = painterResource(id = R.drawable.mockrecipeimage),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Color.Black.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                )
+                .align(Alignment.BottomCenter)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = "Delicious Dish",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
     }
 }
 
-
-
-@Composable
-fun BottomSearchNavItem(iconId: Int, navController: NavController) {
-    Image(
-        painter = painterResource(id = iconId),
-        contentDescription = null,
-        modifier = Modifier
-            .size(40.dp)
-            .clipToBounds()
-           .clickable(onClick = {
-              /* Handle click */
-               navController.navigate("addRecipe")
-
-           })
-
-
-    )
-}
 
 @Preview(showBackground = true)
 @Composable

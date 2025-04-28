@@ -2,6 +2,7 @@ package com.example.dacs_3.utils
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import com.example.dacs_3.R
-import com.example.dacs_3.ui.theme.main.BottomSearchNavItem
 
 
 @Composable
@@ -61,7 +62,8 @@ import com.example.dacs_3.ui.theme.main.BottomSearchNavItem
                 IconButton(onClick = {}) {
                     Icon(
                         painter = painterResource(id = rightIconRes),
-                        contentDescription = "Right Icon"
+                        contentDescription = "Right Icon",
+                        tint =Color(0xff3b684d)
                     )
                 }
             } else {
@@ -75,6 +77,14 @@ import com.example.dacs_3.ui.theme.main.BottomSearchNavItem
 
 @Composable
 fun BottomNavBar(navController: NavController) {
+    val navItems = listOf(
+        BottomNavItemData(R.drawable.password, "passwordScreen"),
+        BottomNavItemData(R.drawable.email, "emailScreen"),
+        BottomNavItemData(R.drawable.add, "addRecipe"),
+        BottomNavItemData(R.drawable.google, "googleScreen"),
+        BottomNavItemData(R.drawable.person, "my_profile")
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -83,23 +93,31 @@ fun BottomNavBar(navController: NavController) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        BottomNavItem(R.drawable.password)
-        BottomNavItem(R.drawable.email)
-        BottomSearchNavItem(R.drawable.add, navController)
-        BottomNavItem(R.drawable.google)
-        BottomNavItem(R.drawable.facebook)
-
+        navItems.forEach { item ->
+            BottomNavItem(
+                iconId = item.iconId,
+                navController = navController,
+                destination = item.destination
+            )
+        }
     }
 }
 
+// This is now a Composable unit
 @Composable
-fun BottomNavItem(iconId: Int) {
-    Image(
+fun BottomNavItem(iconId: Int, navController: NavController, destination: String) {
+    Icon(
         painter = painterResource(id = iconId),
         contentDescription = null,
         modifier = Modifier
             .size(40.dp)
             .clipToBounds()
+            .clickable {
+                navController.navigate(destination)
+            },
+        tint = Color(0xff3b684d)
     )
 }
+
+// Data class to make items cleaner
+data class BottomNavItemData(val iconId: Int, val destination: String)

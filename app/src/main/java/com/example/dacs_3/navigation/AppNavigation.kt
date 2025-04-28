@@ -1,5 +1,6 @@
 package com.example.dacs_3.navigation
 
+import MyProfileScreen
 import ai.codia.x.composeui.demo.AddRecipeScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,6 +39,10 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
             DetailScreen(id)
+        }
+
+        composable("my_profile")
+        { MyProfileScreen()
         }
 
     }
