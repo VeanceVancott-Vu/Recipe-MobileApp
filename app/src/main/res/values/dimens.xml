@@ -12,12 +12,14 @@
     <!-- Text Sizes -->
     <dimen name="text_size_small">12sp</dimen>
     <dimen name="text_size_medium">16sp</dimen>
+    <dimen name="text_size_medium_large">18sp</dimen>
     <dimen name="text_size_large">20sp</dimen>
     <dimen name="text_size_title">24sp</dimen>
     <dimen name="text_size_header">32sp</dimen>
 
     <!-- Icon Sizes -->
     <dimen name="icon_size_small">16dp</dimen>
+    <dimen name="icon_size_average">20dp</dimen>
     <dimen name="icon_size_medium">24dp</dimen>
     <dimen name="icon_size_large">32dp</dimen>
     <dimen name="icon_size_lg_medium">40dp</dimen>
@@ -27,5 +29,12 @@
     <dimen name="image_size_small">64dp</dimen>
     <dimen name="image_size_medium">128dp</dimen>
     <dimen name="image_size_large">192dp</dimen>
+
+    <!-- Corner Radius -->
+    <dimen name="corner_radius_small">8dp</dimen>
+    <dimen name="corner_radius_medium">16dp</dimen>
+    <dimen name="corner_radius_large">24dp</dimen>
+
+    <dimen name="height_top_bar">80dp</dimen>
 
 </resources>

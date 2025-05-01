@@ -9,6 +9,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.dacs_3.ui.theme.main.DishSuggestionByIngredient
+import com.example.dacs_3.ui.theme.main.NotificationsAndKitchenBuddies
+import com.example.dacs_3.ui.theme.main.PersonalFood
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 
 
@@ -39,7 +42,7 @@ class MainActivity : ComponentActivity() {
 //
 //                }
 //            }
-            RecipeDetailScreen(imageUrl = "") { }
+            NotificationsAndKitchenBuddies()
 
         }
     }

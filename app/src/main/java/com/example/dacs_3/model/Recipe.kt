@@ -19,9 +19,13 @@ data class Recipe(
     val story: String = "",
     val servingSize: String = "",
     val cookingTime: String = "",
-    val resultImages: List<String> = emptyList(),
+//    val resultImages: List<String> = emptyList(),
+    val resultImages: String = "",
     val ingredients: List<String> = emptyList(),
     val instructions: List<Instruction> = emptyList(),
+    val likes: Int = 0,                // Số lượt thả tim
+    val smiles: Int = 0,               // Số lượt mặt cười
+    val claps: Int = 0,
     val userId: String = ""              // Thêm userId để liên kết với tác giả
 )
 
