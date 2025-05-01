@@ -1,6 +1,8 @@
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +16,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,11 +33,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
+import com.example.dacs_3.model.User
 import com.example.dacs_3.utils.TopBar
+import com.example.dacs_3.viewmodel.AuthViewModel
 
 @Composable
-fun MyProfileScreen() {
+fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
+                    navController: NavController
+) {
+
+
+
+    val user by authViewModel.currentUser.observeAsState()
+    Log.d("My profile Screen", "user: $user")
+    LaunchedEffect(Unit) {
+        authViewModel.fetchAndSetCurrentUser()
+    }
+
     Scaffold(
         topBar = {
             TopBar("My profile", showRightIcon = false)
@@ -47,24 +68,31 @@ fun MyProfileScreen() {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ProfileHeader()
+                user?.let { ProfileHeader(it) }
                 BioCard()
                 Spacer(modifier = Modifier.height(40.dp))
                 SectionCard(
                     iconRes = R.drawable.person,
-                    title = "Personal Information"
+                    title = "Personal Information",
+                    {navController.navigate("edit_profile")}
                 )
                 SectionCard(
                     iconRes = R.drawable.settings,
-                    title = "Setting"
+                    title = "Setting",
+                    {navController.navigate("edit_profile")}
+
                 )
                 SectionCard(
                     iconRes = R.drawable.bookmark,
-                    title = "My Recipes"
+                    title = "My Recipes",
+                    {navController.navigate("edit_profile")}
+
                 )
                 SectionCard(
                     iconRes = R.drawable.person,
-                    title = "My Statistics"
+                    title = "My Statistics",
+                    {navController.navigate("edit_profile")}
+
                 )
             }
         }
@@ -73,7 +101,7 @@ fun MyProfileScreen() {
 
 
 @Composable
-fun ProfileHeader() {
+fun ProfileHeader(user: User) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(vertical = 24.dp)
@@ -89,7 +117,7 @@ fun ProfileHeader() {
         Spacer(modifier = Modifier.width(30.dp))
         Column(modifier = Modifier.padding(8.dp)) {
             Text(
-                text = "Léonie Diane",
+                text = user.username,
                 fontSize = 25.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xff3b684d)
@@ -97,7 +125,7 @@ fun ProfileHeader() {
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "@2510lenie",
+                text = user.email,
                 color = Color(0xff9ab0a3),
                 fontSize = 15.sp
             )
@@ -192,13 +220,13 @@ fun BioCard() {
 
 
 @Composable
-fun SectionCard(iconRes: Int, title: String) {
+fun SectionCard(iconRes: Int, title: String,onClick:()->Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
-
+            .clickable { onClick() } // 🔥 Make the whole card clickable
             .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
@@ -246,5 +274,5 @@ fun SectionCard(iconRes: Int, title: String) {
 @Composable
 fun MyProfileScreenPreview()
 {
-    MyProfileScreen()
+    MyProfileScreen(navController = rememberNavController())
 }

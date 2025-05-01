@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,17 +22,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.utils.TopBar
+import com.example.dacs_3.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen() {
-    var name by remember { mutableStateOf(TextFieldValue("Léonie Diane")) }
-    var id by remember { mutableStateOf(TextFieldValue("@2510lenie")) }
-    var email by remember { mutableStateOf(TextFieldValue("kk2882725@gmail.com")) }
-    var location by remember { mutableStateOf(TextFieldValue("Viet Nam")) }
-    var about by remember { mutableStateOf(TextFieldValue("Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?")) }
+fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
+                      navController: NavController
+) {
+
 
     Scaffold(
         topBar = {
@@ -46,6 +50,19 @@ fun EditProfileScreen() {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                val user by authViewModel.currentUser.observeAsState()
+                Log.d("Edit profile Screen", "user: $user")
+                LaunchedEffect(Unit) {
+                    authViewModel.fetchAndSetCurrentUser()
+                }
+
+                var name by remember { mutableStateOf(user?.let { TextFieldValue(it.username) }) }
+                var id by remember { mutableStateOf(user?.let { TextFieldValue(it.userId) }) }
+                var email by remember { mutableStateOf(user?.let { TextFieldValue(it.email) }) }
+                var location by remember { mutableStateOf(TextFieldValue("Viet Nam")) }
+                var about by remember { mutableStateOf(TextFieldValue("Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?")) }
+
 
                 // Profile Image
                 Box(contentAlignment = Alignment.Center) {
@@ -72,9 +89,9 @@ fun EditProfileScreen() {
                         .padding(10.dp)
                 )
                 {
-                    EditableField("Your Name", name) { name = it }
-                    EditableField("ID Cookpad", id) { id = it }
-                    EditableField("Email", email) { email = it }
+                    name?.let { EditableField("Your Name", it) { name = it } }
+                    id?.let { EditableField("ID Cookpad", it) { id = it } }
+                    email?.let { EditableField("Email", it) { email = it } }
                     EditableField("Come From", location) { location = it }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -114,7 +131,25 @@ fun EditProfileScreen() {
                     Spacer(modifier = Modifier.height(64.dp))
                 }
                 Button(
-                    onClick = { /* Handle update */ },
+                    onClick = {
+                        user?.let { currentUser ->
+                            val updatedUser = currentUser.copy(
+                                username = name?.text ?: currentUser.username,
+                                email = email?.text ?: currentUser.email,
+                                userId = id?.text ?: currentUser.userId
+                                // Add other fields like location, about if your data class supports them
+                            )
+
+                            authViewModel.updateUser(updatedUser) { success ->
+                                if (success) {
+                                    Log.d("EditProfileScreen", "User updated successfully")
+                                    navController.navigate("my_profile")
+                                } else {
+                                    Log.d("EditProfileScreen", "Failed to update user")
+                                }
+                            }
+                        } ?: Log.e("EditProfileScreen", "User is null, cannot update.")
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xff3f764e)),
                     shape = RoundedCornerShape(32.dp),
                     modifier = Modifier
@@ -173,5 +208,5 @@ fun EditableField(label: String, value: TextFieldValue, onValueChange: (TextFiel
 @Preview
 @Composable
 fun EditProfileScreenPreview() {
-    EditProfileScreen()
+    EditProfileScreen(navController = rememberNavController())
 }

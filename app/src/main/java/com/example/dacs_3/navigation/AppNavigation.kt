@@ -1,5 +1,6 @@
 package com.example.dacs_3.navigation
 
+import EditProfileScreen
 import MyProfileScreen
 import ai.codia.x.composeui.demo.AddRecipeScreen
 import androidx.compose.runtime.Composable
@@ -42,7 +43,12 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         }
 
         composable("my_profile")
-        { MyProfileScreen()
+        { MyProfileScreen(authViewModel,navController)
+        }
+
+        composable("edit_profile")
+        {EditProfileScreen(authViewModel,navController)
+
         }
 
     }

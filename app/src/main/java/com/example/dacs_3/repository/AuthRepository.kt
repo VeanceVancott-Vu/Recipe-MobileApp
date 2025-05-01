@@ -2,6 +2,8 @@ package com.example.dacs_3.repository
 
 import android.util.Log
 import com.example.dacs_3.model.User
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -92,6 +94,74 @@ class AuthRepository {
     // Lụm UID
     fun getCurrentUserId(): String? {
         return firebaseAuth.currentUser?.uid
+    }
+
+    suspend fun fetchCurrentUserData(): User? {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            return try {
+                val document = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(currentUser.uid)
+                    .get()
+                    .await()
+
+                if (document.exists()) {
+                    val userData = document.toObject(User::class.java)
+                    Log.d("LoginViewModel", "Fetched User: $userData")
+                    userData
+                } else {
+                    Log.d("LoginViewModel", "No user document found for UID: ${currentUser.uid}")
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("LoginViewModel", "Failed to fetch user data: ${e.message}")
+                null
+            }
+        } else {
+            Log.e("LoginViewModel", "No current user after login")
+            return null
+        }
+    }
+
+    fun updateUser(user: User): Task<Void> {
+        Log.d("updateUser","User: $user")
+        return firestore
+            .collection("users")
+            .document(user.userId)
+            .set(user)
+    }
+
+
+    suspend fun deleteUserAccount(password: String): Result<String> {
+        val user = firebaseAuth.currentUser
+
+        if (user == null) {
+            return Result.failure(Exception("No user is currently signed in."))
+        }
+
+        val email = user.email
+        if (email.isNullOrEmpty()) {
+            return Result.failure(Exception("No email associated with user."))
+        }
+
+        return try {
+            val credential = EmailAuthProvider.getCredential(email, password)
+            user.reauthenticate(credential).await()
+
+            // Delete the user document from Firestore
+            firestore.collection("users").document(user.uid)
+                .delete()
+                .await()
+
+            // Finally, delete the Firebase Auth user
+            user.delete().await()
+
+            Result.success("User account deleted successfully.")
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Delete account failed: ${e.message}")
+            Result.failure(e)
+        }
     }
 
 }
