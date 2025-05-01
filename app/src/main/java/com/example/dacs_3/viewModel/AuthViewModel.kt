@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.repository.AuthRepository
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -26,6 +27,9 @@ class AuthViewModel : ViewModel() {
         Log.d("AuthViewModel", "Attempting login with email: $email")
 
         viewModelScope.launch {
+            val app = FirebaseApp.getInstance()
+            Log.d("FirebaseDebug", "Firebase project: ${app.options.projectId}")
+
             val result = authRepository.login(email, password)
             Log.d("AuthViewModel", "Login result: Success=${result.first}, Message=${result.second}")
             _authResult.postValue(result)

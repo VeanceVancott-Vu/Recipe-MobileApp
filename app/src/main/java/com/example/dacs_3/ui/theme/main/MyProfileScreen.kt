@@ -240,9 +240,11 @@ fun SectionCard(iconRes: Int, title: String) {
     }
 }
 
+
+
 @Preview
 @Composable
-fun preview()
+fun MyProfileScreenPreview()
 {
     MyProfileScreen()
 }

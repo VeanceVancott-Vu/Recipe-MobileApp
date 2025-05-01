@@ -41,30 +41,32 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+
+    implementation(platform(libs.androidx.compose.bom)) // Always include BOM FIRST
+
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+
+    implementation(libs.coil.compose)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.navigation.compose)
+
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.coil.compose)
-    implementation("io.coil-kt:coil-compose:2.4.0")
-
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.1")
 
