@@ -680,53 +680,6 @@ fun InstructionWithImages(
     }
 }
 
-@Composable
-fun ShowAttachments(
-
-) {
-    val fileList = remember { mutableStateListOf<String>() }
-
-    Column(modifier = Modifier.padding(dimensionResource(R.dimen.spacing_m))) {
-        Button(onClick = {
-            fileList.add("Attach file")
-        }) {
-            Text("Them file")
-        }
-
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
-
-        // Danh sách dòng file đã thêm
-        fileList.forEachIndexed { index, fileName ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = dimensionResource(R.dimen.spacing_xs))
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.attach),
-                    contentDescription = "File attach"
-                )
-
-                Text(
-                    text = fileName,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = dimensionResource(R.dimen.spacing_s))
-                )
-
-                IconButton(onClick = {
-                    fileList.removeAt(index)
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Remove file"
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
