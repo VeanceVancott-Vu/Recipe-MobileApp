@@ -1,7 +1,7 @@
 package com.example.dacs_3
 
+import AddRecipeScreen
 import DACS_3Theme
-import ai.codia.x.composeui.demo.AddRecipeScreen
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -19,12 +19,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
 import com.example.dacs_3.cloudinary.imageupload.UploadImageScreen
-import com.example.dacs_3.ui.theme.main.DishSuggestionByIngredient
+import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.ui.theme.main.NotificationsAndKitchenBuddies
 import com.example.dacs_3.ui.theme.main.PersonalFood
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
+import com.example.dacs_3.viewmodel.AuthViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -34,28 +37,29 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
+            val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
+
 //            DACS_3Theme {
 //                Surface(
 //                    modifier = Modifier.fillMaxSize(),
 //                    color = MaterialTheme.colorScheme.background
 //                ) {
 //
-//                    val navController = rememberNavController()
 //
 //                    // Q:
-//                    // val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
 //
-//                    // AppNavigation(navController, authViewModel)
-//
+                     AppNavigation(navController, authViewModel)
+  //                  AddRecipeScreen()
 //                    IconDropdownMenuSample()
 //                }
 //            }
 
-            DACS_3Theme {
-                Surface {
-                    UploadImageScreen()
-                }
-            }
+//            DACS_3Theme {
+//                Surface {
+//                    UploadImageScreen()
+//                }
+//            }
 
 
         }

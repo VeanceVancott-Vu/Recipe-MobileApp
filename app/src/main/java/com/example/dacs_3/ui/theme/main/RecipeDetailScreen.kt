@@ -294,54 +294,31 @@ private fun DishContent(
     )
 
     val stepList = listOf(
-        Instruction(
+    Instruction(
             stepNumber = 1,
-            description = "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup",
-            images = listOf(
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage
-            ),
-            links = listOf(
-                Link(title = "Recipe.pdf", url = "https://example.com/files/recipe.pdf"),
-                Link(title = "ShoppingList.txt", url = "https://example.com/files/shoppinglist.txt"),
-                Link(title = "CookingTips.docx", url = "https://example.com/files/cookingtips.docx")
-            )
-        ),
-        Instruction(
-            stepNumber = 2,
-            description = "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup",
-            images = listOf(
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage
-            ),
-            links = listOf(
-                Link(title = "Recipe.pdf", url = "https://example.com/files/recipe.pdf"),
-                Link(title = "ShoppingList.txt", url = "https://example.com/files/shoppinglist.txt"),
-                Link(title = "CookingTips.docx", url = "https://example.com/files/cookingtips.docx")
-            )
-        ),
-        Instruction(
-            stepNumber = 3,
-            description = "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup",
-            images = listOf(
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage
-            ),
-            links = listOf(
-                Link(title = "Recipe.pdf", url = "https://example.com/files/recipe.pdf"),
-                Link(title = "ShoppingList.txt", url = "https://example.com/files/shoppinglist.txt"),
-                Link(title = "CookingTips.docx", url = "https://example.com/files/cookingtips.docx")
-            )
-        )
+    description = "Prepare the ingredients: Chop the vegetables and measure the spices.",
+    imageUrl = listOf("https://example.com/images/step1_1.jpg", "https://example.com/images/step1_2.jpg")
+    ),
+    Instruction(
+        stepNumber = 2,
+        description = "Heat the pan and add oil. Once hot, add onions and garlic and sauté until golden brown.",
+        imageUrl = listOf("https://example.com/images/step2_1.jpg")
+    ),
+    Instruction(
+        stepNumber = 3,
+        description = "Add chopped vegetables to the pan and cook until tender.",
+        imageUrl = listOf("https://example.com/images/step3_1.jpg", "https://example.com/images/step3_2.jpg")
+    ),
+    Instruction(
+        stepNumber = 4,
+        description = "Add the spices and stir to combine, cooking for an additional 2 minutes.",
+        imageUrl = listOf("https://example.com/images/step4_1.jpg")
+    ),
+    Instruction(
+        stepNumber = 5,
+        description = "Serve hot and garnish with fresh herbs.",
+        imageUrl = listOf("https://example.com/images/step5_1.jpg")
+    )
     )
 
     Column(
@@ -823,23 +800,23 @@ private fun CookingSteps(
                         color = Color.Gray
                     )
 
-                    LazyRow {
-                        items(step.images) { image ->
-                            Image(
-                                painter = painterResource(image),
-                                contentDescription = "Cooking step image",
-                                contentScale = ContentScale.Crop, // 👈 quan trọng nè!
-                                modifier = Modifier
-                                    .width(dimensionResource(R.dimen.image_size_large))
-                                    .height(dimensionResource(R.dimen.image_size_medium))
-                                    .padding(end = dimensionResource(R.dimen.spacing_xs))
-                                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_s))) // nếu muốn bo góc nữa
-                            )
-
-                        }
-                    }
-
-                    ShowLinks(step.links)
+//                    LazyRow {
+//                        items(step.imageUrl) { image ->
+//                            Image(
+//                                painter = painterResource(image),
+//                                contentDescription = "Cooking step image",
+//                                contentScale = ContentScale.Crop, // 👈 quan trọng nè!
+//                                modifier = Modifier
+//                                    .width(dimensionResource(R.dimen.image_size_large))
+//                                    .height(dimensionResource(R.dimen.image_size_medium))
+//                                    .padding(end = dimensionResource(R.dimen.spacing_xs))
+//                                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_s))) // nếu muốn bo góc nữa
+//                            )
+//
+//                        }
+//                    }
+//
+//                    ShowLinks(step.links)
                 }
             }
         }

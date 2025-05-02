@@ -1,8 +1,8 @@
 package com.example.dacs_3.navigation
 
+import AddRecipeScreen
 import EditProfileScreen
 import MyProfileScreen
-import ai.codia.x.composeui.demo.AddRecipeScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController

@@ -19,7 +19,6 @@ data class Recipe(
     val story: String = "",
     val servingSize: String = "",
     val cookingTime: String = "",
-//    val resultImages: List<String> = emptyList(),
     val resultImages: String = "",
     val ingredients: List<String> = emptyList(),
     val instructions: List<Instruction> = emptyList(),
