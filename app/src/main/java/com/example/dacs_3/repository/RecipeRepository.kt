@@ -24,7 +24,7 @@ class RecipeRepository {
         onFailure: (Exception) -> Unit
     ) {
         recipeCollection
-            .orderBy("createdAt", Query.Direction.DESCENDING)
+         //   .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { snapshot ->
                 val recipes = snapshot.toObjects(Recipe::class.java)
@@ -37,7 +37,7 @@ class RecipeRepository {
 
     fun observeRecipes(onChange: (List<Recipe>) -> Unit) {
         recipeCollection
-            .orderBy("createdAt", Query.Direction.DESCENDING)
+      //      .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
                 val recipes = snapshot.toObjects(Recipe::class.java)

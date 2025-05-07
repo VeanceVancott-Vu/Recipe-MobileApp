@@ -1,6 +1,7 @@
 package com.example.dacs_3.ui.theme.main
 
 import DACS_3Theme
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,9 +31,40 @@ import com.example.dacs_3.utils.BottomNavBar
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
+import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.repository.RecipeRepository
+import com.example.dacs_3.viewModel.RecipeViewModel
 
 @Composable
-fun HomePageScreen(navController: NavController, userId: String?) {
+fun HomePageScreen(navController: NavController, userId: String?,
+                   recipeViewModel: RecipeViewModel = viewModel()) {
+
+
+    val recipes by recipeViewModel.recipes.collectAsState()
+    val isLoading by recipeViewModel.isLoading.collectAsState()
+    val errorMessage by recipeViewModel.errorMessage.collectAsState()
+
+    // Trigger data load only once
+    LaunchedEffect(Unit) {
+        recipeViewModel.fetchRecipes()
+    }
+    Log.d("HomePageScreen", "Fetch recipes: $recipes")
+    Log.d("HomePageScreen", "Recipes size: $recipes.size")
+
+
+
+
+
+
+
+
+
+
     Scaffold(
         bottomBar = {
             BottomNavBar(navController)
@@ -55,16 +87,16 @@ fun HomePageScreen(navController: NavController, userId: String?) {
                 SectionTitle(title = "Featured Recipes")
             }
 
-            items(2) {
-                RecipeRow()
+            items(recipes.size  ) {
+                RecipeRow(recipes)
             }
 
             item {
                 SectionTitle(title = "Trending Recipes")
             }
 
-            items(1) {
-                RecipeRow()
+            items(recipes.size ) {
+                RecipeRow(recipes)
             }
         }
     }
@@ -112,22 +144,39 @@ fun SectionTitle(title: String) {
         modifier = Modifier.padding(horizontal = 16.dp)
     )
 }
-
 @Composable
-fun RecipeRow() {
-    Row(
+fun RecipeRow(recipes: List<Recipe>) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        RecipeCard(modifier = Modifier.weight(1f))
-        RecipeCard(modifier = Modifier.weight(1f))
+        recipes.chunked(2).forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                for (recipe in rowItems) {
+                    RecipeCard(recipe = recipe, modifier = Modifier.weight(1f))
+                }
+                // Fill in empty space if row has only 1 item
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun RecipeCard(modifier: Modifier = Modifier) {
+fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier) {
+    val painter = if (recipe.resultImages.isNotBlank()) {
+        rememberAsyncImagePainter(recipe.resultImages) // Cloudinary URL
+    } else {
+        painterResource(id = R.drawable.mockrecipeimage) // Fallback
+    }
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
@@ -137,11 +186,12 @@ fun RecipeCard(modifier: Modifier = Modifier) {
             .clickable { /* Navigate to recipe detail */ }
     ) {
         Image(
-            painter = painterResource(id = R.drawable.mockrecipeimage),
+            painter = painter,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -153,7 +203,7 @@ fun RecipeCard(modifier: Modifier = Modifier) {
                 .padding(8.dp)
         ) {
             Text(
-                text = "Delicious Dish",
+                text = recipe.title.ifBlank { "Untitled Recipe" },
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -162,7 +212,6 @@ fun RecipeCard(modifier: Modifier = Modifier) {
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

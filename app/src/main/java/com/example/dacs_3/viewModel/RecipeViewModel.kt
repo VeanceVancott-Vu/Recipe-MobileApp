@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
@@ -36,6 +38,10 @@ class RecipeViewModel: ViewModel() {
 
     // Temporarily store local image URIs for each instruction
     private val instructionImageUris = mutableMapOf<Int, MutableList<Uri>>()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
 
     init {
         observeRecipes()
@@ -72,6 +78,23 @@ class RecipeViewModel: ViewModel() {
         }
     }
 
+    fun fetchRecipes() {
+        _isLoading.value = true
+        _errorMessage.value = null
+
+        repository.getRecipes(
+            onSuccess = { list ->
+                Log.d("RecipeViewModel", "Fetch recipes: $list")
+
+                _recipes.value = list
+                _isLoading.value = false
+            },
+            onFailure = { e ->
+                _errorMessage.value = e.message
+                _isLoading.value = false
+            }
+        )
+    }
 
     fun uploadRecipe(recipe: Recipe) {
         _isUploading.value = true

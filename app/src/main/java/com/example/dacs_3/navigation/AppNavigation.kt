@@ -29,7 +29,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         { SignupScreen(navController,authViewModel) }
 
         composable("homepage")
-        { HomePageScreen(navController, userId) }
+        { HomePageScreen(navController, userId,recipeViewModel) }
 
         composable("forgot_password")
         { ForgotPasswordScreen(navController) }
