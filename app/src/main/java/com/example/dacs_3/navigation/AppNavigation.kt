@@ -13,11 +13,12 @@ import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
 import com.example.dacs_3.ui.theme.main.DetailScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
+import com.example.dacs_3.viewModel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
 @Composable
-fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel) {
+fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel) {
     val userId = authViewModel.getCurrentUserId() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
@@ -34,7 +35,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         { ForgotPasswordScreen(navController) }
 
         composable("addRecipe")
-        { AddRecipeScreen() }
+        { AddRecipeScreen(recipeViewModel,navController) }
 
         composable("detail/{id}")
         { backStackEntry ->

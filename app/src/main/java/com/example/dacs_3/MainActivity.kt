@@ -27,6 +27,7 @@ import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.ui.theme.main.NotificationsAndKitchenBuddies
 import com.example.dacs_3.ui.theme.main.PersonalFood
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
+import com.example.dacs_3.viewModel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
+            val recipeViewModel: RecipeViewModel = viewModel() // Tạo ViewModel
 
 //            DACS_3Theme {
 //                Surface(
@@ -49,7 +51,7 @@ class MainActivity : ComponentActivity() {
 //
 //                    // Q:
 //
-                     AppNavigation(navController, authViewModel)
+                     AppNavigation(navController, authViewModel,recipeViewModel)
   //                  AddRecipeScreen()
 //                    IconDropdownMenuSample()
 //                }

@@ -1,19 +1,23 @@
 package com.example.dacs_3.repository
 
 import com.example.dacs_3.model.Recipe
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 class RecipeRepository {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val recipeCollection = firestore.collection("recipes")
+     private val currentUser = FirebaseAuth.getInstance().currentUser
 
     fun addRecipe(recipe: Recipe, onResult: (Boolean) -> Unit) {
-        recipeCollection.document(recipe.recipeId)
-            .set(recipe)
+        recipe.userId = currentUser?.uid ?: ""
+        recipeCollection
+            .add(recipe)
             .addOnSuccessListener { onResult(true) }
             .addOnFailureListener { onResult(false) }
     }
+
 
     fun getRecipes(
         onSuccess: (List<Recipe>) -> Unit,
