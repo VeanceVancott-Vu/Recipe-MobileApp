@@ -11,12 +11,21 @@ class RecipeRepository {
      private val currentUser = FirebaseAuth.getInstance().currentUser
 
     fun addRecipe(recipe: Recipe, onResult: (Boolean) -> Unit) {
-        recipe.userId = currentUser?.uid ?: ""
+        val userId = currentUser?.uid ?: ""
+        recipe.userId = userId
+
         recipeCollection
             .add(recipe)
-            .addOnSuccessListener { onResult(true) }
+            .addOnSuccessListener { documentRef ->
+                val recipeId = documentRef.id
+                // Update the same document with its generated ID
+                documentRef.update("recipeId", recipeId)
+                    .addOnSuccessListener { onResult(true) }
+                    .addOnFailureListener { onResult(false) }
+            }
             .addOnFailureListener { onResult(false) }
     }
+
 
 
     fun getRecipes(
@@ -42,6 +51,27 @@ class RecipeRepository {
                 if (error != null || snapshot == null) return@addSnapshotListener
                 val recipes = snapshot.toObjects(Recipe::class.java)
                 onChange(recipes)
+            }
+    }
+
+    fun getRecipeById(
+        recipeId: String,
+        onSuccess: (Recipe?) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        recipeCollection
+            .document(recipeId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val recipe = document.toObject(Recipe::class.java)
+                    onSuccess(recipe)
+                } else {
+                    onSuccess(null) // No such document
+                }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
             }
     }
 }

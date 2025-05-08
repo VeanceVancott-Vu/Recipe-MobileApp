@@ -22,26 +22,27 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class RecipeViewModel: ViewModel() {
+class RecipeViewModel : ViewModel() {
     private val repository: RecipeRepository = RecipeRepository()
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
-    val recipes: StateFlow<List<Recipe>> = _recipes.asStateFlow()
+    val recipes: StateFlow<List<Recipe>> = _recipes
 
     private val _isUploading = MutableStateFlow(false)
-    val isUploading: StateFlow<Boolean> = _isUploading.asStateFlow()
+    val isUploading: StateFlow<Boolean> = _isUploading
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     private val _instructions = mutableStateListOf<Instruction>()
     val instructions: List<Instruction> get() = _instructions
 
-    // Temporarily store local image URIs for each instruction
     private val instructionImageUris = mutableMapOf<Int, MutableList<Uri>>()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
+    val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe
 
     init {
         observeRecipes()
@@ -54,62 +55,61 @@ class RecipeViewModel: ViewModel() {
         onSuccess: (String) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val imageUrl = suspendCoroutine<String> { continuation ->
-                    CloudinaryUploader.uploadImageFromUri(
-                        context,
-                        uri,
-                        uploadPreset,
-                        onSuccess = { url -> continuation.resume(url) },
-                        onError = { exception -> continuation.resumeWithException(exception) }
-                    )
+                val imageUrl = withContext(Dispatchers.IO) {
+                    suspendCoroutine<String> { continuation ->
+                        CloudinaryUploader.uploadImageFromUri(
+                            context,
+                            uri,
+                            uploadPreset,
+                            onSuccess = { url -> continuation.resume(url) },
+                            onError = { e -> continuation.resumeWithException(e) }
+                        )
+                    }
                 }
-
-                withContext(Dispatchers.Main) {
-                    onSuccess(imageUrl) // ✅ Return the image URL
-                }
-
+                onSuccess(imageUrl)
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onError(e)
-                }
+                onError(e)
             }
         }
     }
 
     fun fetchRecipes() {
-        _isLoading.value = true
-        _errorMessage.value = null
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
 
-        repository.getRecipes(
-            onSuccess = { list ->
-                Log.d("RecipeViewModel", "Fetch recipes: $list")
-
-                _recipes.value = list
-                _isLoading.value = false
-            },
-            onFailure = { e ->
-                _errorMessage.value = e.message
-                _isLoading.value = false
-            }
-        )
+            repository.getRecipes(
+                onSuccess = { list ->
+                    Log.d("RecipeViewModel", "Fetch recipes: $list")
+                    _recipes.value = list
+                    _isLoading.value = false
+                },
+                onFailure = { e ->
+                    _errorMessage.value = e.message
+                    _isLoading.value = false
+                }
+            )
+        }
     }
 
     fun uploadRecipe(recipe: Recipe) {
-        _isUploading.value = true
-        repository.addRecipe(recipe) { success ->
-            Log.d("RecipeViewModel", "uploadRecipe: $success")
-            _isUploading.value = false
-            if (!success) {
-                _errorMessage.value = "Failed to upload recipe"
+        viewModelScope.launch {
+            _isUploading.value = true
+            repository.addRecipe(recipe) { success ->
+                Log.d("RecipeViewModel", "uploadRecipe: $success")
+                _isUploading.value = false
+                if (!success) _errorMessage.value = "Failed to upload recipe"
             }
         }
     }
 
     private fun observeRecipes() {
-        repository.observeRecipes { recipeList ->
-            _recipes.value = recipeList
+        viewModelScope.launch {
+            repository.observeRecipes { recipeList ->
+                _recipes.value = recipeList
+            }
         }
     }
 
@@ -126,7 +126,6 @@ class RecipeViewModel: ViewModel() {
     }
 
     fun addImageUriToInstruction(index: Int, uri: Uri) {
-        Log.d("RecipeViewModel", "addImageUriToInstruction: $uri")
         val list = instructionImageUris.getOrPut(index) { mutableListOf() }
         list.add(uri)
 
@@ -145,37 +144,28 @@ class RecipeViewModel: ViewModel() {
         return instructionImageUris[index] ?: emptyList()
     }
 
-
     fun updateInstructionDescription(index: Int, description: String) {
-        // Update the mutable list and trigger reactivity
         _instructions[index] = _instructions[index].copy(description = description)
     }
 
-    // Function to insert a new instruction at a specific position
     fun insertInstructionAt(position: Int) {
         val newInstruction = Instruction(stepNumber = position + 1)
         _instructions.add(position, newInstruction)
-        // Ensure the step numbers remain in order
         reorderInstructions()
     }
 
-    // Function to delete an instruction at a specific position
     fun deleteInstructionAt(position: Int) {
         if (_instructions.size > 1) {
             _instructions.removeAt(position)
-            // Ensure the step numbers remain in order
             reorderInstructions()
         }
     }
 
-    // Helper function to reorder instructions based on their step number
     private fun reorderInstructions() {
         _instructions.forEachIndexed { index, instruction ->
             _instructions[index] = instruction.copy(stepNumber = index + 1)
         }
     }
-
-
 
     fun uploadAllInstructionImages(
         context: Context,
@@ -183,40 +173,51 @@ class RecipeViewModel: ViewModel() {
         onComplete: (List<Instruction>) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val updatedInstructions = _instructions.mapIndexed { index, instruction ->
-                    val uris = instructionImageUris[index] ?: emptyList()
-                    val urls = mutableListOf<String>()
-
-                    uris.forEach { uri ->
-                        val url = suspendCoroutine<String> { continuation ->
-                            CloudinaryUploader.uploadImageFromUri(
-                                context, uri, uploadPreset,
-                                onSuccess = { uploadedUrl -> continuation.resume(uploadedUrl) },
-                                onError = { exception -> continuation.resumeWithException(exception) }
-                            )
+                val updatedInstructions = withContext(Dispatchers.IO) {
+                    _instructions.mapIndexed { index, instruction ->
+                        val uris = instructionImageUris[index] ?: emptyList()
+                        val urls = mutableListOf<String>()
+                        uris.forEach { uri ->
+                            val url = suspendCoroutine<String> { continuation ->
+                                CloudinaryUploader.uploadImageFromUri(
+                                    context, uri, uploadPreset,
+                                    onSuccess = { uploadedUrl -> continuation.resume(uploadedUrl) },
+                                    onError = { e -> continuation.resumeWithException(e) }
+                                )
+                            }
+                            urls.add(url)
                         }
-                        urls.add(url)
+                        instruction.copy(imageUrl = urls)
                     }
-
-                    instruction.copy(imageUrl = urls)
                 }
 
-                withContext(Dispatchers.Main) {
-                    _instructions.clear()
-                    _instructions.addAll(updatedInstructions)
-                    onComplete(updatedInstructions)
-                }
+                _instructions.clear()
+                _instructions.addAll(updatedInstructions)
+                onComplete(updatedInstructions)
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onError(e)
-                }
+                onError(e)
             }
         }
     }
 
+    fun fetchRecipeById(recipeId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
 
-
-
+            repository.getRecipeById(
+                recipeId,
+                onSuccess = { recipe ->
+                    _selectedRecipe.value = recipe
+                    _isLoading.value = false
+                },
+                onFailure = { e ->
+                    _errorMessage.value = e.message
+                    _isLoading.value = false
+                }
+            )
+        }
+    }
 }

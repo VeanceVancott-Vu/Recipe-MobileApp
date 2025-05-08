@@ -54,15 +54,7 @@ fun HomePageScreen(navController: NavController, userId: String?,
         recipeViewModel.fetchRecipes()
     }
     Log.d("HomePageScreen", "Fetch recipes: $recipes")
-    Log.d("HomePageScreen", "Recipes size: $recipes.size")
-
-
-
-
-
-
-
-
+    Log.d("HomePageScreen", "Recipes size: "+recipes.size  )
 
 
     Scaffold(
@@ -87,16 +79,16 @@ fun HomePageScreen(navController: NavController, userId: String?,
                 SectionTitle(title = "Featured Recipes")
             }
 
-            items(recipes.size  ) {
-                RecipeRow(recipes)
+            item {
+                RecipeRow(recipes,navController)
             }
 
             item {
                 SectionTitle(title = "Trending Recipes")
             }
 
-            items(recipes.size ) {
-                RecipeRow(recipes)
+            item {
+                RecipeRow(recipes,navController)
             }
         }
     }
@@ -145,7 +137,7 @@ fun SectionTitle(title: String) {
     )
 }
 @Composable
-fun RecipeRow(recipes: List<Recipe>) {
+fun RecipeRow(recipes: List<Recipe>,navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,7 +150,7 @@ fun RecipeRow(recipes: List<Recipe>) {
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 for (recipe in rowItems) {
-                    RecipeCard(recipe = recipe, modifier = Modifier.weight(1f))
+                    RecipeCard(recipe = recipe, modifier = Modifier.weight(1f), navController)
                 }
                 // Fill in empty space if row has only 1 item
                 if (rowItems.size == 1) {
@@ -170,7 +162,7 @@ fun RecipeRow(recipes: List<Recipe>) {
 }
 
 @Composable
-fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier) {
+fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier,navController: NavController) {
     val painter = if (recipe.resultImages.isNotBlank()) {
         rememberAsyncImagePainter(recipe.resultImages) // Cloudinary URL
     } else {
@@ -183,7 +175,10 @@ fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier) {
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
-            .clickable { /* Navigate to recipe detail */ }
+            .clickable {
+                Log.d("HomePageScreen", "Recipe clicked: ${recipe.recipeId}")
+
+                navController.navigate("recipe_detail/${recipe.recipeId}") }
     ) {
         Image(
             painter = painter,

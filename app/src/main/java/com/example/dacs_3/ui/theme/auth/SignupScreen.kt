@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +56,7 @@ fun SignupScreen(navController: NavController,  authViewModel: AuthViewModel ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
-    val authResult by authViewModel.authResult.observeAsState()
+    val authResult by authViewModel.authResult.collectAsState()
 
 
     // Q: Remember me

@@ -51,7 +51,7 @@ fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                val user by authViewModel.currentUser.observeAsState()
+                val user by authViewModel.currentUser.collectAsState()
                 Log.d("Edit profile Screen", "user: $user")
                 LaunchedEffect(Unit) {
                     authViewModel.fetchAndSetCurrentUser()

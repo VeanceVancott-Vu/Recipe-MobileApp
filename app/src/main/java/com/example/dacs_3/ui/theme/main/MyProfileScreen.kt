@@ -17,6 +17,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -48,7 +49,7 @@ fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
 
 
 
-    val user by authViewModel.currentUser.observeAsState()
+    val user by authViewModel.currentUser.collectAsState()
     Log.d("My profile Screen", "user: $user")
     LaunchedEffect(Unit) {
         authViewModel.fetchAndSetCurrentUser()
