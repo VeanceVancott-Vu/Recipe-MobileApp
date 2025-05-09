@@ -78,6 +78,7 @@ import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewModel.CommentViewModel
 import com.example.dacs_3.viewModel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 import compose.icons.FontAwesomeIcons
@@ -85,6 +86,7 @@ import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.regular.Clock
 import compose.icons.fontawesomeicons.regular.Hourglass
+import compose.icons.fontawesomeicons.solid.ArrowDown
 import compose.icons.fontawesomeicons.solid.Bookmark
 import compose.icons.fontawesomeicons.solid.Clipboard
 import compose.icons.fontawesomeicons.solid.EllipsisH
@@ -98,7 +100,8 @@ fun RecipeDetailScreen(
     navController: NavController,
     id:String = "",
     recipeViewModel: RecipeViewModel = viewModel(),
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = viewModel(),
+    commentViewModel: CommentViewModel = viewModel()
 ) {
 
     val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
@@ -106,6 +109,8 @@ fun RecipeDetailScreen(
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
 
     val recipeUser by authViewModel.recipeUser.collectAsState()
+
+    val currentUser by authViewModel.currentUser.collectAsState()
 
 
 // Trigger fetching recipe only once on entering the screen
@@ -181,7 +186,8 @@ fun RecipeDetailScreen(
         DishContent(
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l))
-            , recipe = selectedRecipe
+            , recipe = selectedRecipe,
+            recipeUser = recipeUser
         )
 
 
@@ -197,11 +203,16 @@ fun RecipeDetailScreen(
 
          RecipeRatingCard()
 
-        CommentListSection(
-            commentList = commentList,
-            onValueChange = { commentText = it },
-            commentText = commentText
-        )
+        selectedRecipe?.let {
+            CommentListSection(
+                currentUser,
+                recipeId = it.recipeId,
+                commentViewModel    ,
+                commentList = commentList,
+                onValueChange = { commentText = it },
+                commentText = commentText
+            )
+        }
 
         SameAuthor()
     }
@@ -330,7 +341,8 @@ private fun FeatureIcon(
 @Composable
 private fun DishContent(
     recipe: Recipe? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null
 ) {
     val ingredientsList = listOf(
         "2 eggs",
@@ -378,18 +390,31 @@ private fun DishContent(
                 modifier = Modifier.weight(1f)
             )
 
-            SectionTitle(
-                "Name of the dish",
-                modifier = Modifier
-                    .padding(dimensionResource(R.dimen.spacing_s))
-            )
+            if (recipe != null) {
+                SectionTitle(
+                    recipe.title,
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.spacing_s))
+                )
+            }
+            else
+            {
+                SectionTitle(
+                    "The Best Sweet and Sour Fish Soup",
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.spacing_s))
+                )
+            }
 
             HorizontalDivider(
                 modifier = Modifier.weight(1f)
             )
         }
 
-        CreatorInfo()
+        CreatorInfo(
+            recipe = recipe,
+            recipeUser = recipeUser
+        )
 
         DishProperties()
 
@@ -567,6 +592,9 @@ private fun RecipeRatingCard(
 
 @Composable
 private fun CommentListSection(
+    currentUser: User? = null,
+    recipeId: String = "",
+    commentViewModel: CommentViewModel,
     commentText: String,
     onValueChange: (String) -> Unit,
     commentList: List<Comment>,
@@ -602,12 +630,10 @@ private fun CommentListSection(
                 placeholder = {
                     Text(
                         text = "Add a comment",
-                        fontSize = 14.sp    // Chỉnh size nhỏ lại
+                        fontSize = 14.sp
                     )
                 },
-                textStyle = TextStyle(
-                    fontSize = 14.sp       // Size chữ nhập vào nhỏ đồng bộ
-                ),
+                textStyle = TextStyle(fontSize = 14.sp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -617,10 +643,46 @@ private fun CommentListSection(
                     focusedPlaceholderColor = Color.Gray,
                     unfocusedPlaceholderColor = Color.Gray
                 ),
+                trailingIcon = {
+                    Icon(
+                        imageVector = FontAwesomeIcons.Solid.ArrowDown,
+                        contentDescription = "Submit comment",
+                        tint = Color.Black, // Make it pop on white background
+                        modifier = Modifier
+                            .size(dimensionResource(R.dimen.icon_size_small))
+                            .clickable {
+                                Log.d(
+                                    "CommentListSection/Recipe Detail",
+                                    "Comment: $commentText from user: $currentUser in recipe: $recipeId"
+                                )
+                                val comment = currentUser?.let {
+                                    Comment(
+                                        recipeId = recipeId,
+                                        userId = it.userId,
+                                        username = it.username,
+                                        text = commentText,
+                                        timestamp = System.currentTimeMillis(),
+                                        isReported = false
+                                    )
+                                }
+                                if (comment != null) {
+                                    commentViewModel.postComment(comment)
+                                }
+
+
+
+
+                            }
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp) // Chiều cao hợp lý cho gõ 1 dòng
+                    .height(48.dp)
             )
+
+
+
+
         }
 
         Column(
@@ -649,13 +711,23 @@ fun SameAuthor() {
 @Composable
 fun CommentItem(
     comment: Comment,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null
 ) {
+
+    val imageUri = recipeUser?.profileImageUrl
+    val painter = if (imageUri?.isNotBlank() == true){
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
+
     Row(
 
     ) {
         Image(
-            painter = painterResource(R.drawable.mockrecipeimage),
+            painter = painter,
             contentDescription = "Avatar",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -699,6 +771,7 @@ fun CommentItem(
 private fun CreatorInfo(
     modifier: Modifier = Modifier,
     recipeUser: User? = null,
+    recipe: Recipe? = null
 ) {
 
     val imageUri = recipeUser?.profileImageUrl
@@ -765,25 +838,51 @@ private fun CreatorInfo(
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Story behind this dish ...") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(dimensionResource(R.dimen.spacing_s) * 15)
-                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
-                    .background(colorResource(R.color.text_field_background)),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent,
-                    selectionColors = LocalTextSelectionColors.current,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
+            if (recipe != null) {
+                OutlinedTextField(
+                    value = recipe.story ?: "",
+                    onValueChange = {},
+                    placeholder = { Text("Story behind this dish ...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(R.dimen.spacing_s) * 15)
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                        .background(colorResource(R.color.text_field_background)),
+                    enabled = false, // This disables the field
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Transparent,
+                        selectionColors = LocalTextSelectionColors.current,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                    )
                 )
-            )
+            }
+            else
+            {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = { Text("Story behind this dish ...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(R.dimen.spacing_s) * 15)
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                        .background(colorResource(R.color.text_field_background)),
+                    enabled = false, // This disables the field
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Transparent,
+                        selectionColors = LocalTextSelectionColors.current,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                    )
+                )
+            }
         }
     }
 }

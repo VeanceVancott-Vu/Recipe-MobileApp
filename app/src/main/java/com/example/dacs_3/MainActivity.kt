@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.utils.askForLocationPermission
+import com.example.dacs_3.viewModel.CommentViewModel
 import com.example.dacs_3.viewModel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
             val recipeViewModel: RecipeViewModel = viewModel() // Tạo ViewModel
-
+            val commentViewModel: CommentViewModel = viewModel() // Tạo ViewModel
 
             DACS_3Theme {
                 Surface {
@@ -76,8 +77,8 @@ class MainActivity : ComponentActivity() {
 
 //                    FollowStatusScreen()
 
-                    MyProfileScreen(navController = navController)
-                    AppNavigation(navController, authViewModel,recipeViewModel)
+            //        MyProfileScreen(navController = navController)
+                    AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel)
 
                 }
             }
