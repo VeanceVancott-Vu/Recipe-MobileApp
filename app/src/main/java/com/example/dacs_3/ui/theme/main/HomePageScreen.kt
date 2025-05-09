@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,12 +21,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,10 +40,20 @@ import com.example.dacs_3.utils.BottomNavBar
 import com.example.dacs_3.utils.askForLocationPermission
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
+import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.repository.RecipeRepository
+import com.example.dacs_3.viewModel.RecipeViewModel
 
 @Composable
-fun HomePageScreen(navController: NavController, userId: String?) {
+fun HomePageScreen(
+    navController: NavController,
+    userId: String?,
+    recipeViewModel: RecipeViewModel = viewModel())
+{
     val context = LocalContext.current
 
 
@@ -89,6 +102,19 @@ fun HomePageScreen(navController: NavController, userId: String?) {
         }
     }
 
+
+    val recipes by recipeViewModel.recipes.collectAsState()
+    val isLoading by recipeViewModel.isLoading.collectAsState()
+    val errorMessage by recipeViewModel.errorMessage.collectAsState()
+
+    // Trigger data load only once
+    LaunchedEffect(Unit) {
+        recipeViewModel.fetchRecipes()
+    }
+    Log.d("HomePageScreen", "Fetch recipes: $recipes")
+    Log.d("HomePageScreen", "Recipes size: "+recipes.size  )
+
+
     Scaffold(
         bottomBar = {
             BottomNavBar(navController)
@@ -111,16 +137,16 @@ fun HomePageScreen(navController: NavController, userId: String?) {
                 SectionTitle(title = "Featured Recipes")
             }
 
-            items(2) {
-                RecipeRow()
+            item {
+                RecipeRow(recipes,navController)
             }
 
             item {
                 SectionTitle(title = "Trending Recipes")
             }
 
-            items(1) {
-                RecipeRow()
+            item {
+                RecipeRow(recipes,navController)
             }
         }
     }
@@ -170,34 +196,56 @@ fun SectionTitle(title: String) {
 }
 
 @Composable
-fun RecipeRow() {
-    Row(
+fun RecipeRow(recipes: List<Recipe>,navController: NavController) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        RecipeCard(modifier = Modifier.weight(1f))
-        RecipeCard(modifier = Modifier.weight(1f))
+        recipes.chunked(2).forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                for (recipe in rowItems) {
+                    RecipeCard(recipe = recipe, modifier = Modifier.weight(1f), navController)
+                }
+                // Fill in empty space if row has only 1 item
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun RecipeCard(modifier: Modifier = Modifier) {
+fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier,navController: NavController) {
+    val painter = if (recipe.resultImages.isNotBlank()) {
+        rememberAsyncImagePainter(recipe.resultImages) // Cloudinary URL
+    } else {
+        painterResource(id = R.drawable.mockrecipeimage) // Fallback
+    }
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
-            .clickable { /* Navigate to recipe detail */ }
+            .clickable {
+                Log.d("HomePageScreen", "Recipe clicked: ${recipe.recipeId}")
+
+                navController.navigate("recipe_detail/${recipe.recipeId}") }
     ) {
         Image(
-            painter = painterResource(id = R.drawable.mockrecipeimage),
+            painter = painter,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -209,7 +257,7 @@ fun RecipeCard(modifier: Modifier = Modifier) {
                 .padding(8.dp)
         ) {
             Text(
-                text = "Delicious Dish",
+                text = recipe.title.ifBlank { "Untitled Recipe" },
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -218,7 +266,6 @@ fun RecipeCard(modifier: Modifier = Modifier) {
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

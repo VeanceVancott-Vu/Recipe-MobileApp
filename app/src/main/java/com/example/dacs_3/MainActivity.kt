@@ -13,10 +13,8 @@ import androidx.compose.material3.Surface
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
-import com.example.dacs_3.ui.theme.main.profile.FollowerListScreen
-import com.example.dacs_3.ui.theme.main.profile.FollowingScreen
-import com.example.dacs_3.ui.theme.main.profile.FriendListScreen
 import com.example.dacs_3.utils.askForLocationPermission
+import com.example.dacs_3.viewModel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
@@ -43,25 +41,10 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-//            DACS_3Theme {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//
-//                    val navController = rememberNavController()
-//
-//                    // Q:
-//                    // val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
-//
-//                    // AppNavigation(navController, authViewModel)
-//
-//                    IconDropdownMenuSample()
-//                }
-//            }
-
-            // Khởi tạo NavController
             val navController = rememberNavController()
+            val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
+            val recipeViewModel: RecipeViewModel = viewModel() // Tạo ViewModel
+
 
             DACS_3Theme {
                 Surface {
@@ -94,6 +77,7 @@ class MainActivity : ComponentActivity() {
 //                    FollowStatusScreen()
 
                     MyProfileScreen(navController = navController)
+                    AppNavigation(navController, authViewModel,recipeViewModel)
 
                 }
             }

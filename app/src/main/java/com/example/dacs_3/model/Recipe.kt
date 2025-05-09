@@ -15,17 +15,16 @@ package com.example.dacs_3.model
 // Q:
 data class Recipe(
     val recipeId: String = "",           // Thêm ID để quản lý công thức
-    val title: String = "",
-    val story: String = "",
-    val servingSize: String = "",
-    val cookingTime: String = "",
-//    val resultImages: List<String> = emptyList(),
-    val resultImages: String = "",
-    val ingredients: List<String> = emptyList(),
-    val instructions: List<Instruction> = emptyList(),
-    val likes: Int = 0,                // Số lượt thả tim
-    val smiles: Int = 0,               // Số lượt mặt cười
-    val claps: Int = 0,
-    val userId: String = ""              // Thêm userId để liên kết với tác giả
+    var title: String = "",
+    var story: String = "",
+    var servingSize: String = "",
+    var cookingTime: String = "",
+    var resultImages: String = "",
+    var ingredients: List<String> = emptyList(),
+    var instructions: List<Instruction> = emptyList(),
+    var likes: Int = 0,                // Số lượt thả tim
+    var smiles: Int = 0,               // Số lượt mặt cười
+    var claps: Int = 0,
+    var userId: String = ""              // Thêm userId để liên kết với tác giả
 )
 

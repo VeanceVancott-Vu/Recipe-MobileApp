@@ -1,8 +1,8 @@
 package com.example.dacs_3.navigation
 
+import AddRecipeScreen
 import EditProfileScreen
 import MyProfileScreen
-import ai.codia.x.composeui.demo.AddRecipeScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -13,11 +13,13 @@ import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
 import com.example.dacs_3.ui.theme.main.DetailScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
+import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
+import com.example.dacs_3.viewModel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
 @Composable
-fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
+fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel) {
     val userId = authViewModel.getCurrentUserId() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
@@ -28,13 +30,13 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         { SignupScreen(navController,authViewModel) }
 
         composable("homepage")
-        { HomePageScreen(navController, userId) }
+        { HomePageScreen(navController, userId,recipeViewModel) }
 
         composable("forgot_password")
         { ForgotPasswordScreen(navController) }
 
         composable("addRecipe")
-        { AddRecipeScreen() }
+        { AddRecipeScreen(recipeViewModel,navController) }
 
         composable("detail/{id}")
         { backStackEntry ->
@@ -50,6 +52,17 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         {EditProfileScreen(authViewModel,navController)
 
         }
+
+
+        composable("recipe_detail/{id}")
+        {
+                backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            RecipeDetailScreen(navController,id,recipeViewModel,authViewModel)
+        }
+
+
+
 
     }
 }

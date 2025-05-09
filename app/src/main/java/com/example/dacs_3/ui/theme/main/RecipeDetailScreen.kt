@@ -1,5 +1,6 @@
 package com.example.dacs_3.ui.theme.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +45,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,16 +66,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Comment
 import com.example.dacs_3.model.Instruction
 import com.example.dacs_3.model.Link
+import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewModel.RecipeViewModel
+import com.example.dacs_3.viewmodel.AuthViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.regular.Clock
+import compose.icons.fontawesomeicons.regular.Hourglass
 import compose.icons.fontawesomeicons.solid.Bookmark
 import compose.icons.fontawesomeicons.solid.Clipboard
 import compose.icons.fontawesomeicons.solid.EllipsisH
@@ -83,10 +95,29 @@ import compose.icons.fontawesomeicons.solid.Thumbtack
 
 @Composable
 fun RecipeDetailScreen(
-    imageUrl: String = "",
-    paddingValues: PaddingValues = PaddingValues(0.dp),
-    onBackClick: () -> Unit
+    navController: NavController,
+    id:String = "",
+    recipeViewModel: RecipeViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel()
 ) {
+
+    val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
+    val isLoading by recipeViewModel.isLoading.collectAsState()
+    val errorMessage by recipeViewModel.errorMessage.collectAsState()
+
+    val recipeUser by authViewModel.recipeUser.collectAsState()
+
+
+// Trigger fetching recipe only once on entering the screen
+    LaunchedEffect(key1 = id) {
+        recipeViewModel.fetchRecipeById(id)
+    }
+
+// Once the recipe is available, fetch its user
+    LaunchedEffect(key1 = selectedRecipe) {
+        selectedRecipe?.let { authViewModel.fetchUserById(it.userId) }
+    }
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -134,18 +165,23 @@ fun RecipeDetailScreen(
 
         var commentText by remember { mutableStateOf("") }
 
-        DishImage(
-            onBackClick = onBackClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-        )
+        selectedRecipe?.let {
+            DishImage(
+                onBackClick = {navController.popBackStack()},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
+                it.resultImages
+
+            )
+        }
 
         FeatureIcon()
 
         DishContent(
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l))
+            , recipe = selectedRecipe
         )
 
 
@@ -155,6 +191,7 @@ fun RecipeDetailScreen(
         RecipeAuthorInfo(
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l))
+            ,recipeUser = recipeUser
         )
 
 
@@ -174,14 +211,22 @@ fun RecipeDetailScreen(
 @Composable
 private fun DishImage(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageUri: String = ""
 ) {
+
+    val painter = if (imageUri.isNotBlank()) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.mockrecipeimage)
+    }
+
     Box(
         modifier = modifier
     ) {
         // Ảnh món ăn
         Image(
-            painter = painterResource(R.drawable.mockrecipeimage),
+            painter = painter,
             contentDescription = "Dish Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -284,6 +329,7 @@ private fun FeatureIcon(
 
 @Composable
 private fun DishContent(
+    recipe: Recipe? = null,
     modifier: Modifier = Modifier
 ) {
     val ingredientsList = listOf(
@@ -294,54 +340,31 @@ private fun DishContent(
     )
 
     val stepList = listOf(
-        Instruction(
+    Instruction(
             stepNumber = 1,
-            description = "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup",
-            images = listOf(
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage
-            ),
-            links = listOf(
-                Link(title = "Recipe.pdf", url = "https://example.com/files/recipe.pdf"),
-                Link(title = "ShoppingList.txt", url = "https://example.com/files/shoppinglist.txt"),
-                Link(title = "CookingTips.docx", url = "https://example.com/files/cookingtips.docx")
-            )
-        ),
-        Instruction(
-            stepNumber = 2,
-            description = "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup",
-            images = listOf(
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage
-            ),
-            links = listOf(
-                Link(title = "Recipe.pdf", url = "https://example.com/files/recipe.pdf"),
-                Link(title = "ShoppingList.txt", url = "https://example.com/files/shoppinglist.txt"),
-                Link(title = "CookingTips.docx", url = "https://example.com/files/cookingtips.docx")
-            )
-        ),
-        Instruction(
-            stepNumber = 3,
-            description = "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup\n" +
-                    "The Best Sweet and Sour Fish Soup",
-            images = listOf(
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage,
-                R.drawable.mockrecipeimage
-            ),
-            links = listOf(
-                Link(title = "Recipe.pdf", url = "https://example.com/files/recipe.pdf"),
-                Link(title = "ShoppingList.txt", url = "https://example.com/files/shoppinglist.txt"),
-                Link(title = "CookingTips.docx", url = "https://example.com/files/cookingtips.docx")
-            )
-        )
+    description = "Prepare the ingredients: Chop the vegetables and measure the spices.",
+    imageUrl = listOf("https://example.com/images/step1_1.jpg", "https://example.com/images/step1_2.jpg")
+    ),
+    Instruction(
+        stepNumber = 2,
+        description = "Heat the pan and add oil. Once hot, add onions and garlic and sauté until golden brown.",
+        imageUrl = listOf("https://example.com/images/step2_1.jpg")
+    ),
+    Instruction(
+        stepNumber = 3,
+        description = "Add chopped vegetables to the pan and cook until tender.",
+        imageUrl = listOf("https://example.com/images/step3_1.jpg", "https://example.com/images/step3_2.jpg")
+    ),
+    Instruction(
+        stepNumber = 4,
+        description = "Add the spices and stir to combine, cooking for an additional 2 minutes.",
+        imageUrl = listOf("https://example.com/images/step4_1.jpg")
+    ),
+    Instruction(
+        stepNumber = 5,
+        description = "Serve hot and garnish with fresh herbs.",
+        imageUrl = listOf("https://example.com/images/step5_1.jpg")
+    )
     )
 
     Column(
@@ -370,27 +393,54 @@ private fun DishContent(
 
         DishProperties()
 
-        DishIngredients(
-            ingredientsList = ingredientsList
-        )
+        if (recipe != null) {
+            DishIngredients(
+                ingredientsList = recipe.ingredients
+            )
+        }
+        else
+        {
+            DishIngredients(
+                ingredientsList = ingredientsList
+            )
+        }
 
-        CookingSteps(
-            stepList = stepList
-        )
+        if (recipe != null) {
+            CookingSteps(
+                stepList = recipe.instructions
+            )
+        }
+        else
+        {
+            CookingSteps(
+                stepList = stepList
+            )
+        }
+
     }
 }
 
 @Composable
 private fun RecipeAuthorInfo(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null,
+
 ) {
+    val imageUri = recipeUser?.profileImageUrl
+    val painter = if (imageUri?.isNotBlank() == true) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
         Image(
-            painter = painterResource(R.drawable.mockrecipeimage),
+            painter = painter,
             contentDescription = "Avatar",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -409,11 +459,21 @@ private fun RecipeAuthorInfo(
             color = OliverGreen
         )
 
-        Text(
-            text = "Léonie Diane Quiterrie",
-            color = OliverGreen,
-            fontWeight = FontWeight.Bold
-        )
+        if (recipeUser != null) {
+            Text(
+                text = recipeUser.username,
+                color = OliverGreen,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        else
+        {
+            Text(
+                text = "Veance",
+                color = OliverGreen,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_xl)))
@@ -637,8 +697,17 @@ fun CommentItem(
 
 @Composable
 private fun CreatorInfo(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null,
 ) {
+
+    val imageUri = recipeUser?.profileImageUrl
+    val painter = if (imageUri?.isNotBlank() == true) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
     ) {
@@ -653,7 +722,7 @@ private fun CreatorInfo(
                     .size(dimensionResource(R.dimen.icon_size_xl))
             ) {
                 Image(
-                    painter = painterResource(R.drawable.mockrecipeimage),
+                    painter = painter,
                     contentDescription = "Avatar",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -664,7 +733,7 @@ private fun CreatorInfo(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s))
             ) {
                 Text(
-                    text = "Leonie Diane",
+                    text = recipeUser?.username ?: "Veance",
                     color = OliverGreen
                 )
 
@@ -682,7 +751,7 @@ private fun CreatorInfo(
                     )
 
                     Text(
-                        text =  "US",
+                        text =  "VietNam",
                         color = OliverGreen
                     )
                 }
@@ -721,7 +790,8 @@ private fun CreatorInfo(
 
 @Composable
 private fun DishProperties(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipe: Recipe? = null
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -737,14 +807,53 @@ private fun DishProperties(
                 .fillMaxWidth()
                 .padding(dimensionResource(R.dimen.spacing_m))
         ) {
-            IconAndText(
-                imageVector = FontAwesomeIcons.Regular.Clock,
-                color = Color((0xFF3F764E)),
-                contentDescription = "Cook Time",
-                text = "30'",
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_medium))
-            )
+            if (recipe != null) {
+                IconAndText(
+                    imageVector = FontAwesomeIcons.Regular.Clock,
+                    color = Color((0xFF3F764E)),
+                    contentDescription = "Cook Time",
+                    text = recipe.cookingTime,
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_medium))
+                )
+            }
+            else
+            {
+                IconAndText(
+                    imageVector = FontAwesomeIcons.Regular.Clock,
+                    color = Color((0xFF3F764E)),
+                    contentDescription = "Cook Time",
+                    text = "30'",
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_medium))
+                )
+            }
+
+            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+
+            if (recipe != null) {
+                IconAndText(
+                    imageVector = FontAwesomeIcons.Regular.Hourglass,
+                    color = Color((0xFF3F764E)),
+                    contentDescription = "Serving size Time",
+                    text = recipe.servingSize,
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_medium))
+                )
+            }
+            else
+            {
+                IconAndText(
+                    imageVector = FontAwesomeIcons.Regular.Hourglass,
+                    color = Color((0xFF3F764E)),
+                    contentDescription = "Serving size Time",
+                    text = "4 people",
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_medium))
+                )
+            }
+
+
 
             Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 
@@ -758,11 +867,9 @@ private fun DishProperties(
             )
         }
 
-        Text(
-            text = "Medium",
-            fontWeight = FontWeight.Bold,
-            color = OliverGreen
-        )
+
+
+
     }
 }
 
@@ -824,9 +931,16 @@ private fun CookingSteps(
                     )
 
                     LazyRow {
-                        items(step.images) { image ->
+                        items(step.imageUrl) { image ->
+
+                            val painter = if (image.isNotBlank()) {
+                                rememberAsyncImagePainter(model = image)
+                            } else {
+                                painterResource(R.drawable.mockrecipeimage)
+                            }
+
                             Image(
-                                painter = painterResource(image),
+                                painter = painter,
                                 contentDescription = "Cooking step image",
                                 contentScale = ContentScale.Crop, // 👈 quan trọng nè!
                                 modifier = Modifier
@@ -839,7 +953,7 @@ private fun CookingSteps(
                         }
                     }
 
-                    ShowLinks(step.links)
+//                    ShowLinks(step.links)
                 }
             }
         }
@@ -940,7 +1054,7 @@ fun SectionTitle(
 @Composable
 private fun RecipeDetailScreenPreview() {
     RecipeDetailScreen(
-        imageUrl = "https://www.bestherbalhealth.com/wp-content/uploads/2014/07/Melon.jpg",
-        onBackClick = {}
+        navController = rememberNavController(),
+        id="abc"
     )
 }

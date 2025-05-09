@@ -71,6 +71,7 @@ dependencies {
     implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.1")
 
     implementation(libs.cloudinary.android)
+    implementation("io.coil-kt:coil-compose:2.4.0") // Or latest version
 
     implementation(libs.play.services.location)
 

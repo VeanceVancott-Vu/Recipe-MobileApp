@@ -261,33 +261,33 @@ fun EditProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditableField(label: String, value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit) {
-       Text(
-           text = label,
-           fontSize = 20.sp,
-           fontWeight = FontWeight.Bold,
-           color = Color(0xff3b684d),
-           modifier = Modifier
-               .padding(top = 16.dp, bottom = 4.dp)
+    Text(
+        text = label,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xff3b684d),
+        modifier = Modifier
+            .padding(top = 16.dp, bottom = 4.dp)
 
-       )
-       TextField(
-           value = value,
-           onValueChange = onValueChange,
-           modifier = Modifier
-               .fillMaxWidth()
-               .background(Color(0xa8dbe6de), RoundedCornerShape(25.dp))
-           ,
-           textStyle = LocalTextStyle.current.copy(
-               fontSize = 18.sp,
-               color = Color(0xff9ab0a3)
-           ),
-           colors = TextFieldDefaults.textFieldColors(
-               containerColor = Color.Transparent,
-               focusedIndicatorColor = Color.Transparent,
-               unfocusedIndicatorColor = Color.Transparent
-           )
-       )
-   }
+    )
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xa8dbe6de), RoundedCornerShape(25.dp))
+        ,
+        textStyle = LocalTextStyle.current.copy(
+            fontSize = 18.sp,
+            color = Color(0xff9ab0a3)
+        ),
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        )
+    )
+}
 
 
 
