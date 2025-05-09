@@ -9,9 +9,11 @@ import com.example.dacs_3.model.User
 import com.example.dacs_3.repository.AuthRepository
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class AuthViewModel : ViewModel() {
     private val authRepository = AuthRepository()
@@ -21,6 +23,7 @@ class AuthViewModel : ViewModel() {
 
     private val _currentUser = MutableLiveData<User?>()
     val currentUser: LiveData<User?> = _currentUser
+
 
     private val _deleteAccountStatus = MutableStateFlow<Result<Boolean>>(Result.success(false))
     val deleteAccountStatus: StateFlow<Result<Boolean>> = _deleteAccountStatus
@@ -50,17 +53,30 @@ class AuthViewModel : ViewModel() {
                 authRepository.fetchCurrentUserData()
             }
         }
-
-
-
     }
 
     fun fetchAndSetCurrentUser() {
+
+//        val testUid = "0iY44FTfxpflQXImL1XPSOT2Knu1" // UID có sẵn
+        val testUid = "Ey6lmMLz77gJxFNLll4OFsrSsRl1"
+
         viewModelScope.launch {
-            val user = authRepository.fetchCurrentUserData()
+            // Gọi phương thức fetchUserDataByUid từ AuthRepository
+            val user = authRepository.fetchUserDataByUid(testUid)
+
+            // Log dữ liệu người dùng
+            Log.d("AuthViewModel", "Fetched user: $user")  // In ra dữ liệu của user
+
+            // Cập nhật _currentUser với dữ liệu người dùng
             _currentUser.postValue(user)
         }
+//        viewModelScope.launch {
+//            val user = authRepository.fetchCurrentUserData()
+//            _currentUser.postValue(user)
+//        }
     }
+
+
 
     fun logout() {
         authRepository.logout()
@@ -118,5 +134,32 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // Q:
 
+
+    fun updateProfileImageUrl(userId: String, imageUrl: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                // Giả sử bạn lưu dữ liệu người dùng trong Firestore
+                val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+
+                userRef.update("profileImageUrl", imageUrl)
+                    .addOnSuccessListener {
+                        Log.d("AuthViewModel", "Profile image URL updated successfully.")
+                        // Cập nhật currentUser
+                        _currentUser.value = _currentUser.value?.copy(profileImageUrl = imageUrl)
+                        onResult(true)
+                    }
+
+                    .addOnFailureListener { e ->
+                        Log.e("AuthViewModel", "Failed to update profile image URL", e)
+                        onResult(false)
+                    }
+                
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Error updating profile image URL: ${e.message}")
+                onResult(false)
+            }
+        }
+    }
 }

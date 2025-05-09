@@ -17,7 +17,7 @@ import com.example.dacs_3.viewmodel.AuthViewModel
 
 
 @Composable
-fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel) {
+fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
     val userId = authViewModel.getCurrentUserId() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {

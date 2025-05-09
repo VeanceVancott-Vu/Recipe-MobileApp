@@ -281,6 +281,7 @@ fun InputField(
             disabledTextColor = Color.Black,
             errorContainerColor = Color(0xa8dbe6de)
         ),
+        textStyle = TextStyle(color = Color.Black),
         leadingIcon = icon?.let {
             {
                 Icon(

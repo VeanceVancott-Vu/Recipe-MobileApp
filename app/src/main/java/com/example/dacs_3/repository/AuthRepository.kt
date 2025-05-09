@@ -164,4 +164,19 @@ class AuthRepository {
         }
     }
 
+
+    // Fake để test - Q
+    // Trong AuthRepository
+    suspend fun fetchUserDataByUid(uid: String): User? {
+        val db = FirebaseFirestore.getInstance()
+
+        return try {
+            val document = db.collection("users").document(uid).get().await()
+            document.toObject(User::class.java) // Chuyển đổi document thành đối tượng User
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Error fetching user data: $e")
+            null
+        }
+    }
+
 }

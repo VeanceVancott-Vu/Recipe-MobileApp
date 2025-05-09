@@ -1,38 +1,94 @@
 package com.example.dacs_3.ui.theme.main
 
 import DACS_3Theme
+import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.utils.BottomNavBar
+import com.example.dacs_3.utils.askForLocationPermission
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
 
 @Composable
 fun HomePageScreen(navController: NavController, userId: String?) {
+    val context = LocalContext.current
+
+
+    // Registering permission request launcher
+    val requestPermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                // Nếu quyền được cấp, xử lý lấy vị trí
+                askForLocationPermission(context) { locationString ->
+                    if (locationString != null) {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid
+                        if (userId != null) {
+                            val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+                            userRef.update("location", locationString)
+                                .addOnSuccessListener { Log.d("LocationUpdate", "Location saved: $locationString") }
+                                .addOnFailureListener { Log.e("LocationUpdate", "Failed to update location", it) }
+                        }
+                    }
+                }
+            } else {
+                // Nếu quyền bị từ chối, thông báo cho người dùng
+                Toast.makeText(context, "Vị trí cần quyền để sử dụng chức năng này", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    // Yêu cầu quyền vị trí ngay lập tức khi vào màn hình HomePageScreen
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Nếu chưa có quyền, yêu cầu quyền
+            requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            // Nếu đã có quyền, gọi ngay hàm lấy vị trí
+            askForLocationPermission(context) { locationString ->
+                if (locationString != null) {
+                    val userId = FirebaseAuth.getInstance().currentUser?.uid
+                    if (userId != null) {
+                        val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+                        userRef.update("location", locationString)
+                            .addOnSuccessListener { Log.d("LocationUpdate", "Location saved: $locationString") }
+                            .addOnFailureListener { Log.e("LocationUpdate", "Failed to update location", it) }
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
             BottomNavBar(navController)

@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -264,6 +265,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 disabledTextColor = Color.Black,
                 errorContainerColor = Color(0xa8dbe6de)
             ),
+            textStyle = TextStyle(color = Color.Black),
             leadingIcon = icon?.let {
                 {
                     Icon(

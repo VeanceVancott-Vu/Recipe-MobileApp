@@ -72,5 +72,7 @@ dependencies {
 
     implementation(libs.cloudinary.android)
 
+    implementation(libs.play.services.location)
+
 
 }

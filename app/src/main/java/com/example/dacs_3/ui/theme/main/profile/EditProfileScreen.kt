@@ -1,41 +1,66 @@
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.dacs_3.R
+import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
 import com.example.dacs_3.utils.TopBar
 import com.example.dacs_3.viewmodel.AuthViewModel
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.Camera
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
-                      navController: NavController
+fun EditProfileScreen(
+    authViewModel: AuthViewModel = viewModel(),
+    navController: NavController
 ) {
-
-
     Scaffold(
         topBar = {
             TopBar("My profile", showRightIcon = false)
@@ -51,10 +76,15 @@ fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                //  Lắng nghe (observe) sự thay đổi dữ liệu người dùng từ ViewModel
                 val user by authViewModel.currentUser.observeAsState()
+
                 Log.d("Edit profile Screen", "user: $user")
                 LaunchedEffect(Unit) {
+                    // Lấy dữ liệu người dùng từ ViewModel khi màn hình được hiển thị lần đầu.
                     authViewModel.fetchAndSetCurrentUser()
+
+
                 }
 
                 var name by remember { mutableStateOf(user?.let { TextFieldValue(it.username) }) }
@@ -63,24 +93,80 @@ fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
                 var location by remember { mutableStateOf(TextFieldValue("Viet Nam")) }
                 var about by remember { mutableStateOf(TextFieldValue("Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?")) }
 
+                val context = LocalContext.current
+                var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent(),
+                    onResult = { uri -> selectedImageUri = uri }
+                )
 
                 // Profile Image
                 Box(contentAlignment = Alignment.Center) {
+                    user?.profileImageUrl?.let { imageUrl ->
+                        // Log hình ảnh mỗi khi URL thay đổi
+                        Log.d("EditProfileScreen", "Profile Image URL: $imageUrl")
+
+                        AsyncImage(
+                            model = imageUrl,  // URL ảnh đã tải lên Cloudinary
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .size(200.dp)
+                                .clip(RoundedCornerShape(100.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } ?: run {
+                        // Nếu không có URL, hiển thị một ảnh mặc định hoặc placeholder
+                        Log.d("EditProfileScreen", "No profile image URL found")
+                        // Bạn có thể thay thế ảnh mặc định ở đây
+                        AsyncImage(
+                            model = R.drawable.mockrecipeimage ,  // Sử dụng ảnh mặc định nếu không có URL
+                            contentDescription = "Default Profile Image",
+                            modifier = Modifier
+                                .size(200.dp)
+                                .clip(RoundedCornerShape(100.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
                     Image(
-                        painter = painterResource(id = R.drawable.mockrecipeimage),
-                        contentDescription = "Profile",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(200.dp)
-                            .clip(RoundedCornerShape(100.dp))
-                    )
-                    Image(
-                        painter = painterResource(id = R.drawable.mockrecipeimage),
+                        imageVector = FontAwesomeIcons.Solid.Camera,
                         contentDescription = "Camera",
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .size(35.dp)
+                            .clickable {
+                                launcher.launch("image/*")  // Mở trình chọn ảnh
+                            }
                     )
+
+                    // Xử lý upload ảnh tự động khi selectedImageUri thay đổi
+                    LaunchedEffect(selectedImageUri) {
+                        selectedImageUri?.let { uri ->
+                            CloudinaryUploader.uploadImageFromUri(
+                                context = context,
+                                uri = uri,
+                                uploadPreset = "koylin_unsigned",
+                                onSuccess = { imageUrl ->
+                                    user?.let {
+
+                                        authViewModel.updateProfileImageUrl(it.userId, imageUrl) { success ->
+                                            if (success) {
+                                                Log.d("EditProfileScreen", "Profile image URL updated in Firebase")
+                                            } else {
+                                                Log.e("EditProfileScreen", "Failed to update profile image URL")
+                                            }
+                                        }
+                                    }
+                                },
+                                onError = { e ->
+                                    Log.e("Cloudinary", "Upload failed", e)
+                                }
+                            )
+                        }
+                    }
+
+
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -106,6 +192,7 @@ fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
                             .align(Alignment.Start)
                             .padding(bottom = 4.dp)
                     )
+
                     TextField(
                         value = about,
                         onValueChange = { about = it },
@@ -130,6 +217,7 @@ fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
 
                     Spacer(modifier = Modifier.height(64.dp))
                 }
+
                 Button(
                     onClick = {
                         user?.let { currentUser ->
@@ -173,8 +261,6 @@ fun EditProfileScreen(authViewModel: AuthViewModel = viewModel(),
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditableField(label: String, value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit) {
-
-
        Text(
            text = label,
            fontSize = 20.sp,
@@ -210,3 +296,4 @@ fun EditableField(label: String, value: TextFieldValue, onValueChange: (TextFiel
 fun EditProfileScreenPreview() {
     EditProfileScreen(navController = rememberNavController())
 }
+
