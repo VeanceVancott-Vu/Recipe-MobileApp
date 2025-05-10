@@ -32,7 +32,6 @@
     import androidx.compose.material.icons.Icons
     import androidx.compose.material.icons.filled.Add
     import androidx.compose.material.icons.filled.ArrowBack
-    import androidx.compose.material.icons.filled.Close
     import androidx.compose.material.icons.filled.Delete
     import androidx.compose.material.icons.filled.Edit
     import androidx.compose.material.icons.filled.Menu
@@ -56,7 +55,6 @@
     import androidx.compose.runtime.mutableStateOf
     import androidx.compose.runtime.remember
     import androidx.compose.runtime.setValue
-    import androidx.compose.runtime.snapshots.SnapshotStateList
     import androidx.compose.ui.Alignment
     import androidx.compose.ui.Modifier
     import androidx.compose.ui.draw.clip
@@ -66,7 +64,6 @@
     import androidx.compose.ui.platform.LocalDensity
     import androidx.compose.ui.res.colorResource
     import androidx.compose.ui.res.dimensionResource
-    import androidx.compose.ui.res.painterResource
     import androidx.compose.ui.tooling.preview.Preview
     import androidx.compose.ui.unit.dp
     import androidx.lifecycle.viewmodel.compose.viewModel
@@ -74,11 +71,10 @@
     import androidx.navigation.compose.rememberNavController
     import coil.compose.rememberAsyncImagePainter
     import com.example.dacs_3.R
-    import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
     import com.example.dacs_3.model.Instruction
     import com.example.dacs_3.model.Recipe
     import com.example.dacs_3.utils.bottomShadow
-    import com.example.dacs_3.viewModel.RecipeViewModel
+    import com.example.dacs_3.viewmodel.RecipeViewModel
 
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -158,20 +154,26 @@
                         val hasInstructionImages = recipeViewModel.hasInstructionImages()
 
                         if (hasInstructionImages) {
-                            recipeViewModel.uploadAllInstructionImages(
-                                context = context,
-                                uploadPreset = "koylin_unsigned",
-                                onComplete = { updatedInstructions ->
-                                    postRecipe(mainImageUrl, updatedInstructions)
-                                },
-                                onError = { e ->
-                                    Toast.makeText(context, "Instruction image upload failed: ${e.message}", Toast.LENGTH_LONG).show()
-                                    postRecipe(mainImageUrl, recipeViewModel.instructions) // fallback to current instructions
-                                }
-                            )
+//                            recipeViewModel.uploadAllInstructionImages(
+//                                context = context,
+//                                uploadPreset = "koylin_unsigned",
+//                                onComplete = { updatedInstructions ->
+//                                    postRecipe(mainImageUrl, updatedInstructions)
+//                                },
+//                                onError = { e ->
+//                                    Toast.makeText(context, "Instruction image upload failed: ${e.message}", Toast.LENGTH_LONG).show()
+//                                    postRecipe(mainImageUrl, recipeViewModel.instructions) // fallback to current instructions
+//                                }
+//                            )
+
+                            Log.e("MainActivity", "Chào bà nha")
+
                         } else {
                             // No instruction images, just use current instructions
                             postRecipe(mainImageUrl, recipeViewModel.instructions)
+
+                            Log.e("RecipeInstructions", "Instructions: ${recipeViewModel.instructions}")
+
                         }
                     }
 

@@ -33,6 +33,34 @@ class AuthViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    init {
+        checkIfUserIsLoggedIn()
+    }
+
+    fun checkIfUserIsLoggedIn() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            // Nếu người dùng đã đăng nhập, lấy thông tin người dùng từ Firestore
+            fetchCurrentUserData()
+        } else {
+            _currentUser.value = null // Nếu không có người dùng đăng nhập, gán null
+        }
+    }
+
+    fun fetchCurrentUserData() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let {
+            val userRef = FirebaseFirestore.getInstance().collection("users").document(it.uid)
+            userRef.get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    _currentUser.value = user
+                }
+            }.addOnFailureListener {
+                Log.e("AuthViewModel", "Failed to fetch user data")
+            }
+        }
+    }
 
 
     private val _deleteAccountStatus = MutableStateFlow<Result<Boolean>>(Result.success(false))

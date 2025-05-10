@@ -1,11 +1,9 @@
-package com.example.dacs_3.viewModel
+package com.example.dacs_3.viewmodel
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
@@ -15,7 +13,6 @@ import com.example.dacs_3.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
@@ -47,7 +44,6 @@ class RecipeViewModel : ViewModel() {
     init {
         observeRecipes()
     }
-
     fun uploadMainImage(
         context: Context,
         uri: Uri,
@@ -57,19 +53,31 @@ class RecipeViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
+                Log.d("UploadImage", "Start uploading image...")  // Log khi bắt đầu upload
+
                 val imageUrl = withContext(Dispatchers.IO) {
                     suspendCoroutine<String> { continuation ->
                         CloudinaryUploader.uploadImageFromUri(
                             context,
                             uri,
                             uploadPreset,
-                            onSuccess = { url -> continuation.resume(url) },
-                            onError = { e -> continuation.resumeWithException(e) }
+                            onSuccess = { url ->
+                                Log.d("UploadImage", "Upload successful, image URL: $url")  // Log khi thành công
+                                continuation.resume(url)
+                            },
+                            onError = { e ->
+                                Log.e("UploadImage", "Error occurred during upload: ${e.message}", e)  // Log lỗi upload
+                                continuation.resumeWithException(e)
+                            }
                         )
                     }
                 }
+
                 onSuccess(imageUrl)
+
             } catch (e: Exception) {
+                // Log exception nếu có lỗi không bắt được trong CloudinaryUploader
+                Log.e("UploadImage", "Exception caught during upload: ${e.message}", e)
                 onError(e)
             }
         }
@@ -126,15 +134,34 @@ class RecipeViewModel : ViewModel() {
     }
 
     fun addImageUriToInstruction(index: Int, uri: Uri) {
-        val list = instructionImageUris.getOrPut(index) { mutableListOf() }
-        list.add(uri)
+        Log.e("AddRecipeScreen", "Adding image URI to instruction $index: $uri")
 
+        // 1. Lấy danh sách ảnh của instruction tại vị trí 'index' hoặc khởi tạo danh sách mới nếu chưa có.
+        val list = instructionImageUris.getOrPut(index) { mutableListOf() }
+        Log.e("AddRecipeScreen", "Image list for instruction $index: $list")
+
+        // 2. Thêm URI của ảnh vào danh sách.
+        list.add(uri)
+        Log.d("AddRecipeScreen", "Updated image list for instruction $index: $list")
+
+        // 3. Nếu chỉ số 'index' hợp lệ trong dãy _instructions, cập nhật ảnh cho instruction.
         if (index in _instructions.indices) {
+            // 4. Lấy danh sách ảnh hiện tại của instruction tại vị trí 'index'.
             val updatedImageUrls = _instructions[index].imageUrl.toMutableList()
+            Log.e("AddRecipeScreen", "Current image URLs for instruction $index: $updatedImageUrls")
+
+            // 5. Thêm URI mới vào danh sách ảnh.
             updatedImageUrls.add(uri.toString())
+            Log.e("AddRecipeScreen", "Updated image URLs after adding new image: $updatedImageUrls")
+
+            // 6. Cập nhật lại instruction tại vị trí 'index' với danh sách ảnh mới.
             _instructions[index] = _instructions[index].copy(imageUrl = updatedImageUrls)
+            Log.e("AddRecipeScreen", "Updated instruction at index $index with new image URLs.")
+        } else {
+            Log.e("AddRecipeScreen", "Index $index is out of bounds in _instructions")
         }
     }
+
 
     fun deleteImageFromInstruction(index: Int, imageIndex: Int) {
         instructionImageUris[index]?.removeAt(imageIndex)
@@ -211,6 +238,7 @@ class RecipeViewModel : ViewModel() {
                 recipeId,
                 onSuccess = { recipe ->
                     _selectedRecipe.value = recipe
+
                     _isLoading.value = false
                 },
                 onFailure = { e ->
@@ -220,4 +248,14 @@ class RecipeViewModel : ViewModel() {
             )
         }
     }
+
+    fun updateRecipe(recipe: Recipe) {
+        viewModelScope.launch {
+            repository.updateRecipe(recipe) { success ->
+                Log.d("RecipeViewModel", "updateRecipe: $success")
+                if (!success) _errorMessage.value = "Failed to update recipe"
+            }
+        }
+    }
+
 }

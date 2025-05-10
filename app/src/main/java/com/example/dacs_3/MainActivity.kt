@@ -1,7 +1,6 @@
 package com.example.dacs_3
 
 import DACS_3Theme
-import MyProfileScreen
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -13,8 +12,10 @@ import androidx.compose.material3.Surface
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
+import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
+import com.example.dacs_3.ui.theme.uploadSampleRecipeToFirestore
 import com.example.dacs_3.utils.askForLocationPermission
-import com.example.dacs_3.viewModel.RecipeViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
@@ -76,8 +77,13 @@ class MainActivity : ComponentActivity() {
 
 //                    FollowStatusScreen()
 
-                    MyProfileScreen(navController = navController)
+//                    MyProfileScreen(navController = navController)
+//
+//                    uploadSampleRecipeToFirestore()
+
                     AppNavigation(navController, authViewModel,recipeViewModel)
+
+
 
                 }
             }

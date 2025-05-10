@@ -1,17 +1,14 @@
 package com.example.dacs_3.ui.theme.main
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -78,7 +75,7 @@ import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
-import com.example.dacs_3.viewModel.RecipeViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
@@ -86,10 +83,11 @@ import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.regular.Clock
 import compose.icons.fontawesomeicons.regular.Hourglass
 import compose.icons.fontawesomeicons.solid.Bookmark
-import compose.icons.fontawesomeicons.solid.Clipboard
+import compose.icons.fontawesomeicons.solid.CameraRetro
 import compose.icons.fontawesomeicons.solid.EllipsisH
 import compose.icons.fontawesomeicons.solid.EllipsisV
 import compose.icons.fontawesomeicons.solid.Paperclip
+import compose.icons.fontawesomeicons.solid.Pen
 import compose.icons.fontawesomeicons.solid.Star
 import compose.icons.fontawesomeicons.solid.Thumbtack
 
@@ -176,7 +174,11 @@ fun RecipeDetailScreen(
             )
         }
 
-        FeatureIcon()
+        FeatureIcon(
+            onClick = {
+                navController.navigate("recipe_edit/$id")
+            }
+        )
 
         DishContent(
             modifier = Modifier
@@ -244,7 +246,8 @@ private fun DishImage(
 
 @Composable
 private fun FeatureIcon(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -318,6 +321,56 @@ private fun FeatureIcon(
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.EllipsisV,
                     contentDescription = "Pin dish today",
+                    tint = Color(0xFF3F764E),
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_small))
+                )
+            }
+        }
+
+        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+
+        Card(
+            modifier = Modifier,
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            IconButton(
+                onClick = onClick,
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen.icon_size_large)),
+                colors = IconButtonDefaults
+                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
+            ) {
+                Icon(
+                    imageVector = FontAwesomeIcons.Solid.Pen,
+                    contentDescription = "",
+                    tint = Color(0xFF3F764E),
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_small))
+                )
+            }
+        }
+
+        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+
+        Card(
+            modifier = Modifier,
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            IconButton(
+                onClick = {},
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen.icon_size_large)),
+                colors = IconButtonDefaults
+                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
+            ) {
+                Icon(
+                    imageVector = FontAwesomeIcons.Solid.CameraRetro,
+                    contentDescription = "",
                     tint = Color(0xFF3F764E),
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_small))

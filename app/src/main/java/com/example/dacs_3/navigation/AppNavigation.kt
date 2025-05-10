@@ -4,7 +4,6 @@ import AddRecipeScreen
 import EditProfileScreen
 import MyProfileScreen
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,7 +13,8 @@ import com.example.dacs_3.ui.theme.auth.SignupScreen
 import com.example.dacs_3.ui.theme.main.DetailScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
-import com.example.dacs_3.viewModel.RecipeViewModel
+import com.example.dacs_3.ui.theme.main.RecipeEditScreen
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
@@ -59,6 +59,11 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
                 backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
             RecipeDetailScreen(navController,id,recipeViewModel,authViewModel)
+        }
+
+        composable("recipe_edit/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            RecipeEditScreen(navController, id, recipeViewModel, authViewModel)
         }
 
 
