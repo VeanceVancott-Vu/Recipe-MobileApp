@@ -1,8 +1,10 @@
 package com.example.dacs_3.ui.theme.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +33,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -61,6 +66,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -75,28 +81,33 @@ import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
-import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.CommentViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.regular.Clock
 import compose.icons.fontawesomeicons.regular.Hourglass
+import compose.icons.fontawesomeicons.solid.ArrowDown
 import compose.icons.fontawesomeicons.solid.Bookmark
 import compose.icons.fontawesomeicons.solid.CameraRetro
-import compose.icons.fontawesomeicons.solid.EllipsisH
 import compose.icons.fontawesomeicons.solid.EllipsisV
 import compose.icons.fontawesomeicons.solid.Paperclip
 import compose.icons.fontawesomeicons.solid.Pen
 import compose.icons.fontawesomeicons.solid.Star
 import compose.icons.fontawesomeicons.solid.Thumbtack
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun RecipeDetailScreen(
     navController: NavController,
     id:String = "",
     recipeViewModel: RecipeViewModel = viewModel(),
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = viewModel(),
+    commentViewModel: CommentViewModel = viewModel()
 ) {
 
     val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
@@ -104,6 +115,10 @@ fun RecipeDetailScreen(
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
 
     val recipeUser by authViewModel.recipeUser.collectAsState()
+
+    val currentUser by authViewModel.currentUser.collectAsState()
+
+    val comment by commentViewModel.comments.collectAsState()
 
 
 // Trigger fetching recipe only once on entering the screen
@@ -114,6 +129,10 @@ fun RecipeDetailScreen(
 // Once the recipe is available, fetch its user
     LaunchedEffect(key1 = selectedRecipe) {
         selectedRecipe?.let { authViewModel.fetchUserById(it.userId) }
+    }
+
+    LaunchedEffect(key1 = selectedRecipe) {
+        selectedRecipe?.let { commentViewModel.loadComments(it.recipeId) }
     }
 
     Column(
@@ -183,7 +202,8 @@ fun RecipeDetailScreen(
         DishContent(
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l))
-            , recipe = selectedRecipe
+            , recipe = selectedRecipe,
+            recipeUser = recipeUser
         )
 
 
@@ -199,11 +219,16 @@ fun RecipeDetailScreen(
 
          RecipeRatingCard()
 
-        CommentListSection(
-            commentList = commentList,
-            onValueChange = { commentText = it },
-            commentText = commentText
-        )
+        selectedRecipe?.let {
+            CommentListSection(
+                currentUser,
+                recipeId = it.recipeId,
+                commentViewModel    ,
+                commentList = comment,
+                onValueChange = { commentText = it },
+                commentText = commentText
+            )
+        }
 
         SameAuthor()
     }
@@ -383,7 +408,8 @@ private fun FeatureIcon(
 @Composable
 private fun DishContent(
     recipe: Recipe? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null
 ) {
     val ingredientsList = listOf(
         "2 eggs",
@@ -431,18 +457,31 @@ private fun DishContent(
                 modifier = Modifier.weight(1f)
             )
 
-            SectionTitle(
-                "Name of the dish",
-                modifier = Modifier
-                    .padding(dimensionResource(R.dimen.spacing_s))
-            )
+            if (recipe != null) {
+                SectionTitle(
+                    recipe.title,
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.spacing_s))
+                )
+            }
+            else
+            {
+                SectionTitle(
+                    "The Best Sweet and Sour Fish Soup",
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.spacing_s))
+                )
+            }
 
             HorizontalDivider(
                 modifier = Modifier.weight(1f)
             )
         }
 
-        CreatorInfo()
+        CreatorInfo(
+            recipe = recipe,
+            recipeUser = recipeUser
+        )
 
         DishProperties()
 
@@ -620,12 +659,24 @@ private fun RecipeRatingCard(
 
 @Composable
 private fun CommentListSection(
+    currentUser: User? = null,
+    recipeId: String = "",
+    commentViewModel: CommentViewModel,
     commentText: String,
     onValueChange: (String) -> Unit,
     commentList: List<Comment>,
     modifier: Modifier = Modifier
         .padding(dimensionResource(R.dimen.spacing_m))
 ) {
+    var isEditing by remember { mutableStateOf(false) }
+    var editingCommentId by remember { mutableStateOf<String?>(null) }
+    var filteredComments = commentList.filter { it.commentId != editingCommentId }
+
+    val visibleComments = if (editingCommentId != null) {
+        commentList.filter { it.commentId != editingCommentId }
+    } else {
+        commentList // unfiltered
+    }
 
     Column(
         modifier = modifier,
@@ -655,12 +706,10 @@ private fun CommentListSection(
                 placeholder = {
                     Text(
                         text = "Add a comment",
-                        fontSize = 14.sp    // Chỉnh size nhỏ lại
+                        fontSize = 14.sp
                     )
                 },
-                textStyle = TextStyle(
-                    fontSize = 14.sp       // Size chữ nhập vào nhỏ đồng bộ
-                ),
+                textStyle = TextStyle(fontSize = 14.sp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -670,22 +719,200 @@ private fun CommentListSection(
                     focusedPlaceholderColor = Color.Gray,
                     unfocusedPlaceholderColor = Color.Gray
                 ),
+                trailingIcon = {
+                    Icon(
+                        imageVector = FontAwesomeIcons.Solid.ArrowDown,
+                        contentDescription = "Submit comment",
+                        tint = Color.Black, // Make it pop on white background
+                        modifier = Modifier
+                            .size(dimensionResource(R.dimen.icon_size_small))
+                            .clickable {
+
+                                val comment = currentUser?.let {
+                                    Comment(
+                                        recipeId = recipeId,
+                                        userId = it.userId,
+                                        username = it.username,
+                                        text = commentText,
+                                        timestamp = System.currentTimeMillis(),
+                                        isReported = false
+                                    )
+                                }
+                                if (comment != null) {
+                                    if (isEditing) {
+                                        val newComment = currentUser.let {
+                                            Comment(
+                                                commentId = editingCommentId!!,
+                                                recipeId = recipeId,
+                                                userId = it.userId,
+                                                username = it.username,
+                                                text = commentText,
+                                                timestamp = System.currentTimeMillis(),
+                                                isReported = false
+                                            )
+                                        }
+
+                                        Log.d(
+                                            "CommentListSection/Recipe Detail/Editing",
+                                            "Comment: $newComment from user: $currentUser in recipe: $recipeId"
+                                        )
+                                        commentViewModel.updateComment(newComment)
+                                        isEditing = false
+                                        editingCommentId = null // this will show the full list again
+                                        onValueChange("")
+                                    }
+                                    else
+                                    {
+                                        Log.d(
+                                            "CommentListSection/Recipe Detail/Posting",
+                                            "Comment: $commentText from user: $currentUser in recipe: $recipeId"
+                                        )
+                                        commentViewModel.postComment(comment)
+                                        onValueChange("")
+
+                                    }
+
+
+                                }
+
+                            }
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp) // Chiều cao hợp lý cho gõ 1 dòng
+                    .height(48.dp)
             )
+
+
+
+
         }
+
 
         Column(
-            modifier = Modifier,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = dimensionResource(R.dimen.spacing_m)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
         ) {
-            commentList.forEach { comment ->
-                CommentItem(comment = comment)
+            filteredComments.forEach { comment ->
+                CommentItem(
+                    comment = comment,
+                    onEdit = {
+                        onValueChange(comment.text)
+                        editingCommentId = comment.commentId
+                        isEditing = true
+                    },
+                    onDelete = {
+                        commentViewModel.deleteComment(comment.commentId, recipeId)
+                        Log.d("CommentListSection/Recipe Detail", "Delete comment: $comment")
+                    }
+                )
             }
         }
+
+
     }
 
+}
+
+
+@Composable
+fun CommentItem(
+    comment: Comment,
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null,
+    onEdit: (String) -> Unit, // Callback for edit action
+    onDelete: () -> Unit    // Callback for delete action
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val imageUri = recipeUser?.profileImageUrl
+    val painter = if (imageUri?.isNotBlank() == true) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { offset -> // 'offset' provides the position of the long press
+                        expanded = true
+                    }
+                )
+            }
+    )
+    {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(dimensionResource(R.dimen.spacing_s)) // Add some padding around the content
+        ) {
+            Image(
+                painter = painter,
+                contentDescription = "Avatar",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen.icon_size_lg_medium))
+                    .clip(CircleShape)
+            )
+
+            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_m)))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = comment.username,
+                    )
+
+                    Spacer(Modifier.weight(1f))
+                    val formattedDate = formatTimestamp(comment.timestamp)
+
+                    Text(
+                        text = formattedDate,
+                    )
+                }
+
+                Text(
+                    text = comment.text,
+                )
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            offset = DpOffset(x = 0.dp, y = 20.dp) // Adjust position if needed
+        ) {
+            DropdownMenuItem(
+                text = { Text("Edit") },
+                onClick = {
+                    expanded = false
+                    onEdit(comment.text)
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Delete") },
+                onClick = {
+                    expanded = false
+                    onDelete()
+                }
+            )
+        }
+    }
+}
+
+
+
+fun formatTimestamp(timestamp: Long): String {
+    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) // Change format as needed
+    val date = Date(timestamp)  // Convert timestamp to Date object
+    return sdf.format(date)  // Format and return as string
 }
 
 @Composable
@@ -700,58 +927,10 @@ fun SameAuthor() {
 }
 
 @Composable
-fun CommentItem(
-    comment: Comment,
-    modifier: Modifier = Modifier
-) {
-    Row(
-
-    ) {
-        Image(
-            painter = painterResource(R.drawable.mockrecipeimage),
-            contentDescription = "Avatar",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(dimensionResource(R.dimen.icon_size_lg_medium))
-                .clip(CircleShape)
-        )
-
-        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_m)))
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
-        ) {
-            Row() {
-                Text(
-                    text = comment.username
-                )
-
-                Spacer(Modifier.weight(1f))
-
-                Text(
-                    text = comment.timestamp.toString()
-                )
-
-                Spacer(Modifier.width(dimensionResource(R.dimen.spacing_m)))
-
-                Icon(
-                    imageVector = FontAwesomeIcons.Solid.EllipsisH,
-                    contentDescription = "",
-                    modifier = Modifier.size(dimensionResource(R.dimen.icon_size_small))
-                )
-            }
-
-            Text(
-                text = comment.text
-            )
-        }
-    }
-}
-
-@Composable
 private fun CreatorInfo(
     modifier: Modifier = Modifier,
     recipeUser: User? = null,
+    recipe: Recipe? = null
 ) {
 
     val imageUri = recipeUser?.profileImageUrl
@@ -818,25 +997,51 @@ private fun CreatorInfo(
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Story behind this dish ...") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(dimensionResource(R.dimen.spacing_s) * 15)
-                    .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
-                    .background(colorResource(R.color.text_field_background)),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent,
-                    selectionColors = LocalTextSelectionColors.current,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
+            if (recipe != null) {
+                OutlinedTextField(
+                    value = recipe.story ?: "",
+                    onValueChange = {},
+                    placeholder = { Text("Story behind this dish ...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(R.dimen.spacing_s) * 15)
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                        .background(colorResource(R.color.text_field_background)),
+                    enabled = false, // This disables the field
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Transparent,
+                        selectionColors = LocalTextSelectionColors.current,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                    )
                 )
-            )
+            }
+            else
+            {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = { Text("Story behind this dish ...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(R.dimen.spacing_s) * 15)
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.spacing_m)))
+                        .background(colorResource(R.color.text_field_background)),
+                    enabled = false, // This disables the field
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Transparent,
+                        selectionColors = LocalTextSelectionColors.current,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                    )
+                )
+            }
         }
     }
 }

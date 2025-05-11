@@ -1,6 +1,7 @@
 package com.example.dacs_3
 
 import DACS_3Theme
+import MyProfileScreen
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -16,6 +17,7 @@ import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 import com.example.dacs_3.ui.theme.uploadSampleRecipeToFirestore
 import com.example.dacs_3.utils.askForLocationPermission
 import com.example.dacs_3.viewmodel.RecipeViewModel
+import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 
@@ -45,7 +47,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val authViewModel: AuthViewModel = viewModel() // Tạo ViewModel
             val recipeViewModel: RecipeViewModel = viewModel() // Tạo ViewModel
-
+            val commentViewModel: CommentViewModel = viewModel() // Tạo ViewModel
 
             DACS_3Theme {
                 Surface {
@@ -77,13 +79,8 @@ class MainActivity : ComponentActivity() {
 
 //                    FollowStatusScreen()
 
-//                    MyProfileScreen(navController = navController)
-//
-//                    uploadSampleRecipeToFirestore()
-
-                    AppNavigation(navController, authViewModel,recipeViewModel)
-
-
+            //        MyProfileScreen(navController = navController)
+                    AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel)
 
                 }
             }

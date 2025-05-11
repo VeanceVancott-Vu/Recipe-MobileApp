@@ -27,6 +27,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -77,7 +78,7 @@ fun EditProfileScreen(
             ) {
 
                 //  Lắng nghe (observe) sự thay đổi dữ liệu người dùng từ ViewModel
-                val user by authViewModel.currentUser.observeAsState()
+                val user by authViewModel.currentUser.collectAsState()
 
                 Log.d("Edit profile Screen", "user: $user")
                 LaunchedEffect(Unit) {

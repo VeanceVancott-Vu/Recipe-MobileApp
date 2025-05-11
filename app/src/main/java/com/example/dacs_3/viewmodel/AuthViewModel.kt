@@ -21,8 +21,9 @@ class AuthViewModel : ViewModel() {
     private val _authResult = MutableStateFlow<Pair<Boolean, String?>>(false to null)
     val authResult: StateFlow<Pair<Boolean, String?>> = _authResult
 
-    private val _currentUser = MutableLiveData<User?>()
-    val currentUser: LiveData<User?> = _currentUser
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser
+
 
     private val _recipeUser = MutableStateFlow<User?>(null)
     val recipeUser: StateFlow<User?> = _recipeUser
@@ -111,7 +112,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // Cái này của Q - Q dùng test
-    fun fetchAndSetCurrentUser() {
+    fun fetchAndSetCurrentUserTest() {
 
         val testUid = "Ey6lmMLz77gJxFNLll4OFsrSsRl1"
 
@@ -123,18 +124,18 @@ class AuthViewModel : ViewModel() {
             Log.d("AuthViewModel", "Fetched user: $user")  // In ra dữ liệu của user
 
             // Cập nhật _currentUser với dữ liệu người dùng
-            _currentUser.postValue(user)
+            _currentUser.value = user
         }
     }
 
 
-    // Cái này của Dũ
-//    fun fetchAndSetCurrentUser() {
-//        viewModelScope.launch {
-//            val user = authRepository.fetchCurrentUserData()
-//            _currentUser.value = user
-//        }
-//    }
+  //   Cái này của Dũ
+    fun fetchAndSetCurrentUser() {
+        viewModelScope.launch {
+            val user = authRepository.fetchCurrentUserData()
+            _currentUser.value = user
+        }
+    }
 
 
     fun logout() {
