@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -29,11 +30,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,6 +68,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -94,6 +99,12 @@ import compose.icons.fontawesomeicons.solid.EllipsisV
 import compose.icons.fontawesomeicons.solid.Paperclip
 import compose.icons.fontawesomeicons.solid.Star
 import compose.icons.fontawesomeicons.solid.Thumbtack
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 @Composable
 fun RecipeDetailScreen(
@@ -607,6 +618,15 @@ private fun CommentListSection(
     modifier: Modifier = Modifier
         .padding(dimensionResource(R.dimen.spacing_m))
 ) {
+    var isEditing by remember { mutableStateOf(false) }
+    var editingCommentId by remember { mutableStateOf<String?>(null) }
+    var filteredComments = commentList.filter { it.commentId != editingCommentId }
+
+    val visibleComments = if (editingCommentId != null) {
+        commentList.filter { it.commentId != editingCommentId }
+    } else {
+        commentList // unfiltered
+    }
 
     Column(
         modifier = modifier,
@@ -657,10 +677,7 @@ private fun CommentListSection(
                         modifier = Modifier
                             .size(dimensionResource(R.dimen.icon_size_small))
                             .clickable {
-                                Log.d(
-                                    "CommentListSection/Recipe Detail",
-                                    "Comment: $commentText from user: $currentUser in recipe: $recipeId"
-                                )
+
                                 val comment = currentUser?.let {
                                     Comment(
                                         recipeId = recipeId,
@@ -672,11 +689,41 @@ private fun CommentListSection(
                                     )
                                 }
                                 if (comment != null) {
-                                    commentViewModel.postComment(comment)
+                                    if (isEditing) {
+                                        val newComment = currentUser.let {
+                                            Comment(
+                                                commentId = editingCommentId!!,
+                                                recipeId = recipeId,
+                                                userId = it.userId,
+                                                username = it.username,
+                                                text = commentText,
+                                                timestamp = System.currentTimeMillis(),
+                                                isReported = false
+                                            )
+                                        }
+
+                                        Log.d(
+                                            "CommentListSection/Recipe Detail/Editing",
+                                            "Comment: $newComment from user: $currentUser in recipe: $recipeId"
+                                        )
+                                        commentViewModel.updateComment(newComment)
+                                        isEditing = false
+                                        editingCommentId = null // this will show the full list again
+                                        onValueChange("")
+                                    }
+                                    else
+                                    {
+                                        Log.d(
+                                            "CommentListSection/Recipe Detail/Posting",
+                                            "Comment: $commentText from user: $currentUser in recipe: $recipeId"
+                                        )
+                                        commentViewModel.postComment(comment)
+                                        onValueChange("")
+
+                                    }
+
+
                                 }
-
-
-
 
                             }
                     )
@@ -691,16 +738,131 @@ private fun CommentListSection(
 
         }
 
+
         Column(
-            modifier = Modifier,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = dimensionResource(R.dimen.spacing_m)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
         ) {
-            commentList.forEach { comment ->
-                CommentItem(comment = comment)
+            filteredComments.forEach { comment ->
+                CommentItem(
+                    comment = comment,
+                    onEdit = {
+                        onValueChange(comment.text)
+                        editingCommentId = comment.commentId
+                        isEditing = true
+                    },
+                    onDelete = {
+                        commentViewModel.deleteComment(comment.commentId, recipeId)
+                        Log.d("CommentListSection/Recipe Detail", "Delete comment: $comment")
+                    }
+                )
             }
         }
+
+
     }
 
+}
+
+
+@Composable
+fun CommentItem(
+    comment: Comment,
+    modifier: Modifier = Modifier,
+    recipeUser: User? = null,
+    onEdit: (String) -> Unit, // Callback for edit action
+    onDelete: () -> Unit    // Callback for delete action
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val imageUri = recipeUser?.profileImageUrl
+    val painter = if (imageUri?.isNotBlank() == true) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { offset -> // 'offset' provides the position of the long press
+                        expanded = true
+                    }
+                )
+            }
+    )
+    {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(dimensionResource(R.dimen.spacing_s)) // Add some padding around the content
+        ) {
+            Image(
+                painter = painter,
+                contentDescription = "Avatar",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen.icon_size_lg_medium))
+                    .clip(CircleShape)
+            )
+
+            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_m)))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = comment.username,
+                    )
+
+                    Spacer(Modifier.weight(1f))
+                    val formattedDate = formatTimestamp(comment.timestamp)
+
+                    Text(
+                        text = formattedDate,
+                    )
+                }
+
+                Text(
+                    text = comment.text,
+                )
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            offset = DpOffset(x = 0.dp, y = 20.dp) // Adjust position if needed
+        ) {
+            DropdownMenuItem(
+                text = { Text("Edit") },
+                onClick = {
+                    expanded = false
+                    onEdit(comment.text)
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Delete") },
+                onClick = {
+                    expanded = false
+                    onDelete()
+                }
+            )
+        }
+    }
+}
+
+
+
+fun formatTimestamp(timestamp: Long): String {
+    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) // Change format as needed
+    val date = Date(timestamp)  // Convert timestamp to Date object
+    return sdf.format(date)  // Format and return as string
 }
 
 @Composable
@@ -711,65 +873,6 @@ fun SameAuthor() {
         )
 
 
-    }
-}
-
-@Composable
-fun CommentItem(
-    comment: Comment,
-    modifier: Modifier = Modifier,
-    recipeUser: User? = null
-) {
-
-    val imageUri = recipeUser?.profileImageUrl
-    val painter = if (imageUri?.isNotBlank() == true){
-        rememberAsyncImagePainter(model = imageUri)
-    } else {
-        painterResource(R.drawable.account)
-    }
-
-
-    Row(
-
-    ) {
-        Image(
-            painter = painter,
-            contentDescription = "Avatar",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(dimensionResource(R.dimen.icon_size_lg_medium))
-                .clip(CircleShape)
-        )
-
-        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_m)))
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xs))
-        ) {
-            Row() {
-                Text(
-                    text = comment.username
-                )
-
-                Spacer(Modifier.weight(1f))
-
-                Text(
-                    text = comment.timestamp.toString()
-                )
-
-                Spacer(Modifier.width(dimensionResource(R.dimen.spacing_m)))
-
-                Icon(
-                    imageVector = FontAwesomeIcons.Solid.EllipsisH,
-                    contentDescription = "",
-                    modifier = Modifier.size(dimensionResource(R.dimen.icon_size_small))
-                )
-            }
-
-            Text(
-                text = comment.text
-            )
-        }
     }
 }
 

@@ -65,4 +65,30 @@ class CommentViewModel : ViewModel() {
             }
         }
     }
+
+
+    fun deleteComment(commentId: String, recipeId: String) {
+        viewModelScope.launch {
+            try {
+                repository.deleteComment(commentId)
+                loadComments(recipeId) // Refresh the list after deletion
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to delete comment: ${e.message}"
+            }
+        }
+    }
+
+    fun updateComment(comment: Comment) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = repository.updateComment(comment)
+            _isLoading.value = false
+            if (result.isSuccess) {
+                loadComments(comment.recipeId) // Refresh the list
+            } else {
+                _errorMessage.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
 }

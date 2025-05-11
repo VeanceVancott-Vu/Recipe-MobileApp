@@ -18,6 +18,30 @@ class CommentRepository {
             .addOnFailureListener { onResult(false) }
     }
 
+    suspend fun deleteComment(commentId: String) {
+        try {
+            FirebaseFirestore.getInstance()
+                .collection("comments")
+                .document(commentId)
+                .delete()
+                .await()
+        } catch (e: Exception) {
+            // Log or handle the error
+            throw e
+        }
+    }
+
+    suspend fun updateComment(comment: Comment): Result<Unit> {
+        return try {
+            firestore.collection("comments")
+                .document(comment.commentId)
+                .set(comment) // Overwrites the whole document with updated data
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
 
     fun getCommentsForRecipe(recipeId: String, onSuccess: (List<Comment>) -> Unit, onFailure: (Exception) -> Unit) {
