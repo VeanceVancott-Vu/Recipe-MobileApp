@@ -2,6 +2,7 @@ package com.example.dacs_3.repository
 
 import com.example.dacs_3.model.Comment
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class CommentRepository {
@@ -17,9 +18,10 @@ class CommentRepository {
             .addOnFailureListener { onResult(false) }
     }
 
+
+
     fun getCommentsForRecipe(recipeId: String, onSuccess: (List<Comment>) -> Unit, onFailure: (Exception) -> Unit) {
         commentsCollection.whereEqualTo("recipeId", recipeId)
-            .orderBy("timestamp")
             .get()
             .addOnSuccessListener { result ->
                 val comments = result.documents.mapNotNull { it.toObject(Comment::class.java) }

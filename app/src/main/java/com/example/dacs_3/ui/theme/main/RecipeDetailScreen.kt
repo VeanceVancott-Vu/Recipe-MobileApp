@@ -112,6 +112,8 @@ fun RecipeDetailScreen(
 
     val currentUser by authViewModel.currentUser.collectAsState()
 
+    val comment by commentViewModel.comments.collectAsState()
+
 
 // Trigger fetching recipe only once on entering the screen
     LaunchedEffect(key1 = id) {
@@ -121,6 +123,10 @@ fun RecipeDetailScreen(
 // Once the recipe is available, fetch its user
     LaunchedEffect(key1 = selectedRecipe) {
         selectedRecipe?.let { authViewModel.fetchUserById(it.userId) }
+    }
+
+    LaunchedEffect(key1 = selectedRecipe) {
+        selectedRecipe?.let { commentViewModel.loadComments(it.recipeId) }
     }
 
     Column(
@@ -208,7 +214,7 @@ fun RecipeDetailScreen(
                 currentUser,
                 recipeId = it.recipeId,
                 commentViewModel    ,
-                commentList = commentList,
+                commentList = comment,
                 onValueChange = { commentText = it },
                 commentText = commentText
             )

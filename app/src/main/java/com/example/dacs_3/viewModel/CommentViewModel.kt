@@ -1,5 +1,6 @@
 package com.example.dacs_3.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.model.Comment
@@ -28,8 +29,11 @@ class CommentViewModel : ViewModel() {
             repository.getCommentsForRecipe(
                 recipeId = recipeId,
                 onSuccess = { list ->
+
                     _comments.value = list
                     _isLoading.value = false
+                    Log.d("CommentViewModel", "Fetched comments: ${comments.value} from: $recipeId")
+
                 },
                 onFailure = { error ->
                     _errorMessage.value = error.message
@@ -38,6 +42,7 @@ class CommentViewModel : ViewModel() {
             )
         }
     }
+
 
     fun postComment(comment: Comment) {
         viewModelScope.launch {
