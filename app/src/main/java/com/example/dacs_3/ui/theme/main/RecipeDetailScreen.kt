@@ -42,20 +42,25 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -97,6 +102,7 @@ import compose.icons.fontawesomeicons.solid.Paperclip
 import compose.icons.fontawesomeicons.solid.Pen
 import compose.icons.fontawesomeicons.solid.Star
 import compose.icons.fontawesomeicons.solid.Thumbtack
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -113,20 +119,52 @@ fun RecipeDetailScreen(
     val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
-
     val recipeUser by authViewModel.recipeUser.collectAsState()
-
     val currentUser by authViewModel.currentUser.collectAsState()
-
     val comment by commentViewModel.comments.collectAsState()
 
+//    val hasVoted = selectedRecipe?.let { recipe ->
+//        currentUser?.let { user ->
+//            recipeViewModel.hasUserVoted(recipe.recipeId, user.userId)
+//        } ?: false
+//    } ?: false
+//
+//    var currentRating by remember {
+//        mutableStateOf(
+//            selectedRecipe?.ratings?.find { rating ->
+//                rating.userId == currentUser?.userId
+//            }?.stars ?: 0f
+//        )
+//    }
+    // Tính giá trị trung bình của tất cả các đánh giá
+    val currentRating = selectedRecipe?.ratings?.map { it.stars }?.average()?.toFloat() ?: 0f
 
-// Trigger fetching recipe only once on entering the screen
+    // Kiểm tra xem người dùng đã đánh giá chưa
+    val hasVoted by remember(selectedRecipe, currentUser) {
+        derivedStateOf {
+            selectedRecipe?.ratings?.any { it.userId == currentUser?.userId } == true
+        }
+    }
+
+    // Lưu trữ điểm đánh giá mà người dùng chọn (chỉ dùng để gửi, không hiển thị)
+    var userSelectedRating by remember { mutableStateOf<Float?>(null) }
+
+    // Đặt lại userSelectedRating khi selectedRecipe hoặc currentUser thay đổi
+    LaunchedEffect(selectedRecipe, currentUser) {
+        val userRatingFromDb = selectedRecipe?.ratings?.find { it.userId == currentUser?.userId }?.stars
+        userSelectedRating = userRatingFromDb // Lưu điểm đánh giá của người dùng (nếu có)
+    }
+
+    // Define coroutineScope and snackbarHostState
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Trigger fetching recipe only once on entering the screen
     LaunchedEffect(key1 = id) {
         recipeViewModel.fetchRecipeById(id)
     }
 
-// Once the recipe is available, fetch its user
+    // Once the recipe is available, fetch its user
     LaunchedEffect(key1 = selectedRecipe) {
         selectedRecipe?.let { authViewModel.fetchUserById(it.userId) }
     }
@@ -217,7 +255,21 @@ fun RecipeDetailScreen(
         )
 
 
-         RecipeRatingCard()
+        RecipeRatingCard(
+            rating = currentRating, // Hiển thị giá trị trung bình
+            onRatingChanged = { newRating ->
+                userSelectedRating = newRating // Lưu điểm người dùng chọn
+                currentUser?.let { user ->
+                    if (hasVoted) {
+                        recipeViewModel.updateRating(id, user.userId, newRating) {}
+                    } else {
+                        recipeViewModel.addRating(id, user.userId, newRating) {}
+                    }
+                } ?: coroutineScope.launch {
+                    snackbarHostState.showSnackbar("Vui lòng đăng nhập để đánh giá món ăn")
+                }
+            }
+        )
 
         selectedRecipe?.let {
             CommentListSection(
@@ -595,8 +647,8 @@ private fun RecipeAuthorInfo(
 
 @Composable
 private fun RecipeRatingCard(
-    rating: Int = 4,
-    onRatingChanged: (Int) -> Unit = {}
+    rating: Float,
+    onRatingChanged: (Float) -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -632,15 +684,43 @@ private fun RecipeRatingCard(
 
                 Row {
                     repeat(5) { index ->
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Star ${index + 1}",
-                            tint = if (index < rating) Color.Yellow else Color.Gray,
+                        val starFill = when {
+                            index + 1 <= rating -> 1f // Sao sáng đầy đủ
+                            index.toFloat() < rating -> rating - index // Sao sáng một phần
+                            else -> 0f // Sao không sáng
+                        }
+
+                        Box(
                             modifier = Modifier
-                                .size(dimensionResource(R.dimen.icon_size_xl))
+                                .size(48.dp)
                                 .padding(4.dp)
-                                .clickable { onRatingChanged(index + 1) }
-                        )
+                                .clickable {
+                                    // Gọi hàm xử lý khi người dùng nhấn vào sao
+                                    onRatingChanged(index + 1f) // Cập nhật giá trị mới cho rating
+                                }
+                        ) {
+                            // Sao nền màu xám
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Star ${index + 1}",
+                                tint = Color.Gray,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            // Sao màu vàng, sáng dần theo rating
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Star ${index + 1}",
+                                tint = Color.Yellow,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .drawWithContent {
+                                        val fillWidth = size.width * starFill
+                                        clipRect(0f, 0f, fillWidth, size.height) {
+                                            this@drawWithContent.drawContent()
+                                        }
+                                    }
+                            )
+                        }
                     }
                 }
             }
@@ -656,6 +736,8 @@ private fun RecipeRatingCard(
         )
     }
 }
+
+
 
 @Composable
 private fun CommentListSection(

@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
+import com.example.dacs_3.ui.theme.main.TestRatingStars
 import com.example.dacs_3.ui.theme.uploadSampleRecipeToFirestore
 import com.example.dacs_3.utils.askForLocationPermission
 import com.example.dacs_3.viewmodel.RecipeViewModel
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
 
             //        MyProfileScreen(navController = navController)
                     AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel)
+
 
                 }
             }

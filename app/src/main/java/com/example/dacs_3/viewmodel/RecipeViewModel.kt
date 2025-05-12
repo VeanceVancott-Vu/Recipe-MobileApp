@@ -8,8 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
 import com.example.dacs_3.model.Instruction
+import com.example.dacs_3.model.RatingEntry
 import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.repository.RecipeRepository
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +42,8 @@ class RecipeViewModel : ViewModel() {
 
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe
+
+    // Q:
 
     init {
         observeRecipes()
@@ -257,5 +261,60 @@ class RecipeViewModel : ViewModel() {
             }
         }
     }
+
+    fun addRating(recipeId: String, userId: String, rating: Float, onSuccess: () -> Unit) {
+        val recipeRef = FirebaseFirestore.getInstance().collection("recipes").document(recipeId)
+
+        val updatedRatings = _selectedRecipe.value?.ratings?.toMutableList() ?: mutableListOf()
+
+        if (updatedRatings.any { it.userId == userId }) {
+            updateRating(recipeId, userId, rating, onSuccess)
+            return
+        }
+
+        updatedRatings.add(RatingEntry(userId, rating))
+        val newAverage = updatedRatings.map { it.stars }.average().toFloat()
+
+        recipeRef.update(
+            "ratings", updatedRatings,
+            "averageRating", newAverage
+        ).addOnSuccessListener {
+            _selectedRecipe.value = _selectedRecipe.value?.copy(
+                ratings = updatedRatings // Only update ratings
+            )
+            onSuccess()
+        }.addOnFailureListener {
+            Log.e("RecipeViewModel", "Failed to add rating: $it")
+        }
+    }
+
+    fun updateRating(recipeId: String, userId: String, newRating: Float, onSuccess: () -> Unit) {
+        val recipeRef = FirebaseFirestore.getInstance().collection("recipes").document(recipeId)
+
+        val updatedRatings = _selectedRecipe.value?.ratings?.toMutableList() ?: mutableListOf()
+
+        val index = updatedRatings.indexOfFirst { it.userId == userId }
+        if (index != -1) {
+            updatedRatings[index] = updatedRatings[index].copy(stars = newRating)
+        } else {
+            updatedRatings.add(RatingEntry(userId, newRating))
+        }
+
+        val newAverage = updatedRatings.map { it.stars }.average().toFloat()
+
+        recipeRef.update(
+            "ratings", updatedRatings,
+            "averageRating", newAverage
+        ).addOnSuccessListener {
+            _selectedRecipe.value = _selectedRecipe.value?.copy(
+                ratings = updatedRatings // Only update ratings
+            )
+            onSuccess()
+        }.addOnFailureListener {
+            Log.e("RecipeViewModel", "Failed to update rating: $it")
+        }
+    }
+
+
 
 }

@@ -41,7 +41,7 @@ fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
 
 
 
-    val user by authViewModel.currentUser.observeAsState()
+    val user by authViewModel.currentUser.collectAsState()
 
     Log.d("My profile Screen", "user: $user")
     LaunchedEffect(Unit) {
