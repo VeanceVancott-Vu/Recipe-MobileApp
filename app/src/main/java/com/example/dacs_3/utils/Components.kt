@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.dacs_3.R
 
 
@@ -78,46 +79,56 @@ import com.example.dacs_3.R
 @Composable
 fun BottomNavBar(navController: NavController) {
     val navItems = listOf(
-        BottomNavItemData(R.drawable.password, "passwordScreen"),
-        BottomNavItemData(R.drawable.email, "emailScreen"),
-        BottomNavItemData(R.drawable.add, "addRecipe"),
-        BottomNavItemData(R.drawable.google, "googleScreen"),
+        BottomNavItemData(R.drawable.home, "passwordScreen"),
+        BottomNavItemData(R.drawable.grroup, "emailScreen"),
+        BottomNavItemData(R.drawable.add_24dp, "addRecipe"),
+        BottomNavItemData(R.drawable.search_24dp, "googleScreen"),
         BottomNavItemData(R.drawable.person, "my_profile")
     )
+
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .background(Color(0xa8dbe6de)),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .background(Color(0xFFDDEFEA)), // soft background
+        horizontalArrangement = Arrangement.SpaceAround, // slightly closer than SpaceEvenly
         verticalAlignment = Alignment.CenterVertically
     ) {
         navItems.forEach { item ->
             BottomNavItem(
                 iconId = item.iconId,
                 navController = navController,
-                destination = item.destination
+                destination = item.destination,
+                isSelected = currentDestination == item.destination
             )
         }
     }
 }
 
-// This is now a Composable unit
+
 @Composable
-fun BottomNavItem(iconId: Int, navController: NavController, destination: String) {
+fun BottomNavItem(
+    iconId: Int,
+    navController: NavController,
+    destination: String,
+    isSelected: Boolean
+) {
     Icon(
         painter = painterResource(id = iconId),
         contentDescription = null,
         modifier = Modifier
-            .size(40.dp)
-            .clipToBounds()
+            .size(32.dp) // Increased icon size
             .clickable {
-                navController.navigate(destination)
+                navController.navigate(destination) {
+                    launchSingleTop = true
+                }
             },
-        tint = Color(0xff3b684d)
+        tint = Color(0xFF3F764E) // Your desired green color
     )
 }
+
 
 // Data class to make items cleaner
 data class BottomNavItemData(val iconId: Int, val destination: String)

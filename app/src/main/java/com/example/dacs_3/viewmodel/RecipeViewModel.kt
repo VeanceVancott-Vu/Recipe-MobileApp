@@ -21,6 +21,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class RecipeViewModel : ViewModel() {
     private val repository: RecipeRepository = RecipeRepository()
+
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes
 
@@ -40,6 +41,11 @@ class RecipeViewModel : ViewModel() {
 
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe
+
+
+    private val _recipesByCollection = MutableStateFlow<List<Recipe>>(emptyList())
+    val recipesByCollection: StateFlow<List<Recipe>> = _recipesByCollection
+
 
     init {
         observeRecipes()
@@ -248,6 +254,21 @@ class RecipeViewModel : ViewModel() {
             )
         }
     }
+
+    fun loadRecipesByCollection(recipeIds: List<String>) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val allRecipes = _recipes.value // Get the current list of all recipes
+            _isLoading.value = false
+
+            // Now we filter recipes that match the recipeIds in the collection
+            val filteredRecipes = allRecipes.filter { recipe ->
+                recipeIds.contains(recipe.recipeId)
+            }
+            _recipesByCollection.value = filteredRecipes
+        }
+    }
+
 
     fun updateRecipe(recipe: Recipe) {
         viewModelScope.launch {

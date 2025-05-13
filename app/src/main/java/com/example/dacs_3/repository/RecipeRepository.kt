@@ -5,6 +5,7 @@ import com.example.dacs_3.model.Recipe
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.tasks.await
 
 class RecipeRepository {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -74,6 +75,7 @@ class RecipeRepository {
             .addOnFailureListener { e ->
                 onFailure(e)
             }
+
     }
 
     fun updateRecipe(recipe: Recipe, onResult: (Boolean) -> Unit) {

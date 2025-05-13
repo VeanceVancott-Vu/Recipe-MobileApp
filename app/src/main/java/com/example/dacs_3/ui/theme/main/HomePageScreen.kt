@@ -143,6 +143,14 @@ fun HomePageScreen(
             item {
                 RecipeRow(recipes,navController)
             }
+
+            item {
+                SectionTitle(title = "Newly added Recipes")
+            }
+
+            item {
+                RecipeRow(recipes,navController)
+            }
         }
     }
 }

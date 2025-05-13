@@ -79,7 +79,7 @@ fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
                 SectionCard(
                     iconRes = R.drawable.bookmark,
                     title = "My Recipes",
-                    {navController.navigate("edit_profile")}
+                    {navController.navigate("saved_recipe")}
 
                 )
                 SectionCard(

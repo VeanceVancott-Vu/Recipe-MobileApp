@@ -12,15 +12,17 @@ import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
 import com.example.dacs_3.ui.theme.main.DetailScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
+import com.example.dacs_3.ui.theme.main.PersonalFood
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 import com.example.dacs_3.ui.theme.main.RecipeEditScreen
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 
 
 @Composable
-fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel, commentViewModel: CommentViewModel) {
+fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel, commentViewModel: CommentViewModel,collectionsViewModel: CollectionsViewModel) {
     val userId = authViewModel.getCurrentUserId() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
@@ -59,7 +61,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         {
                 backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
-            RecipeDetailScreen(navController,id,recipeViewModel,authViewModel, commentViewModel)
+            RecipeDetailScreen(navController,id,recipeViewModel,authViewModel, commentViewModel,collectionsViewModel)
         }
 
         composable("recipe_edit/{id}") { backStackEntry ->
@@ -67,6 +69,13 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
             RecipeEditScreen(navController, id, recipeViewModel, authViewModel)
         }
 
+
+        composable("saved_recipe")
+        {
+            if (userId != null) {
+                PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel)
+            }
+        }
 
 
 

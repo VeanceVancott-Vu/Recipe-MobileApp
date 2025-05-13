@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -74,6 +76,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
+import com.example.dacs_3.model.Collections
 import com.example.dacs_3.model.Comment
 import com.example.dacs_3.model.Instruction
 import com.example.dacs_3.model.Link
@@ -82,6 +85,7 @@ import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
@@ -107,7 +111,8 @@ fun RecipeDetailScreen(
     id:String = "",
     recipeViewModel: RecipeViewModel = viewModel(),
     authViewModel: AuthViewModel = viewModel(),
-    commentViewModel: CommentViewModel = viewModel()
+    commentViewModel: CommentViewModel = viewModel(),
+    collectionViewModel: CollectionsViewModel = viewModel()
 ) {
 
     val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
@@ -120,6 +125,7 @@ fun RecipeDetailScreen(
 
     val comment by commentViewModel.comments.collectAsState()
 
+    val collections by collectionViewModel.collections.collectAsState()
 
 // Trigger fetching recipe only once on entering the screen
     LaunchedEffect(key1 = id) {
@@ -133,6 +139,10 @@ fun RecipeDetailScreen(
 
     LaunchedEffect(key1 = selectedRecipe) {
         selectedRecipe?.let { commentViewModel.loadComments(it.recipeId) }
+    }
+
+    LaunchedEffect(Unit) {
+        collectionViewModel.loadCollections(currentUser?.userId ?: "")
     }
 
     Column(
@@ -158,7 +168,12 @@ fun RecipeDetailScreen(
         FeatureIcon(
             onClick = {
                 navController.navigate("recipe_edit/$id")
-            }
+            },
+            collections = collections,
+            collectionViewModel = collectionViewModel,
+            currentUserId = currentUser?.userId?: "",
+            recipeId =  selectedRecipe?.recipeId ?: "",
+
         )
 
         DishContent(
@@ -192,7 +207,7 @@ fun RecipeDetailScreen(
             )
         }
 
-        SameAuthor()
+
     }
 
 }
@@ -234,38 +249,19 @@ private fun DishImage(
 @Composable
 private fun FeatureIcon(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    collections: List<Collections>,
+    collectionViewModel: CollectionsViewModel,
+    currentUserId: String,
+    recipeId: String
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Row(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        Card(
-            modifier = Modifier,
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            IconButton(
-                onClick = {},
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_large)),
-                colors = IconButtonDefaults
-                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
-
-            ) {
-                Icon(
-                    imageVector = FontAwesomeIcons.Solid.Thumbtack,
-                    contentDescription = "Pin dish today",
-                    tint = Color(0xFF3F764E),
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_small))
-                )
-            }
-        }
-
-        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 
         Card(
             modifier = Modifier,
@@ -286,8 +282,59 @@ private fun FeatureIcon(
                     tint = Color(0xFF3F764E),
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_small))
+                        .clickable {
+                            showDialog = true
+                        }
                 )
+
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Save Recipe To Collection") },
+                        text = {
+                            Column {
+                                collections.forEach { collection ->
+                                    Text(
+                                        text = collection.name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val updatedList = collection.recipeIds.toMutableList()
+                                                if (!updatedList.contains(recipeId)) {
+                                                    updatedList.add(recipeId)
+                                                    collectionViewModel.updateRecipesInCollection(
+                                                        collection.id,
+                                                        updatedList,
+                                                        currentUserId
+                                                    )
+                                                }
+                                                showDialog = false
+                                            }
+                                            .padding(vertical = 8.dp)
+                                    )
+                                }
+
+                                if (collections.isEmpty()) {
+                                    Text("No collections found. Please create one first.")
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Close")
+                            }
+                        }
+                    )
+                }
             }
+
+
+
+
+
+
+
         }
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
@@ -315,30 +362,30 @@ private fun FeatureIcon(
             }
         }
 
-        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
-
-        Card(
-            modifier = Modifier,
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            IconButton(
-                onClick = onClick,
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_large)),
-                colors = IconButtonDefaults
-                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
-            ) {
-                Icon(
-                    imageVector = FontAwesomeIcons.Solid.Pen,
-                    contentDescription = "",
-                    tint = Color(0xFF3F764E),
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_small))
-                )
-            }
-        }
+//        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+//
+//        Card(
+//            modifier = Modifier,
+//            shape = RoundedCornerShape(24.dp),
+//            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+//            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+//        ) {
+//            IconButton(
+//                onClick = onClick,
+//                modifier = Modifier
+//                    .size(dimensionResource(R.dimen.icon_size_large)),
+//                colors = IconButtonDefaults
+//                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
+//            ) {
+//                Icon(
+//                    imageVector = FontAwesomeIcons.Solid.Pen,
+//                    contentDescription = "",
+//                    tint = Color(0xFF3F764E),
+//                    modifier = Modifier
+//                        .size(dimensionResource(R.dimen.icon_size_small))
+//                )
+//            }
+//        }
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 
@@ -769,6 +816,7 @@ private fun CommentListSection(
             filteredComments.forEach { comment ->
                 CommentItem(
                     comment = comment,
+                    currentUser = currentUser,
                     onEdit = {
                         onValueChange(comment.text)
                         editingCommentId = comment.commentId
@@ -777,6 +825,10 @@ private fun CommentListSection(
                     onDelete = {
                         commentViewModel.deleteComment(comment.commentId, recipeId)
                         Log.d("CommentListSection/Recipe Detail", "Delete comment: $comment")
+                    }
+                    ,
+                    onReport = {
+                        Log.d("CommentListSection/Recipe Detail", "Report comment: $comment")
                     }
                 )
             }
@@ -793,8 +845,11 @@ fun CommentItem(
     comment: Comment,
     modifier: Modifier = Modifier,
     recipeUser: User? = null,
+    currentUser: User? = null,
     onEdit: (String) -> Unit, // Callback for edit action
-    onDelete: () -> Unit    // Callback for delete action
+    onDelete: () -> Unit ,   // Callback for delete action
+    onReport: () -> Unit    // Callback for report action
+
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -811,8 +866,12 @@ fun CommentItem(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = { offset -> // 'offset' provides the position of the long press
-                       if(comment.userId == recipeUser?.userId) {
+                       if(comment.userId == currentUser?.userId) {
                            expanded = true
+                       }
+                        else
+                       {
+
                        }
                     }
                 )
@@ -862,20 +921,29 @@ fun CommentItem(
             onDismissRequest = { expanded = false },
             offset = DpOffset(x = 0.dp, y = 20.dp) // Adjust position if needed
         ) {
-            DropdownMenuItem(
-                text = { Text("Edit") },
-                onClick = {
-                    expanded = false
-                    onEdit(comment.text)
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Delete") },
-                onClick = {
-                    expanded = false
-                    onDelete()
-                }
-            )
+            if (comment.userId == currentUser?.userId) {
+                DropdownMenuItem(
+                    text = { Text("Edit") },
+                    onClick = {
+                        expanded = false
+                        onEdit(comment.text)
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Delete") },
+                    onClick = {
+                        expanded = false
+                        onDelete()
+                    }
+                )
+            } else {
+                DropdownMenuItem(
+                    text = { Text("Report") },
+                    onClick = {
+                        expanded = false
+                        onReport()                    }
+                )
+            }
         }
     }
 }
@@ -888,16 +956,6 @@ fun formatTimestamp(timestamp: Long): String {
     return sdf.format(date)  // Format and return as string
 }
 
-@Composable
-fun SameAuthor() {
-    Column() {
-        Text(
-            text = "From the same author"
-        )
-
-
-    }
-}
 
 @Composable
 private fun CreatorInfo(
@@ -955,10 +1013,19 @@ private fun CreatorInfo(
                             .aspectRatio(2 / 3f)
                     )
 
-                    Text(
-                        text =  "VietNam",
-                        color = OliverGreen
-                    )
+                    if (recipeUser != null) {
+                        Text(
+                            text =  recipeUser.location ,
+                            color = OliverGreen
+                        )
+                    }
+                    else
+                    {
+                        Text(
+                            text = " HaNoi,VietNam" ,
+                            color = OliverGreen
+                        )
+                    }
                 }
             }
         }
@@ -972,7 +1039,7 @@ private fun CreatorInfo(
         ) {
             if (recipe != null) {
                 OutlinedTextField(
-                    value = recipe.story ?: "",
+                    value = recipe.story,
                     onValueChange = {},
                     placeholder = { Text("Story behind this dish ...") },
                     modifier = Modifier
