@@ -141,44 +141,6 @@ fun RecipeDetailScreen(
             .statusBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xl))
     ) {
-        val commentList = listOf(
-            Comment(
-                commentId = "cmt001",
-                recipeId = "recipe123",
-                userId = "user01",
-                username = "An Nguyen",
-                text = "Món này ngon thật sự! Cảm ơn bạn đã chia sẻ 🥰",
-                timestamp = 1683289200000, // 05/04/2023 12:00 GMT
-                isReported = false
-            ),
-            Comment(
-                commentId = "cmt002",
-                recipeId = "recipe123",
-                userId = "user02",
-                username = "Linh Pham",
-                text = "Mình thử làm theo công thức mà bị khét 😅 Có mẹo gì không bạn?",
-                timestamp = 1683375600000, // 06/04/2023 12:00 GMT
-                isReported = false
-            ),
-            Comment(
-                commentId = "cmt003",
-                recipeId = "recipe123",
-                userId = "user03",
-                username = "Minh Tran",
-                text = "Gợi ý tuyệt vời! Mình thêm tí phô mai vào và ngon hơn nhiều!",
-                timestamp = 1683462000000, // 07/04/2023 12:00 GMT
-                isReported = false
-            ),
-            Comment(
-                commentId = "cmt004",
-                recipeId = "recipe123",
-                userId = "user04",
-                username = "Thảo Lê",
-                text = "Bài viết rất chi tiết, cảm ơn bạn nhiều nha! ❤️",
-                timestamp = 1683548400000, // 08/04/2023 12:00 GMT
-                isReported = false
-            )
-        )
 
         var commentText by remember { mutableStateOf("") }
 
@@ -678,6 +640,15 @@ private fun CommentListSection(
         commentList // unfiltered
     }
 
+
+    val imageUri = currentUser?.profileImageUrl
+    val painter = if (imageUri?.isNotBlank() == true) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
@@ -689,7 +660,7 @@ private fun CommentListSection(
             horizontalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(R.drawable.mockrecipeimage),
+                painter = painter,
                 contentDescription = "Avatar",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -840,7 +811,9 @@ fun CommentItem(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = { offset -> // 'offset' provides the position of the long press
-                        expanded = true
+                       if(comment.userId == recipeUser?.userId) {
+                           expanded = true
+                       }
                     }
                 )
             }
