@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.dacs_3.R
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -97,26 +98,30 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile")
     )
 
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .background(Color(0xa8dbe6de)),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .background(Color(0xFFDDEFEA)), // soft background
+        horizontalArrangement = Arrangement.SpaceAround, // slightly closer than SpaceEvenly
         verticalAlignment = Alignment.CenterVertically
     ) {
         navItems.forEach { item ->
             BottomNavItem(
                 icon = item.icon,
                 navController = navController,
-                destination = item.destination
+                destination = item.destination,
+                isSelected = currentDestination == item.destination
             )
         }
     }
 }
 
+
 @Composable
-fun BottomNavItem(icon: ImageVector, navController: NavController, destination: String) {
+fun BottomNavItem(icon: ImageVector, navController: NavController, destination: String, isSelected: Boolean) {
     Icon(
         imageVector = icon,
         contentDescription = null,
@@ -124,9 +129,11 @@ fun BottomNavItem(icon: ImageVector, navController: NavController, destination: 
             .size(dimensionResource(R.dimen.icon_size_medium))
             .clipToBounds()
             .clickable {
-                navController.navigate(destination)
+                navController.navigate(destination) {
+                    launchSingleTop = true
+                }
             },
-        tint = Color(0xff3b684d)
+        tint = Color(0xFF3F764E) // Your desired green color
     )
 }
 

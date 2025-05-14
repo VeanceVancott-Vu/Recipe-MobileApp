@@ -1,5 +1,6 @@
 package com.example.dacs_3.ui.theme.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -32,6 +33,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +53,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
+import com.example.dacs_3.model.Collections
 import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewmodel.CollectionsViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Bell
@@ -63,7 +69,10 @@ import compose.icons.fontawesomeicons.solid.Thumbtack
 @Composable
 fun PersonalFood(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    collectionsViewModel: CollectionsViewModel,
+    userId:String,
+    recipeViewModel: RecipeViewModel
 ) {
     // Dữ liệu Fake
     val recipes = listOf(
@@ -94,6 +103,16 @@ fun PersonalFood(
     val horizontalPadding = dimensionResource(R.dimen.spacing_m)
     val verticalSpacing   = dimensionResource(R.dimen.spacing_m)
 
+    val collections by collectionsViewModel.collections.collectAsState()
+
+    LaunchedEffect(Unit) {
+        collectionsViewModel.loadCollections(userId)
+        Log.d("PersonalFood", "Collections: $collections")
+
+    }
+
+
+
 
     Column(
         modifier = modifier
@@ -111,21 +130,11 @@ fun PersonalFood(
         )
 
         TagSelector(
-            modifier = modifier
-        )
-
-        FoodCardGrid(
-            recipeList = recipes,
-            modifier = modifier
-        )
-
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
-
-        SectionTitle("Recently Viewed")
-
-        FoodCardGrid(
-            recipeList = recipes,
-            modifier = modifier
+            modifier = modifier,
+            collectionsViewModel = collectionsViewModel,
+            userId = userId,
+            collections,
+            recipeViewModel
         )
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
@@ -268,12 +277,41 @@ fun SearchBar(
 
 @Composable
 fun TagSelector(
-    modifier: Modifier = Modifier
-) {
-    var tags by remember { mutableStateOf(listOf("Breakfast", "Dessert", "Vegan")) }
+    modifier: Modifier = Modifier,
+    collectionsViewModel: CollectionsViewModel,
+    userId: String,
+    collections: List<Collections>,
+    recipeViewModel: RecipeViewModel
+
+    ) {
     var showDialog by remember { mutableStateOf(false) }
     var newTag by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+//    var selectedTag by remember { mutableStateOf<String?>(collections.first().name) }
+    var selectedTag by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(collections) {
+        // Only set the selectedTag when collections are available and selectedTag is null
+        if (collections.isNotEmpty() && selectedTag == null) {
+            selectedTag = collections.first().name
+            // Load recipes for the initial tag
+            recipeViewModel.loadRecipesByCollection(collections.first().recipeIds)
+        }
+    }
+
+    LaunchedEffect(selectedTag) {
+        // When selectedTag changes, load recipes based on that tag
+        selectedTag?.let { tag ->
+            val selectedCollection = collections.find { it.name == tag }
+            selectedCollection?.recipeIds?.let { ids ->
+                recipeViewModel.loadRecipesByCollection(ids)
+            }
+        }
+    }
+
+
+
+    val recipesByCollection by recipeViewModel.recipesByCollection.collectAsState()
 
     Row(
         modifier = Modifier
@@ -291,8 +329,8 @@ fun TagSelector(
 
         Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacing_m)))
 
-        tags.forEachIndexed { index, tag ->
-            val isSelected = index == 0 // highlight first tag
+        collections.forEachIndexed { _, collection  ->
+            val isSelected = selectedTag == collection.name
 
             Surface(
                 shape = RoundedCornerShape(50),
@@ -300,9 +338,13 @@ fun TagSelector(
                 shadowElevation = 4.dp,
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
+                    .clickable {
+                        selectedTag = if (isSelected) null else collection.name
+                        // Optionally call some action based on selection
+                    }
             ) {
                 Text(
-                    text = tag,
+                    text = collection.name,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     color = Color(0xFF2F5D47),
@@ -326,7 +368,7 @@ fun TagSelector(
             confirmButton = {
                 TextButton(onClick = {
                     if (newTag.isNotBlank()) {
-                        tags = tags + newTag
+                        collectionsViewModel.addCollection(newTag, userId = userId)
                         newTag = ""
                     }
                     showDialog = false
@@ -343,6 +385,16 @@ fun TagSelector(
             }
         )
     }
+
+    Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
+
+    SectionTitle("Your $selectedTag ")
+
+    FoodCardGrid(
+        recipeList = recipesByCollection,
+        modifier = modifier
+    )
+
 }
 
 @Composable
@@ -407,18 +459,6 @@ fun FoodCardItem(
                     onClick = {}
                 ) {
                     Icon(
-                        imageVector = FontAwesomeIcons.Solid.Thumbtack,
-                        contentDescription = "Today's Dish",
-                        modifier = Modifier
-                            .size(dimensionResource(R.dimen.icon_size_small)),
-                        tint = OliverGreen
-                    )
-                }
-
-                IconButton(
-                    onClick = {}
-                ) {
-                    Icon(
                         imageVector = FontAwesomeIcons.Solid.Bookmark,
                         contentDescription = "Save to folder",
                         modifier = Modifier
@@ -426,6 +466,8 @@ fun FoodCardItem(
                         tint = OliverGreen
                     )
                 }
+
+                Spacer(Modifier.weight(1f))
 
                 IconButton(
                     onClick = {}

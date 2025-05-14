@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -44,6 +45,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -79,6 +81,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
+import com.example.dacs_3.model.Collections
 import com.example.dacs_3.model.Comment
 import com.example.dacs_3.model.Instruction
 import com.example.dacs_3.model.Link
@@ -87,6 +90,7 @@ import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
@@ -113,16 +117,21 @@ fun RecipeDetailScreen(
     id:String = "",
     recipeViewModel: RecipeViewModel = viewModel(),
     authViewModel: AuthViewModel = viewModel(),
-    commentViewModel: CommentViewModel = viewModel()
+    commentViewModel: CommentViewModel = viewModel(),
+    collectionViewModel: CollectionsViewModel = viewModel()
 ) {
 
     val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
+
     val recipeUser by authViewModel.recipeUser.collectAsState()
+
     val currentUser by authViewModel.currentUser.collectAsState()
+
     val comment by commentViewModel.comments.collectAsState()
 
+    val collections by collectionViewModel.collections.collectAsState()
 //    val hasVoted = selectedRecipe?.let { recipe ->
 //        currentUser?.let { user ->
 //            recipeViewModel.hasUserVoted(recipe.recipeId, user.userId)
@@ -171,6 +180,10 @@ fun RecipeDetailScreen(
 
     LaunchedEffect(key1 = selectedRecipe) {
         selectedRecipe?.let { commentViewModel.loadComments(it.recipeId) }
+    }
+
+    LaunchedEffect(Unit) {
+        collectionViewModel.loadCollections(currentUser?.userId ?: "")
     }
 
     Column(
@@ -237,7 +250,12 @@ fun RecipeDetailScreen(
             },
             onShareCooksnapClick = {
                 navController.navigate("cooksnap/$id")
-            }
+            },
+            collections = collections,
+            collectionViewModel = collectionViewModel,
+            currentUserId = currentUser?.userId?: "",
+            recipeId =  selectedRecipe?.recipeId ?: "",
+
         )
 
         DishContent(
@@ -328,8 +346,14 @@ private fun DishImage(
 private fun FeatureIcon(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    onShareCooksnapClick: () -> Unit
+    onShareCooksnapClick: () -> Unit,
+    collections: List<Collections>,
+    collectionViewModel: CollectionsViewModel,
+    currentUserId: String,
+    recipeId: String
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Row(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -376,12 +400,63 @@ private fun FeatureIcon(
             ) {
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.Bookmark,
-                    contentDescription = "",
+                    contentDescription = "Pin dish today",
                     tint = Color(0xFF3F764E),
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_small))
+                        .clickable {
+                            showDialog = true
+                        }
                 )
+
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Save Recipe To Collection") },
+                        text = {
+                            Column {
+                                collections.forEach { collection ->
+                                    Text(
+                                        text = collection.name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val updatedList = collection.recipeIds.toMutableList()
+                                                if (!updatedList.contains(recipeId)) {
+                                                    updatedList.add(recipeId)
+                                                    collectionViewModel.updateRecipesInCollection(
+                                                        collection.id,
+                                                        updatedList,
+                                                        currentUserId
+                                                    )
+                                                }
+                                                showDialog = false
+                                            }
+                                            .padding(vertical = 8.dp)
+                                    )
+                                }
+
+                                if (collections.isEmpty()) {
+                                    Text("No collections found. Please create one first.")
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Close")
+                            }
+                        }
+                    )
+                }
             }
+
+
+
+
+
+
+
         }
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
@@ -409,30 +484,30 @@ private fun FeatureIcon(
             }
         }
 
-        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
-
-        Card(
-            modifier = Modifier,
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            IconButton(
-                onClick = onClick,
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_large)),
-                colors = IconButtonDefaults
-                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
-            ) {
-                Icon(
-                    imageVector = FontAwesomeIcons.Solid.Pen,
-                    contentDescription = "",
-                    tint = Color(0xFF3F764E),
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_small))
-                )
-            }
-        }
+//        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+//
+//        Card(
+//            modifier = Modifier,
+//            shape = RoundedCornerShape(24.dp),
+//            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+//            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+//        ) {
+//            IconButton(
+//                onClick = onClick,
+//                modifier = Modifier
+//                    .size(dimensionResource(R.dimen.icon_size_large)),
+//                colors = IconButtonDefaults
+//                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
+//            ) {
+//                Icon(
+//                    imageVector = FontAwesomeIcons.Solid.Pen,
+//                    contentDescription = "",
+//                    tint = Color(0xFF3F764E),
+//                    modifier = Modifier
+//                        .size(dimensionResource(R.dimen.icon_size_small))
+//                )
+//            }
+//        }
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 
