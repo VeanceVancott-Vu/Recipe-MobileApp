@@ -29,7 +29,7 @@ import com.example.dacs_3.viewmodel.RecipeViewModel
 
 @Composable
 fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel, commentViewModel: CommentViewModel,collectionsViewModel: CollectionsViewModel) {
-    val userId = authViewModel.getCurrentUserId() // Get the current user's ID
+    val userId = authViewModel.getCurrentUserId().toString() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
         composable("login")
@@ -104,6 +104,9 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
             ) // Màn hình điều hướng đến
         }
 
+        composable("personal_food") {
+            PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel) // Điều hướng đến PersonalFood
+        }
 
         composable("cooksnap/{id}")
         { backStackEntry ->
