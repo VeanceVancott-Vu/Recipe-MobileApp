@@ -40,8 +40,11 @@ import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.utils.BottomNavBar
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
@@ -51,6 +54,7 @@ import compose.icons.fontawesomeicons.solid.SlidersH
 
 @Composable
 fun SearchScreen(
+    navController: NavController,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onSearch: (String) -> Unit = {},
@@ -87,15 +91,16 @@ fun SearchScreen(
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
 
             ) {
-                // ← Back icon
+
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier
-                        .clickable { onBack() } , // Thêm sự kiện click
+                        .clickable {
+                            navController.popBackStack() // Quay lại màn hình trước (SearchScreen)
+                        },
                     tint = OliverGreen
                 )
-
 
                 Card(
                     modifier = Modifier
@@ -141,15 +146,13 @@ fun SearchScreen(
                     )
                 }
 
-
-
-
-                // Filter/Settings icon
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.SlidersH,
                     contentDescription = "Filter",
                     modifier = Modifier
-                        .clickable(onClick = onFilter)
+                        .clickable {
+                            navController.navigate("filter") // Điều hướng đến FilterScreen
+                        }
                         .size(dimensionResource(R.dimen.icon_size_medium)),
                     tint = OliverGreen
                 )
@@ -211,5 +214,6 @@ fun SearchScreen(
 @Preview(showBackground = true)
 @Composable
 private fun SearchScreenPreview() {
-    SearchScreen()
+    val navController = rememberNavController()
+    SearchScreen(navController = navController)
 }

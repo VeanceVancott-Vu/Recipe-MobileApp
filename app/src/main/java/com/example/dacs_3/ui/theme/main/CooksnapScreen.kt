@@ -43,9 +43,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Cooksnap
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Camera
@@ -53,6 +57,9 @@ import compose.icons.fontawesomeicons.solid.EllipsisV
 
 @Composable
 fun CooksnapScreen(
+    navController: NavController,
+    id: String,
+    recipeViewModel: RecipeViewModel = viewModel(),
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
@@ -88,7 +95,9 @@ fun CooksnapScreen(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier
-                        .clickable { onBack() } , // Thêm sự kiện click
+                        .clickable {
+                            navController.popBackStack() // Quay lại màn hình trước (SearchScreen)
+                        },
                     tint = OliverGreen
                 )
 
@@ -122,7 +131,11 @@ fun CooksnapScreen(
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.Camera,
                     contentDescription = "Camera",
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            navController.navigate("share_cooksnap/$id")
+                        },
                     tint = OliverGreen
                 )
 
@@ -298,5 +311,5 @@ fun ButtonCard(
 @Preview(showBackground = true)
 @Composable
 private fun CooksnapScreenPreview() {
-    CooksnapScreen()
+//    CooksnapScreen()
 }

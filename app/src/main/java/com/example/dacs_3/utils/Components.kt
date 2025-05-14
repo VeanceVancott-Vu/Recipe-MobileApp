@@ -19,13 +19,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.Box
+import compose.icons.fontawesomeicons.solid.Home
+import compose.icons.fontawesomeicons.solid.Plus
+import compose.icons.fontawesomeicons.solid.Search
+import compose.icons.fontawesomeicons.solid.User
+import compose.icons.fontawesomeicons.solid.Users
 
 
 @Composable
@@ -78,11 +90,11 @@ import com.example.dacs_3.R
 @Composable
 fun BottomNavBar(navController: NavController) {
     val navItems = listOf(
-        BottomNavItemData(R.drawable.password, "passwordScreen"),
-        BottomNavItemData(R.drawable.email, "emailScreen"),
-        BottomNavItemData(R.drawable.add, "addRecipe"),
-        BottomNavItemData(R.drawable.google, "googleScreen"),
-        BottomNavItemData(R.drawable.person, "my_profile")
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.Home, "homepage"),
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.Search, "search"),
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.Plus, "addRecipe"),
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.Box, "personal_food"),
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile")
     )
 
     Row(
@@ -95,7 +107,7 @@ fun BottomNavBar(navController: NavController) {
     ) {
         navItems.forEach { item ->
             BottomNavItem(
-                iconId = item.iconId,
+                icon = item.icon,
                 navController = navController,
                 destination = item.destination
             )
@@ -103,14 +115,13 @@ fun BottomNavBar(navController: NavController) {
     }
 }
 
-// This is now a Composable unit
 @Composable
-fun BottomNavItem(iconId: Int, navController: NavController, destination: String) {
+fun BottomNavItem(icon: ImageVector, navController: NavController, destination: String) {
     Icon(
-        painter = painterResource(id = iconId),
+        imageVector = icon,
         contentDescription = null,
         modifier = Modifier
-            .size(40.dp)
+            .size(dimensionResource(R.dimen.icon_size_medium))
             .clipToBounds()
             .clickable {
                 navController.navigate(destination)
@@ -119,5 +130,11 @@ fun BottomNavItem(iconId: Int, navController: NavController, destination: String
     )
 }
 
-// Data class to make items cleaner
-data class BottomNavItemData(val iconId: Int, val destination: String)
+data class BottomNavItemData( val icon: ImageVector, val destination: String)
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewBottomNavBar() {
+    val navController = rememberNavController()
+    BottomNavBar(navController = navController)
+}

@@ -37,11 +37,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.dacs_3.R
 import com.example.dacs_3.ui.theme.OliverGreen
 
 @Composable
 fun FilterScreen(
+    navController: NavController,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
@@ -73,7 +75,9 @@ fun FilterScreen(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier
-                        .clickable { onBack() } , // Thêm sự kiện click
+                        .clickable {
+                            navController.popBackStack() // Quay lại màn hình trước (SearchScreen)
+                        },
                     tint = OliverGreen
                 )
 
@@ -211,8 +215,3 @@ fun FilterScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun FilterScreenPreview() {
-    FilterScreen()
-}

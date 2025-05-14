@@ -234,6 +234,9 @@ fun RecipeDetailScreen(
         FeatureIcon(
             onClick = {
                 navController.navigate("recipe_edit/$id")
+            },
+            onShareCooksnapClick = {
+                navController.navigate("cooksnap/$id")
             }
         )
 
@@ -324,7 +327,8 @@ private fun DishImage(
 @Composable
 private fun FeatureIcon(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onShareCooksnapClick: () -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -372,7 +376,7 @@ private fun FeatureIcon(
             ) {
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.Bookmark,
-                    contentDescription = "Pin dish today",
+                    contentDescription = "",
                     tint = Color(0xFF3F764E),
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_small))
@@ -397,7 +401,7 @@ private fun FeatureIcon(
             ) {
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.EllipsisV,
-                    contentDescription = "Pin dish today",
+                    contentDescription = "",
                     tint = Color(0xFF3F764E),
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_small))
@@ -439,7 +443,7 @@ private fun FeatureIcon(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             IconButton(
-                onClick = {},
+                onClick = onShareCooksnapClick,
                 modifier = Modifier
                     .size(dimensionResource(R.dimen.icon_size_large)),
                 colors = IconButtonDefaults

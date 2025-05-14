@@ -185,7 +185,6 @@ fun RecipeEditScreen(
 //                            }
 //                        )
 
-                        Log.e("TAG", "Chào bà nha")
 
                     } else {
                         // No instruction images, just use current instructions

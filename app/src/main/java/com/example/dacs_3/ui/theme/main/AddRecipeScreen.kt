@@ -121,7 +121,9 @@
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    navController.popBackStack() // Quay lại trang trước đó
+                }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
 
@@ -166,7 +168,6 @@
 //                                }
 //                            )
 
-                            Log.e("MainActivity", "Chào bà nha")
 
                         } else {
                             // No instruction images, just use current instructions

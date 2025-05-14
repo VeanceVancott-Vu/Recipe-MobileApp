@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Notification
@@ -73,7 +74,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NotificationsAndKitchenBuddies() {
+fun NotificationsAndKitchenBuddies(
+    navController: NavController
+) {
     // Khởi tạo pager state với số lượng tab
     val pagerState = rememberPagerState(pageCount = { 2 })
     val tabs = listOf("Notifications", "Kitchen Buddies")
@@ -108,7 +111,9 @@ fun NotificationsAndKitchenBuddies() {
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier
-                        .clickable { } , // Thêm sự kiện click
+                        .clickable {
+                            navController.popBackStack() // Quay lại màn hình trước (SearchScreen)
+                        },
                     tint = OliverGreen
                 )
 
@@ -507,5 +512,5 @@ fun CommentInput(
 @Preview(showBackground = true)
 @Composable
 private fun NotificationsAndKitchenBuddiesPreview() {
-    NotificationsAndKitchenBuddies()
+//    NotificationsAndKitchenBuddies()
 }

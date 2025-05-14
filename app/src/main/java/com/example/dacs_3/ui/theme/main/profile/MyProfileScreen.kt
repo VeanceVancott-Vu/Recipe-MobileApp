@@ -38,9 +38,6 @@ fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
                     navController: NavController
 ) {
 
-
-
-
     val user by authViewModel.currentUser.collectAsState()
 
     Log.d("My profile Screen", "user: $user")

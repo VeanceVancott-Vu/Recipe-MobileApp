@@ -35,13 +35,19 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import androidx.compose.material3.Text as Text
 
 @Composable
 fun ShareCooksnapScreen(
+    navController: NavController,
+    id: String,
+    recipeViewModel: RecipeViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -72,7 +78,7 @@ fun ShareCooksnapScreen(
                     contentDescription = "Back",
                     modifier = Modifier
                         .clickable {
-
+                            navController.popBackStack() // Quay lại màn hình trước (SearchScreen)
                         },
                     tint = OliverGreen
                 )
@@ -146,5 +152,5 @@ fun ShareCooksnapScreen(
 @Preview(showBackground = true)
 @Composable
 private fun ShareCooksnapPreview() {
-    ShareCooksnapScreen()
+//    ShareCooksnapScreen()
 }

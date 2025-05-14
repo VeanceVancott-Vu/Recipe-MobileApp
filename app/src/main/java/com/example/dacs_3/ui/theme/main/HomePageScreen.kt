@@ -39,6 +39,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.viewmodel.RecipeViewModel
@@ -114,7 +115,13 @@ fun HomePageScreen(
         bottomBar = {
             BottomNavBar(navController)
         },
-        containerColor = Color(0xFFF7F7F7)
+        containerColor = Color(0xFFF7F7F7),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            )
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -125,7 +132,7 @@ fun HomePageScreen(
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
             item {
-                SearchBox()
+                SearchBox(navController = navController)
             }
 
             item {
@@ -149,7 +156,9 @@ fun HomePageScreen(
 
 
 @Composable
-fun SearchBox() {
+fun SearchBox(
+    navController: NavController
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,7 +166,9 @@ fun SearchBox() {
             .height(56.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFFD7ECE2))
-            .clickable { /* handle click */ },
+            .clickable {
+                navController.navigate("search")
+            },
         contentAlignment = Alignment.CenterStart
     ) {
         Row(

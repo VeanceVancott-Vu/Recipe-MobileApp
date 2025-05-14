@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Recipe
@@ -61,6 +62,7 @@ import compose.icons.fontawesomeicons.solid.Thumbtack
 
 @Composable
 fun PersonalFood(
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     // Dữ liệu Fake
@@ -100,6 +102,7 @@ fun PersonalFood(
         verticalArrangement = Arrangement.spacedBy(verticalSpacing)
     ) {
         PersonalFoodHeader(
+            navController = navController,
             modifier = modifier
         )
 
@@ -147,6 +150,7 @@ fun PersonalFood(
 
 @Composable
 fun PersonalFoodHeader(
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -177,7 +181,10 @@ fun PersonalFoodHeader(
         Spacer(Modifier.weight(1f))
 
         IconButton(
-            onClick = {}
+            onClick = {
+                // Điều hướng tới NotificationsAndKitchenBuddies khi nhấn vào icon
+                navController.navigate("notifications_and_kitchen_buddies")
+            }
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.Bell,
@@ -442,5 +449,5 @@ fun FoodCardItem(
 @Preview(showBackground = true)
 @Composable
 private fun PersonalFoodPreview() {
-    PersonalFood()
+//    PersonalFood()
 }
