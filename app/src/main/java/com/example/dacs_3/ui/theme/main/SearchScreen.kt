@@ -1,26 +1,22 @@
 package com.example.dacs_3.ui.theme.main
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -28,9 +24,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -46,36 +40,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.ui.theme.OliverGreen
-import com.example.dacs_3.utils.BottomNavBar
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
-import compose.icons.fontawesomeicons.regular.Bookmark
 import compose.icons.fontawesomeicons.regular.Clock
-import compose.icons.fontawesomeicons.solid.Bookmark
-import compose.icons.fontawesomeicons.solid.Clock
 import compose.icons.fontawesomeicons.solid.SlidersH
-import compose.icons.fontawesomeicons.solid.User
 
 @Composable
 fun SearchScreen(
@@ -107,6 +90,9 @@ fun SearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(
+                WindowInsets.systemBars.asPaddingValues()  // Bao gồm status bar + navigation bar
+            )
     ) {
         var query by remember { mutableStateOf("") }
 
