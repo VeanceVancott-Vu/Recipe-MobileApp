@@ -2,6 +2,7 @@ package com.example.dacs_3.ui.theme.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -190,78 +191,39 @@ fun SearchScreen(
         if(showHistory) {
             SearchHistoryList(
                 history = fakeHistory,
-                onItemClick = { text = it },
+                onItemClick = {
+
+                  //  text = it
+                    showHistory = false
+                    recipeViewModel.searchRecipesByName(it)
+
+                },
                 onItemDelete = { fakeHistory.remove(it) }
             )
         }
         else {
+            if (results.isNotEmpty()) {
 
-            val demoRecipes = listOf(
-                Recipe(
-                    recipeId = "1",
-                    title = "Creamy Chicken Alfredo",
-                    story = "A rich and creamy pasta dish that's perfect for weeknight dinners.",
-                    servingSize = "2 servings",
-                    cookingTime = "30 min",
-                    resultImages = "https://images.unsplash.com/photo-1603133872872-684928dc4a07",
-                    ingredients = listOf(
-                        "Chicken breast",
-                        "Fettuccine",
-                        "Heavy cream",
-                        "Parmesan",
-                        "Garlic"
-                    ),
-                    instructions = listOf(),
-                    likes = 120,
-                    smiles = 85,
-                    claps = 45,
-                    userId = "user123",
-                    ratings = listOf(),
-                    averageRating = 4.5f
-                ),
-                Recipe(
-                    recipeId = "2",
-                    title = "Vegan Buddha Bowl",
-                    story = "A colorful and nourishing vegan bowl packed with flavor.",
-                    servingSize = "1 bowl",
-                    cookingTime = "20 min",
-                    resultImages = "https://images.unsplash.com/photo-1605478571948-e7cf6deff18b",
-                    ingredients = listOf(
-                        "Quinoa",
-                        "Chickpeas",
-                        "Avocado",
-                        "Sweet potato",
-                        "Tahini"
-                    ),
-                    instructions = listOf(),
-                    likes = 75,
-                    smiles = 90,
-                    claps = 30,
-                    userId = "user456",
-                    ratings = listOf(),
-                    averageRating = 4.8f
-                ),
-                Recipe(
-                    recipeId = "3",
-                    title = "Blueberry Pancakes",
-                    story = "Fluffy pancakes bursting with blueberries and a hint of vanilla.",
-                    servingSize = "3 pancakes",
-                    cookingTime = "25 min",
-                    resultImages = "https://images.unsplash.com/photo-1587731253653-0711df56f156",
-                    ingredients = listOf("Flour", "Milk", "Eggs", "Blueberries", "Maple syrup"),
-                    instructions = listOf(),
-                    likes = 150,
-                    smiles = 110,
-                    claps = 70,
-                    userId = "user789",
-                    ratings = listOf(),
-                    averageRating = 4.7f
-                )
-            )
-
-            LazyColumn {
-                items(results) { recipe ->
-                    RecipeCard(recipe = recipe)
+                LazyColumn {
+                    items(results) { recipe ->
+                        RecipeCard(recipe = recipe)
+                    }
+                }
+            }
+            else
+            {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No results found",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Gray
+                        )
+                    )
                 }
             }
 

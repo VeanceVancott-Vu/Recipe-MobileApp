@@ -95,7 +95,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         composable("saved_recipe")
         {
             if (userId != null) {
-                PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel)
+                PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, authViewModel = authViewModel, recipeViewModel = recipeViewModel)
             }
         }
 
@@ -106,7 +106,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         }
 
         composable("personal_food") {
-            PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel) // Điều hướng đến PersonalFood
+            PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel, authViewModel = authViewModel) // Điều hướng đến PersonalFood
         }
 
 //        composable("cooksnap/{id}")

@@ -50,4 +50,15 @@ class CollectionsRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun updateCollectionName(collectionId: String, newName: String): Result<Unit> {
+        return try {
+            collectionRef.document(collectionId)
+                .update("name", newName)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

@@ -19,6 +19,10 @@ class CollectionsViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val _updateStatus = MutableStateFlow<Result<Unit>?>(null)
+    val updateStatus: StateFlow<Result<Unit>?> = _updateStatus
+
+
     fun loadCollections(userId: String) {
         viewModelScope.launch {
             val result = repository.getCollectionsByUser(userId)
@@ -65,6 +69,20 @@ class CollectionsViewModel : ViewModel() {
                 loadCollections(userId)
             } else {
                 _error.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
+    fun renameCollection(collectionId: String, newName: String) {
+        viewModelScope.launch {
+            val result = repository.updateCollectionName(collectionId, newName)
+            _updateStatus.value = result
+
+            if (result.isSuccess) {
+                // Update UI list immediately
+                _collections.value = _collections.value.map {
+                    if (it.id == collectionId) it.copy(name = newName) else it
+                }
             }
         }
     }

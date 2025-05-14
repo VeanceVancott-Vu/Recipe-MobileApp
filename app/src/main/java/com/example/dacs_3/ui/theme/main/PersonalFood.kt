@@ -1,8 +1,10 @@
 package com.example.dacs_3.ui.theme.main
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,11 +57,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Collections
 import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
@@ -75,31 +80,11 @@ fun PersonalFood(
     modifier: Modifier = Modifier,
     collectionsViewModel: CollectionsViewModel,
     userId:String,
-    recipeViewModel: RecipeViewModel
+    recipeViewModel: RecipeViewModel,
+    authViewModel: AuthViewModel
 ) {
+    val currentUser = authViewModel.currentUser.collectAsState()
     // Dữ liệu Fake
-    val recipes = listOf(
-        Recipe(
-            title = "Spaghetti Bolognese",
-            resultImages = "https://i.pinimg.com/736x/c7/26/5c/c7265c102d65fc6b2d78ca307e6c5968.jpg"
-        ),
-        Recipe(
-            title = "Classic Pancakes",
-            resultImages = "https://example.com/images/classic_pancakes.jpg"
-        ),
-        Recipe(
-            title = "Grilled Chicken Salad",
-            resultImages = "https://example.com/images/grilled_chicken_salad.jpg"
-        ),
-        Recipe(
-            title = "Beef Tacos",
-            resultImages = "https://example.com/images/beef_tacos.jpg"
-        ),
-        Recipe(
-            title = "Strawberry Cheesecake",
-            resultImages = "https://example.com/images/strawberry_cheesecake.jpg"
-        )
-    )
 
 
     // Lấy giá trị dimensionResource bên trong Composition
@@ -117,6 +102,7 @@ fun PersonalFood(
 
 
 
+
     Column(
         modifier = modifier
             .fillMaxSize()                                // nếu cần
@@ -126,9 +112,13 @@ fun PersonalFood(
             ),     // padding trái–phải
         verticalArrangement = Arrangement.spacedBy(verticalSpacing)
     ) {
+        val imageUri = currentUser.value?.profileImageUrl
+
+
         PersonalFoodHeader(
             navController = navController,
-            modifier = modifier
+            modifier = modifier,
+           imageUri =imageUri
         )
 
         SearchBar(
@@ -166,8 +156,14 @@ fun PersonalFood(
 @Composable
 fun PersonalFoodHeader(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageUri: String? = null
 ) {
+    val painter = if (imageUri?.isNotBlank() == true) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m)),
@@ -182,7 +178,7 @@ fun PersonalFoodHeader(
                 .size(dimensionResource(R.dimen.icon_size_xl))
         ) {
             Image(
-                painter = painterResource(R.drawable.mockrecipeimage),
+                painter = painter,
                 contentDescription = "Avatar",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -281,6 +277,7 @@ fun SearchBar(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TagSelector(
     modifier: Modifier = Modifier,
@@ -316,9 +313,13 @@ fun TagSelector(
     }
 
 
-
     val recipesByCollection by recipeViewModel.recipesByCollection.collectAsState()
 
+
+    var showDialogFor: Collections? by remember { mutableStateOf(null) }
+    var renameMode by remember { mutableStateOf(false) }
+    var newName by remember { mutableStateOf("") }
+    var selectedCollection by remember { mutableStateOf<Collections?>(null) }
     Row(
         modifier = Modifier
             .horizontalScroll(scrollState),
@@ -330,12 +331,14 @@ fun TagSelector(
             tint = Color(0xFF2F5D47),
             modifier = Modifier
                 .size(dimensionResource(R.dimen.icon_size_medium))
-                .clickable { showDialog = true }
+                .clickable {
+                    showDialog = true
+                }
         )
 
         Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacing_m)))
 
-        collections.forEachIndexed { _, collection  ->
+        collections.forEachIndexed { _, collection ->
             val isSelected = selectedTag == collection.name
 
             Surface(
@@ -344,10 +347,18 @@ fun TagSelector(
                 shadowElevation = 4.dp,
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
-                    .clickable {
-                        selectedTag = if (isSelected) null else collection.name
-                        // Optionally call some action based on selection
-                    }
+                    .combinedClickable(
+                        onClick = {
+                            selectedTag = if (isSelected) null else collection.name
+                        },
+                        onLongClick = {
+                            selectedCollection = collection
+                            showDialogFor = collection
+                            renameMode = false
+                            newName = collection.name
+                        }
+                    )
+
             ) {
                 Text(
                     text = collection.name,
@@ -359,6 +370,82 @@ fun TagSelector(
             }
         }
     }
+    showDialogFor?.let {
+        AlertDialog(
+            onDismissRequest = { showDialogFor = null },
+            confirmButton = {
+                if (renameMode) {
+                    Text(
+                        text = "Confirm",
+                        modifier = Modifier
+                            .clickable {
+                                selectedCollection?.let { it1 ->
+                                    collectionsViewModel.renameCollection(
+                                        it1.id, newName)
+                                }
+                            }
+                            .padding(8.dp),
+                        color = OliverGreen
+                    )
+                }
+            },
+            dismissButton = {
+                if (renameMode) {
+                    Text(
+                        text = "Cancel",
+                        modifier = Modifier
+                            .clickable { showDialogFor = null }
+                            .padding(8.dp),
+                        color = Color.Gray
+                    )
+                } else {
+                    Row {
+                        Text(
+                            text = "Rename",
+                            modifier = Modifier
+                                .clickable {
+                                    renameMode = true
+                                }
+                                .padding(8.dp),
+                            color = OliverGreen
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Delete",
+                            modifier = Modifier
+                                .clickable {
+                                    selectedCollection?.let { it1 ->
+                                        collectionsViewModel.deleteCollection(
+                                            it1.id, userId=userId)
+                                    }
+                                    showDialogFor = null
+                                }
+                                .padding(8.dp),
+                            color = Color.Red
+                        )
+                    }
+                }
+            },
+            title = {
+                Text(
+                    text = if (renameMode) "Rename Collection" else "Collection Options"
+                )
+            },
+            text = {
+                if (renameMode) {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("New Name") },
+                        singleLine = true
+                    )
+                } else {
+                    Text("Do you want to delete or rename this collection?")
+                }
+            }
+        )
+    }
+
 
     if (showDialog) {
         AlertDialog(

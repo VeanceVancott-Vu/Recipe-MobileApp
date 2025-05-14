@@ -193,44 +193,7 @@ fun RecipeDetailScreen(
             .statusBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_xl))
     ) {
-        val commentList = listOf(
-            Comment(
-                commentId = "cmt001",
-                recipeId = "recipe123",
-                userId = "user01",
-                username = "An Nguyen",
-                text = "Món này ngon thật sự! Cảm ơn bạn đã chia sẻ 🥰",
-                timestamp = 1683289200000, // 05/04/2023 12:00 GMT
-                isReported = false
-            ),
-            Comment(
-                commentId = "cmt002",
-                recipeId = "recipe123",
-                userId = "user02",
-                username = "Linh Pham",
-                text = "Mình thử làm theo công thức mà bị khét 😅 Có mẹo gì không bạn?",
-                timestamp = 1683375600000, // 06/04/2023 12:00 GMT
-                isReported = false
-            ),
-            Comment(
-                commentId = "cmt003",
-                recipeId = "recipe123",
-                userId = "user03",
-                username = "Minh Tran",
-                text = "Gợi ý tuyệt vời! Mình thêm tí phô mai vào và ngon hơn nhiều!",
-                timestamp = 1683462000000, // 07/04/2023 12:00 GMT
-                isReported = false
-            ),
-            Comment(
-                commentId = "cmt004",
-                recipeId = "recipe123",
-                userId = "user04",
-                username = "Thảo Lê",
-                text = "Bài viết rất chi tiết, cảm ơn bạn nhiều nha! ❤️",
-                timestamp = 1683548400000, // 08/04/2023 12:00 GMT
-                isReported = false
-            )
-        )
+
 
         var commentText by remember { mutableStateOf("") }
 
@@ -294,14 +257,16 @@ fun RecipeDetailScreen(
         )
 
         selectedRecipe?.let {
-            CommentListSection(
-                currentUser,
-                recipeId = it.recipeId,
-                commentViewModel    ,
-                commentList = comment,
-                onValueChange = { commentText = it },
-                commentText = commentText
-            )
+            currentUser?.let { it1 ->
+                CommentListSection(
+                    it1,
+                    recipeId = it.recipeId,
+                    commentViewModel    ,
+                    commentList = comment,
+                    onValueChange = { commentText = it },
+                    commentText = commentText
+                )
+            }
         }
 
         SameAuthor()
@@ -423,7 +388,8 @@ private fun FeatureIcon(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                val updatedList = collection.recipeIds.toMutableList()
+                                                val updatedList =
+                                                    collection.recipeIds.toMutableList()
                                                 if (!updatedList.contains(recipeId)) {
                                                     updatedList.add(recipeId)
                                                     collectionViewModel.updateRecipesInCollection(
@@ -814,7 +780,7 @@ private fun RecipeRatingCard(
 
 @Composable
 private fun CommentListSection(
-    currentUser: User? = null,
+    currentUser: User,
     recipeId: String = "",
     commentViewModel: CommentViewModel,
     commentText: String,
@@ -833,6 +799,13 @@ private fun CommentListSection(
         commentList // unfiltered
     }
 
+    val imageUri = currentUser.profileImageUrl
+    val painter = if (imageUri.isNotBlank()) {
+        rememberAsyncImagePainter(model = imageUri)
+    } else {
+        painterResource(R.drawable.account)
+    }
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
@@ -844,7 +817,7 @@ private fun CommentListSection(
             horizontalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(R.drawable.mockrecipeimage),
+                painter = painter,
                 contentDescription = "Avatar",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -913,11 +886,10 @@ private fun CommentListSection(
                                         )
                                         commentViewModel.updateComment(newComment)
                                         isEditing = false
-                                        editingCommentId = null // this will show the full list again
+                                        editingCommentId =
+                                            null // this will show the full list again
                                         onValueChange("")
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         Log.d(
                                             "CommentListSection/Recipe Detail/Posting",
                                             "Comment: $commentText from user: $currentUser in recipe: $recipeId"
@@ -962,6 +934,7 @@ private fun CommentListSection(
                         commentViewModel.deleteComment(comment.commentId, recipeId)
                         Log.d("CommentListSection/Recipe Detail", "Delete comment: $comment")
                     }
+                    , currentUser = currentUser
                 )
             }
         }
@@ -976,13 +949,13 @@ private fun CommentListSection(
 fun CommentItem(
     comment: Comment,
     modifier: Modifier = Modifier,
-    recipeUser: User? = null,
+    currentUser: User? = null,
     onEdit: (String) -> Unit, // Callback for edit action
     onDelete: () -> Unit    // Callback for delete action
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val imageUri = recipeUser?.profileImageUrl
+    val imageUri = currentUser?.profileImageUrl
     val painter = if (imageUri?.isNotBlank() == true) {
         rememberAsyncImagePainter(model = imageUri)
     } else {
