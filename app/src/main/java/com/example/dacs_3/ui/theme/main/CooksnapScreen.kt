@@ -1,5 +1,8 @@
 package com.example.dacs_3.ui.theme.main
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -34,6 +37,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,26 +59,63 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dacs_3.R
+import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
 import com.example.dacs_3.model.Cooksnap
 import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.OliverGreen
-import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CooksnapViewModel
-import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Camera
 import compose.icons.fontawesomeicons.solid.EllipsisV
+import kotlinx.coroutines.launch
 
 @Composable
 fun CooksnapScreen(
     navController: NavController,
-    id: String, // ID CÔNG THỨC NẤU ĂN
-    recipeViewModel: RecipeViewModel = viewModel(),
+    id: String,
+    viewModel: CooksnapViewModel = viewModel(),
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {},
-    viewModel: CooksnapViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()  // Coroutine scope để chạy trên Main thread
+
+    var uploading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Launcher chọn ảnh từ gallery
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            uploading = true
+            errorMessage = null
+
+            CloudinaryUploader.uploadImageFromUri(
+                context = context,
+                uri = it,
+                uploadPreset = "koylin_unsigned",
+                onSuccess = { imageUrl ->
+                    scope.launch {
+                        uploading = false
+                        uploadedImageUrl = imageUrl
+                        val encodedImageUrl = Uri.encode(imageUrl)  // Mã hóa URL để dùng navigation
+                        navController.navigate("share_cooksnap/$id/$encodedImageUrl")
+                    }
+                },
+                onError = { e ->
+                    scope.launch {
+                        uploading = false
+                        errorMessage = "Upload ảnh thất bại: ${e.message}"
+                    }
+                }
+            )
+        }
+    }
+
+    // ... phần UI còn lại giữ nguyên
+
 
     LaunchedEffect(id) {
         viewModel.loadCooksnaps(id)
@@ -82,9 +126,6 @@ fun CooksnapScreen(
 
     // Quan sát state flow map userId -> User
     val usersMap by viewModel.usersMap.collectAsState()
-
-    // Quan sát lỗi nếu có
-    val errorMessage by viewModel.errorMessage.collectAsState()
 
 
     // Dữ liệu Fake
@@ -151,16 +192,22 @@ fun CooksnapScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
+                // Phần UI giữ nguyên, sửa lại icon camera:
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.Camera,
                     contentDescription = "Camera",
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            navController.navigate("share_cooksnap/$id")
+                            pickImageLauncher.launch("image/*")
                         },
                     tint = OliverGreen
                 )
+
+                // Hiển thị lỗi upload (nếu có)
+                errorMessage?.let {
+                    Text(text = it, color = Color.Red)
+                }
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -280,6 +327,16 @@ fun CooksnapItemCard(
                     fontSize = 14.sp,
                     color = Color(0xFF6A6363)
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Icon(
+                    imageVector = FontAwesomeIcons.Solid.EllipsisV,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_small)),
+                    tint = OliverGreen
+                )
             }
 
             Text(
@@ -292,36 +349,30 @@ fun CooksnapItemCard(
 
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_s)))
 
-            Row(
-                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s)),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ButtonCard(
-                    text = cooksnap.hearts.toString(),
-                    iconResId = R.drawable.heart
-                )
-
-                ButtonCard(
-                    text = cooksnap.slaps.toString(),
-                    iconResId = R.drawable.slap
-                )
-
-                ButtonCard(
-                    text = cooksnap.smiles.toString(),
-                    iconResId = R.drawable.smile
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Icon(
-                    imageVector = FontAwesomeIcons.Solid.EllipsisV,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_small)),
-                    tint = OliverGreen
-                )
-
-            }
+//            Row(
+//                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s)),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                ButtonCard(
+//                    text = cooksnap.hearts.toString(),
+//                    iconResId = R.drawable.heart
+//                )
+//
+//                ButtonCard(
+//                    text = cooksnap.slaps.toString(),
+//                    iconResId = R.drawable.slap
+//                )
+//
+//                ButtonCard(
+//                    text = cooksnap.smiles.toString(),
+//                    iconResId = R.drawable.smile
+//                )
+//
+//                Spacer(modifier = Modifier.weight(1f))
+//
+//
+//
+//            }
         }
     }
 }

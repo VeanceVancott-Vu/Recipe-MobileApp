@@ -5,8 +5,10 @@ import EditProfileScreen
 import MyProfileScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.dacs_3.ui.theme.auth.ForgotPasswordScreen
 import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
@@ -107,17 +109,35 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
             PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel) // Điều hướng đến PersonalFood
         }
 
-        composable("cooksnap/{id}")
-        { backStackEntry ->
+//        composable("cooksnap/{id}")
+//        { backStackEntry ->
+//            val id = backStackEntry.arguments?.getString("id") ?: ""
+//            CooksnapScreen(navController, id, recipeViewModel)
+//        }
+//
+//        composable("share_cooksnap/{id}")
+//        { backStackEntry ->
+//            val id = backStackEntry.arguments?.getString("id") ?: ""
+//            ShareCooksnapScreen(navController, id, recipeViewModel)
+//        }
+
+        composable("cooksnap/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
-            CooksnapScreen(navController, id, recipeViewModel)
+            CooksnapScreen(navController, id)
         }
 
-        composable("share_cooksnap/{id}")
-        { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id") ?: ""
-            ShareCooksnapScreen(navController, id, recipeViewModel)
+        composable(
+            "share_cooksnap/{recipeId}/{imageUrl}",
+            arguments = listOf(
+                navArgument("recipeId") { type = NavType.StringType },
+                navArgument("imageUrl") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+            val imageUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
+            ShareCooksnapScreen(navController, recipeId, imageUrl)
         }
+
 
 
     }
