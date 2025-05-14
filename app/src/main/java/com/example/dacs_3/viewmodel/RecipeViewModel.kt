@@ -47,6 +47,14 @@ class RecipeViewModel : ViewModel() {
     private val _recipesByCollection = MutableStateFlow<List<Recipe>>(emptyList())
     val recipesByCollection: StateFlow<List<Recipe>> = _recipesByCollection
 
+    private val _searchResults = MutableStateFlow<List<Recipe>>(emptyList())
+    val searchResults: StateFlow<List<Recipe>> = _searchResults
+
+    private val _searchError = MutableStateFlow<String?>(null)
+    val searchError: StateFlow<String?> = _searchError
+
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching
 
     init {
         observeRecipes()
@@ -331,6 +339,21 @@ class RecipeViewModel : ViewModel() {
         }.addOnFailureListener {
             Log.e("RecipeViewModel", "Failed to update rating: $it")
         }
+    }
+
+    fun searchRecipesByName(name: String) {
+        _isSearching.value = true
+        repository.getRecipesByName(
+            query = name,
+            onSuccess = {
+                _searchResults.value = it
+                _isSearching.value = false
+            },
+            onFailure = { e ->
+                _searchError.value = e.message
+                _isSearching.value = false
+            }
+        )
     }
 
 

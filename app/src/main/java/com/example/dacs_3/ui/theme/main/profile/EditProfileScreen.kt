@@ -64,7 +64,8 @@ fun EditProfileScreen(
 ) {
     Scaffold(
         topBar = {
-            TopBar("My profile", showRightIcon = false)
+            TopBar("My profile", showRightIcon = false
+            ,  onBackIconClick = {navController.popBackStack()})
         },
         content = { innerPadding ->
             Column(

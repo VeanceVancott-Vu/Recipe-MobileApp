@@ -99,4 +99,24 @@ class RecipeRepository {
             }
     }
 
+    fun getRecipesByName(
+        query: String,
+        onSuccess: (List<Recipe>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        firestore
+            .collection("recipes")
+            .whereGreaterThanOrEqualTo("title", query)
+            .whereLessThanOrEqualTo("title", query + "\uf8ff") // For prefix matching
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val recipes = snapshot.toObjects(Recipe::class.java)
+                onSuccess(recipes)
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+
 }

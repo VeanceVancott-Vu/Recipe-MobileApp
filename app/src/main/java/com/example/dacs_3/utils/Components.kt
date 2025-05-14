@@ -46,6 +46,7 @@ import compose.icons.fontawesomeicons.solid.Users
                showRightIcon: Boolean = true,
                rightIconRes: Int = R.drawable.email,
                onRightIconClick: () -> Unit = {},
+               onBackIconClick: () -> Unit = {},
     ) {
         Row(
             modifier = Modifier
@@ -55,7 +56,7 @@ import compose.icons.fontawesomeicons.solid.Users
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { /* Back */ }) {
+                IconButton(onClick =   onBackIconClick ) {
                     Icon(
                         painter = painterResource(id = R.drawable.arrowback),
                         contentDescription = "Back",

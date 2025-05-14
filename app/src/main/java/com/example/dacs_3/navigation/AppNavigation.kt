@@ -78,9 +78,8 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         composable("search") {
             SearchScreen(
                 navController = navController,
-                onBack = { /* Xử lý quay lại nếu cần */ },
-                onSearch = { query -> /* Xử lý tìm kiếm */ },
-                onFilter = { /* Xử lý lọc nếu cần */ }
+                recipeViewModel = recipeViewModel,
+                authViewModel = authViewModel,
             )
         }
 
