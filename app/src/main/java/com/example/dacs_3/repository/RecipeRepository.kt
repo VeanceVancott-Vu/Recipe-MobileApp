@@ -78,6 +78,28 @@ class RecipeRepository {
 
     }
 
+    fun getRecipeByUserId(
+        userId: String,
+        onSuccess: (List<Recipe>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        recipeCollection
+            .whereEqualTo("userId", userId) // Assuming 'userId' is a field in your recipe documents
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val recipes = querySnapshot.toObjects(Recipe::class.java)
+                    onSuccess(recipes)
+                } else {
+                    onSuccess(emptyList()) // No recipes found for this user
+                }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+
+    }
+
     fun updateRecipe(recipe: Recipe, onResult: (Boolean) -> Unit) {
         // Kiểm tra xem recipeId có rỗng không, nếu có thì không thể update được
         if (recipe.recipeId.isBlank()) {

@@ -58,6 +58,10 @@ class RecipeViewModel : ViewModel() {
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
 
+    private val _recipesByUserId = MutableStateFlow<List<Recipe>>(emptyList())
+    val recipesByUserId: StateFlow<List<Recipe>> = _recipesByUserId
+
+
     init {
         observeRecipes()
     }
@@ -256,6 +260,26 @@ class RecipeViewModel : ViewModel() {
                 onSuccess = { recipe ->
                     _selectedRecipe.value = recipe
 
+                    _isLoading.value = false
+                },
+                onFailure = { e ->
+                    _errorMessage.value = e.message
+                    _isLoading.value = false
+                }
+            )
+        }
+    }
+
+
+    fun fetchRecipeByUserId(userId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            repository.getRecipeByUserId(
+                userId ,
+                onSuccess = { recipe ->
+                    _recipesByUserId.value = recipe
                     _isLoading.value = false
                 },
                 onFailure = { e ->

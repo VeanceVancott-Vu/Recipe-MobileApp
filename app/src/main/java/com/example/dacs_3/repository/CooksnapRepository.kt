@@ -1,14 +1,9 @@
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.model.Cooksnap
-import com.example.dacs_3.model.CooksnapWithUser
 import com.example.dacs_3.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import com.google.firebase.firestore.ktx.toObjects
+import kotlinx.coroutines.tasks.await
 
 class CooksnapRepository {
 
@@ -17,19 +12,13 @@ class CooksnapRepository {
     private var cooksnapListener: ListenerRegistration? = null
     private val userListeners = mutableMapOf<String, ListenerRegistration>()
 
-    /**
-     * Lắng nghe realtime danh sách Cooksnap theo recipeId.
-     * Trả về callback success với danh sách cooksnap.
-     * Callback error trả về lỗi nếu có.
-     */
+    // Real-time version (kept for updates)
     fun listenCooksnapsByRecipeId(
         recipeId: String,
         onSuccess: (List<Cooksnap>) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        // Hủy listener cũ nếu có
         cooksnapListener?.remove()
-
         cooksnapListener = firestore.collection("cooksnaps")
             .whereEqualTo("recipeId", recipeId)
             .addSnapshotListener { snapshot, error ->
@@ -44,19 +33,22 @@ class CooksnapRepository {
             }
     }
 
-    /**
-     * Lắng nghe realtime thông tin User theo userId.
-     * Trả về callback success với User hoặc null.
-     * Callback error trả về lỗi nếu có.
-     */
+    // New: One-time fetch version (faster initial load)
+    suspend fun fetchCooksnapsByRecipeId(recipeId: String): List<Cooksnap> {
+        return firestore.collection("cooksnaps")
+            .whereEqualTo("recipeId", recipeId)
+            .get()
+            .await()
+            .toObjects(Cooksnap::class.java)
+    }
+
+    // User realtime listener (keep as-is)
     fun listenUserById(
         userId: String,
         onSuccess: (User?) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        // Nếu đã có listener cho userId thì bỏ đi, rồi tạo lại để cập nhật mới nhất
         userListeners[userId]?.remove()
-
         val listener = firestore.collection("users")
             .document(userId)
             .addSnapshotListener { snapshot, error ->
@@ -74,19 +66,28 @@ class CooksnapRepository {
         userListeners[userId] = listener
     }
 
-    /**
-     * Hủy listener Cooksnap realtime.
-     */
     fun removeCooksnapListener() {
         cooksnapListener?.remove()
         cooksnapListener = null
     }
 
-    /**
-     * Hủy tất cả listener User realtime.
-     */
     fun removeAllUserListeners() {
         userListeners.values.forEach { it.remove() }
         userListeners.clear()
+    }
+
+    // Batch fetch users by IDs (used in ViewModel optimization)
+    suspend fun getUsersByIdsBatch(userIds: List<String>): List<User> {
+        val chunks = userIds.distinct().chunked(10) // Firestore limit
+        val allUsers = mutableListOf<User>()
+
+        for (chunk in chunks) {
+            val snapshot = firestore.collection("users")
+                .whereIn("id", chunk)
+                .get()
+                .await()
+            allUsers.addAll(snapshot.toObjects(User::class.java))
+        }
+        return allUsers
     }
 }

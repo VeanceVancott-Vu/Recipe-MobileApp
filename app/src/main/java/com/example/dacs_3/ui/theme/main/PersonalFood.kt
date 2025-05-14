@@ -93,11 +93,19 @@ fun PersonalFood(
 
     val collections by collectionsViewModel.collections.collectAsState()
 
+    val recipesByUserId by recipeViewModel.recipesByUserId.collectAsState()
+
+
+
     LaunchedEffect(Unit) {
         collectionsViewModel.loadCollections(userId)
-        Log.d("PersonalFood", "Collections: $collections")
 
     }
+    LaunchedEffect(Unit) {
+        recipeViewModel.fetchRecipeByUserId(userId)
+
+    }
+
 
 
 
@@ -112,6 +120,9 @@ fun PersonalFood(
             ),     // padding trái–phải
         verticalArrangement = Arrangement.spacedBy(verticalSpacing)
     ) {
+
+
+
         val imageUri = currentUser.value?.profileImageUrl
 
 
@@ -130,26 +141,24 @@ fun PersonalFood(
             collectionsViewModel = collectionsViewModel,
             userId = userId,
             collections,
-            recipeViewModel
+            recipeViewModel,
+            navController
         )
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
 
-        SectionTitle("Cook Today")
 
-        FoodCardGrid(
-            recipeList = recipes,
-            modifier = modifier
-        )
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
 
         SectionTitle("My Recipes")
 
         FoodCardGrid(
-            recipeList = recipes,
-            modifier = modifier
+            recipeList = recipesByUserId,
+            modifier = modifier,
+            navController
         )
+
     }
 }
 
@@ -284,7 +293,8 @@ fun TagSelector(
     collectionsViewModel: CollectionsViewModel,
     userId: String,
     collections: List<Collections>,
-    recipeViewModel: RecipeViewModel
+    recipeViewModel: RecipeViewModel,
+    navController: NavController
 
     ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -485,7 +495,8 @@ fun TagSelector(
 
     FoodCardGrid(
         recipeList = recipesByCollection,
-        modifier = modifier
+        modifier = modifier,
+        navController = navController
     )
 
 }
@@ -493,13 +504,14 @@ fun TagSelector(
 @Composable
 fun FoodCardGrid(
     recipeList: List<Recipe>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s))
     ) {
         items(recipeList) { recipe ->
-            FoodCardItem(recipe = recipe)
+            FoodCardItem(recipe = recipe,navController = navController)
         }
     }
 }
@@ -507,7 +519,8 @@ fun FoodCardGrid(
 @Composable
 fun FoodCardItem(
     recipe: Recipe,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.spacing_s)),
@@ -519,6 +532,10 @@ fun FoodCardItem(
                 width = dimensionResource(R.dimen.image_size_medium),
                 height = dimensionResource(R.dimen.image_size_large)
             )
+            .clickable {
+                navController.navigate("recipe_detail/${recipe.recipeId}")
+            }
+
 
     ) {
         Column(
