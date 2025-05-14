@@ -1,5 +1,6 @@
 package com.example.dacs_3.ui.theme.main
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -52,9 +54,11 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.model.SearchHistory
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
+import com.example.dacs_3.viewmodel.SearchHistoryViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
@@ -69,7 +73,9 @@ fun SearchScreen(
     onSearch: (String) -> Unit = {},
     onFilter: () -> Unit = {},
     recipeViewModel: RecipeViewModel,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    searchHistoryViewModel: SearchHistoryViewModel,
+    userId:String
 ) {
     // Lịch sử tìm kiếm giả
     val fakeHistory = remember { mutableStateListOf(
@@ -86,7 +92,12 @@ fun SearchScreen(
     val results by recipeViewModel.searchResults.collectAsState()
     val isSearching by recipeViewModel.isSearching.collectAsState()
 
+    val history by searchHistoryViewModel.history.collectAsState()
 
+    LaunchedEffect(Unit) {
+        searchHistoryViewModel.loadHistory(userId)
+    }
+    Log.d("SearchScreen", "History $history")
 
     Column(
         modifier = Modifier
@@ -138,7 +149,7 @@ fun SearchScreen(
                         },
                         placeholder = {
                             Text(
-                                text = "Enter ingredient names …",
+                                text = "Enter recipe names …",
                             )
                         },
                         singleLine = true,
@@ -150,7 +161,9 @@ fun SearchScreen(
                                     .size(dimensionResource(R.dimen.icon_size_medium))
                                     .clickable {
                                         showHistory = false
-                                            recipeViewModel.searchRecipesByName(query)
+                                        searchHistoryViewModel.addHistory(userId, query)
+                                        recipeViewModel.searchRecipesByName(query)
+
                                                },
 
                                tint = OliverGreen
@@ -190,15 +203,17 @@ fun SearchScreen(
         // --- 2. List lịch sử giả ---
         if(showHistory) {
             SearchHistoryList(
-                history = fakeHistory,
+                history = history,
                 onItemClick = {
-
                   //  text = it
                     showHistory = false
-                    recipeViewModel.searchRecipesByName(it)
+                    recipeViewModel.searchRecipesByName(it.query)
 
                 },
-                onItemDelete = { fakeHistory.remove(it) }
+                onItemDelete = {
+                  searchHistoryViewModel.deleteItem(it.id, userId)
+
+                }
             )
         }
         else {
@@ -231,16 +246,16 @@ fun SearchScreen(
 
     }
 }
+
+
 @Composable
 fun SearchHistoryList(
-    history: List<String>,
-    onItemClick: (String) -> Unit,
-    onItemDelete: (String) -> Unit,
+    history: List<SearchHistory>,
+    onItemClick: (SearchHistory) -> Unit,
+    onItemDelete: (SearchHistory) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth()
-    ) {
+    LazyColumn(modifier = modifier.fillMaxWidth()) {
         items(history) { item ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -262,7 +277,7 @@ fun SearchHistoryList(
                 Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 
                 Text(
-                    text = item,
+                    text = item.query,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -278,6 +293,7 @@ fun SearchHistoryList(
         }
     }
 }
+
 
 
 

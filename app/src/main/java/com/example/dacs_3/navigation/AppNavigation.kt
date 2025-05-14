@@ -27,10 +27,11 @@ import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
+import com.example.dacs_3.viewmodel.SearchHistoryViewModel
 
 
 @Composable
-fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel, commentViewModel: CommentViewModel,collectionsViewModel: CollectionsViewModel) {
+fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel, commentViewModel: CommentViewModel,collectionsViewModel: CollectionsViewModel,searchHistoryViewModel: SearchHistoryViewModel) {
     val userId = authViewModel.getCurrentUserId().toString() // Get the current user's ID
 
     NavHost(navController, startDestination = "login") {
@@ -82,6 +83,8 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
                 navController = navController,
                 recipeViewModel = recipeViewModel,
                 authViewModel = authViewModel,
+                searchHistoryViewModel = searchHistoryViewModel,
+                userId = userId
             )
         }
 

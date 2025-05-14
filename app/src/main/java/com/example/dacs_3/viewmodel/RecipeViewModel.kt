@@ -22,6 +22,8 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class RecipeViewModel : ViewModel() {
+
+
     private val repository: RecipeRepository = RecipeRepository()
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes
