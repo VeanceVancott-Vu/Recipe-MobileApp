@@ -31,11 +31,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,10 +49,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Cooksnap
+import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.CooksnapViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -58,14 +66,29 @@ import compose.icons.fontawesomeicons.solid.EllipsisV
 @Composable
 fun CooksnapScreen(
     navController: NavController,
-    id: String,
+    id: String, // ID CÔNG THỨC NẤU ĂN
     recipeViewModel: RecipeViewModel = viewModel(),
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    viewModel: CooksnapViewModel = viewModel()
 ) {
 
+    LaunchedEffect(id) {
+        viewModel.loadCooksnaps(id)
+    }
+
+    // Quan sát state flow danh sách cooksnap
+    val cooksnaps by viewModel.cooksnaps.collectAsState()
+
+    // Quan sát state flow map userId -> User
+    val usersMap by viewModel.usersMap.collectAsState()
+
+    // Quan sát lỗi nếu có
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+
     // Dữ liệu Fake
-    val sampleCooksnaps = generateFakeCooksnaps()
+//    val sampleCooksnaps = generateFakeCooksnaps()
 
     Column(
         modifier = Modifier
@@ -149,7 +172,19 @@ fun CooksnapScreen(
         }
 
         // Gọi hàm hiển thị Grid
-        CooksnapGrid(cooksnapList = sampleCooksnaps)
+        CooksnapGrid(
+            cooksnapList = cooksnaps,
+            usersMap = usersMap
+        )
+
+        // Hiển thị lỗi nếu có
+        if (!errorMessage.isNullOrBlank()) {
+            Text(
+                text = errorMessage ?: "",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
 
     }
 }
@@ -157,7 +192,8 @@ fun CooksnapScreen(
 
 @Composable
 fun CooksnapGrid(
-    cooksnapList: List<Cooksnap>
+    cooksnapList: List<Cooksnap>,
+    usersMap: Map<String, User>
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -169,13 +205,17 @@ fun CooksnapGrid(
             .background(Color.White)
     ) {
         items(cooksnapList) { cooksnap ->
-            CooksnapItemCard(cooksnap)
+            val user = usersMap[cooksnap.userId]
+            CooksnapItemCard(cooksnap = cooksnap, user = user)
         }
     }
 }
 
 @Composable
-fun CooksnapItemCard(cooksnap: Cooksnap) {
+fun CooksnapItemCard(
+    cooksnap: Cooksnap,
+    user: User? // có thể null nếu chưa load kịp
+) {
     Card(
         shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium)),
         colors = CardDefaults.cardColors(
@@ -196,8 +236,11 @@ fun CooksnapItemCard(cooksnap: Cooksnap) {
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s))
 
         ) {
-            Image(
-                painter = painterResource(id = cooksnap.imageResId),
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(cooksnap.imageResult)   // URL ảnh
+                    .crossfade(true)
+                    .build(),
                 contentDescription = "Cooksnap Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -206,22 +249,34 @@ fun CooksnapItemCard(cooksnap: Cooksnap) {
                     .clip(RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium)))
             )
 
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s)),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = cooksnap.userAvatarResId),
-                    contentDescription = "Avatar",
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_medium))
-                        .clip(CircleShape) //
-                )
+                if (user?.profileImageUrl.isNullOrBlank()) {
+                    // Hiển thị avatar mặc định hoặc placeholder nếu user hoặc avatar chưa có
+                    Image(
+                        painter = painterResource(id = R.drawable.loading), // bạn thay bằng icon phù hợp
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(dimensionResource(R.dimen.icon_size_medium))
+                            .clip(CircleShape)
+                    )
+                } else {
+                    AsyncImage(
+                        model = user?.profileImageUrl,
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(dimensionResource(R.dimen.icon_size_medium))
+                            .clip(CircleShape)
+                    )
+                }
 
                 Text(
-                    text = cooksnap.userName,
+                    text = user?.username ?: "Unknown",
                     fontSize = 14.sp,
                     color = Color(0xFF6A6363)
                 )
@@ -242,12 +297,12 @@ fun CooksnapItemCard(cooksnap: Cooksnap) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ButtonCard(
-                    text = cooksnap.likes.toString(),
+                    text = cooksnap.hearts.toString(),
                     iconResId = R.drawable.heart
                 )
 
                 ButtonCard(
-                    text = cooksnap.claps.toString(),
+                    text = cooksnap.slaps.toString(),
                     iconResId = R.drawable.slap
                 )
 

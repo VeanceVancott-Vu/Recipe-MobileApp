@@ -15,6 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 import com.example.dacs_3.ui.theme.main.TestRatingStars
+import com.example.dacs_3.ui.theme.main.addRecipeToFirestore
+import com.example.dacs_3.ui.theme.main.recipes
 import com.example.dacs_3.ui.theme.uploadSampleRecipeToFirestore
 import com.example.dacs_3.utils.askForLocationPermission
 import com.example.dacs_3.viewmodel.RecipeViewModel
@@ -84,7 +86,12 @@ class MainActivity : ComponentActivity() {
             //        MyProfileScreen(navController = navController)
                     AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel,collectionsViewModel)
 
-
+//                    for (recipe in recipes) {
+//                        addRecipeToFirestore(recipe) { updatedRecipe ->
+//                            // In ra hoặc làm gì đó với món ăn đã cập nhật recipeId
+//                            println("Món ăn đã được thêm: ${updatedRecipe.title} với ID: ${updatedRecipe.recipeId}")
+//                        }
+//                    }
                 }
             }
 

@@ -120,6 +120,7 @@ fun RecipeDetailScreen(
     commentViewModel: CommentViewModel = viewModel(),
     collectionViewModel: CollectionsViewModel = viewModel()
 ) {
+    Log.e("ID", "id is: $id")
 
     val selectedRecipe by recipeViewModel.selectedRecipe.collectAsState()
     val isLoading by recipeViewModel.isLoading.collectAsState()
@@ -450,13 +451,6 @@ private fun FeatureIcon(
                     )
                 }
             }
-
-
-
-
-
-
-
         }
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
@@ -484,30 +478,30 @@ private fun FeatureIcon(
             }
         }
 
-//        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
-//
-//        Card(
-//            modifier = Modifier,
-//            shape = RoundedCornerShape(24.dp),
-//            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
-//            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-//        ) {
-//            IconButton(
-//                onClick = onClick,
-//                modifier = Modifier
-//                    .size(dimensionResource(R.dimen.icon_size_large)),
-//                colors = IconButtonDefaults
-//                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
-//            ) {
-//                Icon(
-//                    imageVector = FontAwesomeIcons.Solid.Pen,
-//                    contentDescription = "",
-//                    tint = Color(0xFF3F764E),
-//                    modifier = Modifier
-//                        .size(dimensionResource(R.dimen.icon_size_small))
-//                )
-//            }
-//        }
+        Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+
+        Card(
+            modifier = Modifier,
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            IconButton(
+                onClick = onClick,
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen.icon_size_large)),
+                colors = IconButtonDefaults
+                    .iconButtonColors(containerColor = Color(0xFFDBE6DE))
+            ) {
+                Icon(
+                    imageVector = FontAwesomeIcons.Solid.Pen,
+                    contentDescription = "",
+                    tint = Color(0xFF3F764E),
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size_small))
+                )
+            }
+        }
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 

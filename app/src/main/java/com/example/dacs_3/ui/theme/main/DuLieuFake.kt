@@ -40,59 +40,6 @@ fun generateFakeNotifications(): List<Notification> {
     )
 }
 
-fun generateFakeCooksnaps(): List<Cooksnap> {
-    return listOf(
-        Cooksnap(
-            id = "1",
-            recipeId = "r001",
-            userName = "Quỳnh An",
-            userAvatarResId = R.drawable.ic_launcher_background,  // Thay thế bằng tài nguyên thực tế
-            imageResId = R.drawable.mockrecipeimage,               // Thay thế bằng tài nguyên thực tế
-            description = "Thành phẩm lần đầu làm onigiri!",
-            likes = 5,
-            smiles = 3,
-            claps = 2,
-            createdAt = System.currentTimeMillis()
-        ),
-        Cooksnap(
-            id = "2",
-            recipeId = "r001",
-            userName = "Quỳnh Anh",
-            userAvatarResId = R.drawable.ic_launcher_background,  // Thay thế bằng tài nguyên thực tế
-            imageResId = R.drawable.mockrecipeimage,               // Thay thế bằng tài nguyên thực tế
-            description = "Ngon tuyệt vời, cả nhà đều thích!",
-            likes = 8,
-            smiles = 5,
-            claps = 7,
-            createdAt = System.currentTimeMillis()
-        ),
-        Cooksnap(
-            id = "3",
-            recipeId = "r001",
-            userName = "Quỳnh Chi",
-            userAvatarResId = R.drawable.ic_launcher_background,  // Thay thế bằng tài nguyên thực tế
-            imageResId = R.drawable.mockrecipeimage,               // Thay thế bằng tài nguyên thực tế
-            description = "Thêm trứng cá hồi ăn siêu ngon!",
-            likes = 10,
-            smiles = 4,
-            claps = 9,
-            createdAt = System.currentTimeMillis()
-        ),
-        Cooksnap(
-            id = "4",
-            recipeId = "r001",
-            userName = "Quỳnh Mai",
-            userAvatarResId = R.drawable.ic_launcher_background,  // Thay thế bằng tài nguyên thực tế
-            imageResId = R.drawable.mockrecipeimage,               // Thay thế bằng tài nguyên thực tế
-            description = "Làm nhanh gọn lẹ cho bữa sáng!",
-            likes = 3,
-            smiles = 1,
-            claps = 2,
-            createdAt = System.currentTimeMillis()
-        )
-    )
-}
-
 fun generateFakeKitchen(): List<Recipe> {
     return listOf(
         Recipe(

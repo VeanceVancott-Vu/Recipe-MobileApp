@@ -14,6 +14,7 @@ data class Recipe(
     var claps: Int = 0,
     var userId: String = "",              // Thêm userId để liên kết với tác giả
     var ratings: List<RatingEntry> = emptyList(),
-    val averageRating: Float = 0f
+    val averageRating: Float = 0f,
+    var cooksnaps: List<Cooksnap> = emptyList()
 )
 
