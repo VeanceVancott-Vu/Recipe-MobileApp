@@ -16,6 +16,9 @@ import com.example.dacs_3.navigation.AppNavigation
 import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 import com.example.dacs_3.ui.theme.main.TestRatingStars
 import com.example.dacs_3.ui.theme.main.addRecipeToFirestore
+import com.example.dacs_3.ui.theme.main.admin.FilterReportScreen
+import com.example.dacs_3.ui.theme.main.admin.RecipeReportsScreen
+import com.example.dacs_3.ui.theme.main.admin.UserReportsScreen
 import com.example.dacs_3.ui.theme.main.recipes
 import com.example.dacs_3.ui.theme.uploadSampleRecipeToFirestore
 import com.example.dacs_3.utils.askForLocationPermission
@@ -87,7 +90,7 @@ class MainActivity : ComponentActivity() {
 //                    FollowStatusScreen()
 
             //        MyProfileScreen(navController = navController)
-                    AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel,collectionsViewModel, searchHistoryViewModel)
+//                    AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel,collectionsViewModel, searchHistoryViewModel)
 
 //                    for (recipe in recipes) {
 //                        addRecipeToFirestore(recipe) { updatedRecipe ->
@@ -95,6 +98,9 @@ class MainActivity : ComponentActivity() {
 //                            println("Món ăn đã được thêm: ${updatedRecipe.title} với ID: ${updatedRecipe.recipeId}")
 //                        }
 //                    }
+
+
+                    RecipeReportsScreen(navController = navController)
                 }
             }
 

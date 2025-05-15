@@ -37,6 +37,7 @@ import compose.icons.fontawesomeicons.solid.Box
 import compose.icons.fontawesomeicons.solid.Home
 import compose.icons.fontawesomeicons.solid.Plus
 import compose.icons.fontawesomeicons.solid.Search
+import compose.icons.fontawesomeicons.solid.ShieldAlt
 import compose.icons.fontawesomeicons.solid.User
 import compose.icons.fontawesomeicons.solid.Users
 
@@ -96,7 +97,9 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Search, "search"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Plus, "addRecipe"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Box, "personal_food"),
-        BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile")
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile"),
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.ShieldAlt, "")
+
     )
 
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
