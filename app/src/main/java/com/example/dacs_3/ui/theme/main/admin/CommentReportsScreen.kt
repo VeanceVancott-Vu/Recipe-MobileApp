@@ -45,6 +45,7 @@ import com.example.dacs_3.model.CooksnapReport
 import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
+import com.example.dacs_3.utils.ReportSummary
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.SlidersH
@@ -121,7 +122,7 @@ fun CommentReportsScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 SectionTitle(
-                    text = "Cooksnap Reports"
+                    text = "Comment Reports"
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -137,7 +138,7 @@ fun CommentReportsScreen(
             }
         }
 
-        ReportSummary()
+         ReportSummary()
 
         CommentReportTableWithReasonDialog(reports = sampleCommentReports)
 

@@ -26,6 +26,8 @@ import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
+import com.example.dacs_3.viewmodel.CommentReportsViewModel
+import com.example.dacs_3.viewmodel.RecipeReportsViewModel
 import com.example.dacs_3.viewmodel.SearchHistoryViewModel
 
 
@@ -58,7 +60,8 @@ class MainActivity : ComponentActivity() {
             val commentViewModel: CommentViewModel = viewModel() // Tạo ViewModel
             val collectionsViewModel: CollectionsViewModel = viewModel() // Tạo ViewModel
             val searchHistoryViewModel: SearchHistoryViewModel = viewModel() // Tạo ViewModel
-
+            val recipeReportsViewModel: RecipeReportsViewModel = viewModel() // Tạo ViewModel
+            val commentReportsViewModel: CommentReportsViewModel = viewModel() // Tạo ViewModel
             DACS_3Theme {
                 Surface {
 //                    AppNavigation(navController = navController)
@@ -90,7 +93,7 @@ class MainActivity : ComponentActivity() {
 //                    FollowStatusScreen()
 
             //        MyProfileScreen(navController = navController)
-//                    AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel,collectionsViewModel, searchHistoryViewModel)
+                    AppNavigation(navController, authViewModel,recipeViewModel,commentViewModel,collectionsViewModel, searchHistoryViewModel,recipeReportsViewModel, commentReportsViewModel )
 
 //                    for (recipe in recipes) {
 //                        addRecipeToFirestore(recipe) { updatedRecipe ->
@@ -100,7 +103,7 @@ class MainActivity : ComponentActivity() {
 //                    }
 
 
-                    RecipeReportsScreen(navController = navController)
+       //             RecipeReportsScreen(navController = navController)
                 }
             }
 

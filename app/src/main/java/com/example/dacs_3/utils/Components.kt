@@ -4,13 +4,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -34,7 +39,9 @@ import com.example.dacs_3.R
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Box
+import compose.icons.fontawesomeicons.solid.Check
 import compose.icons.fontawesomeicons.solid.Home
+import compose.icons.fontawesomeicons.solid.Hourglass
 import compose.icons.fontawesomeicons.solid.Plus
 import compose.icons.fontawesomeicons.solid.Search
 import compose.icons.fontawesomeicons.solid.ShieldAlt
@@ -96,7 +103,6 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Home, "homepage"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Search, "search"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Plus, "addRecipe"),
-        BottomNavItemData(icon = FontAwesomeIcons.Solid.Box, "personal_food"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.ShieldAlt, "")
 
@@ -140,6 +146,95 @@ fun BottomNavItem(icon: ImageVector, navController: NavController, destination: 
         tint = Color(0xFF3F764E) // Your desired green color
     )
 }
+
+
+@Composable
+fun ReportSummary() {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = dimensionResource(R.dimen.spacing_m))
+    ) {
+        ReportSummaryCard(
+            icon = FontAwesomeIcons.Solid.Hourglass,
+            titleLine1 = "Pending",
+            titleLine2 = "Reports",
+            count = "28"
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        ReportSummaryCard(
+            icon = FontAwesomeIcons.Solid.Check,
+            titleLine1 = "Resolved",
+            titleLine2 = "Reports",
+            count = "126"
+        )
+
+
+    }
+
+}
+
+@Composable
+fun ReportSummaryCard(
+    icon: ImageVector,
+    titleLine1: String,
+    titleLine2: String,
+    count: String,
+    onClick: () -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .width(160.dp)
+            .height(120.dp)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F0E9)),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = Color(0xFF14462E)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Column {
+                    Text(
+                        text = titleLine1,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF567F67)
+                    )
+                    Text(
+                        text = titleLine2,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF567F67)
+                    )
+                }
+            }
+            Text(
+                text = count,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color(0xFF567F67),
+                modifier = Modifier.padding(start = 48.dp)
+            )
+        }
+    }
+}
+
 
 data class BottomNavItemData( val icon: ImageVector, val destination: String)
 

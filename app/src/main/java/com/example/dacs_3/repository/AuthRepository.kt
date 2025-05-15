@@ -95,6 +95,21 @@ class AuthRepository {
     fun getCurrentUserId(): String? {
         return firebaseAuth.currentUser?.uid
     }
+    suspend fun getCurrentUserRole(): String? {
+        val uid = firebaseAuth.currentUser?.uid ?: return null
+
+        return try {
+            val snapshot = firestore.collection("users")
+                .document(uid)
+                .get()
+                .await()
+            snapshot.getString("role")
+        } catch (e: Exception) {
+            null // or log error
+        }
+    }
+
+
 
     suspend fun fetchCurrentUserData(): User? {
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -199,6 +214,21 @@ class AuthRepository {
             }
             .addOnFailureListener { exception ->
                 onFailure(exception)
+            }
+    }
+
+    fun getAllUsers(
+        onSuccess: (List<User>) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        firestore.collection("users")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val users = snapshot.toObjects(User::class.java)
+                onSuccess(users)
+            }
+            .addOnFailureListener { exception ->
+                onError(exception)
             }
     }
 

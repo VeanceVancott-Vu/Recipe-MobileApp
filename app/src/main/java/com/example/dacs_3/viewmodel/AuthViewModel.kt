@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -33,6 +34,16 @@ class AuthViewModel : ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _userRole = MutableStateFlow<String?>(null)
+    val userRole: StateFlow<String?> = _userRole.asStateFlow()
+
+
+    private val _loginAttempted = MutableStateFlow(false)
+    val loginAttempted = _loginAttempted.asStateFlow()
+
+    private val _allUsers = MutableStateFlow<List<User>>(emptyList())
+    val allUsers: StateFlow<List<User>> = _allUsers
 
     init {
         checkIfUserIsLoggedIn()
@@ -88,8 +99,25 @@ class AuthViewModel : ViewModel() {
             if (result.first) {
                 val user = authRepository.fetchCurrentUserData()
                 _currentUser.value = user
+                _loginAttempted.value = true
+
             }
             _isLoading.value = false
+            _loginAttempted.value = true
+
+        }
+    }
+
+    fun loadAllUsers() {
+        viewModelScope.launch {
+            authRepository.getAllUsers(
+                onSuccess = { users ->
+                    _allUsers.value = users
+                },
+                onError = { error ->
+                    _errorMessage.value = "Failed to load users: ${error.message}"
+                }
+            )
         }
     }
 
@@ -141,6 +169,7 @@ class AuthViewModel : ViewModel() {
     fun logout() {
         authRepository.logout()
         _currentUser.value = null
+        _userRole.value= null
     }
 
     fun isUserLoggedIn(): Boolean = authRepository.isUserLoggedIn()
@@ -152,6 +181,17 @@ class AuthViewModel : ViewModel() {
     }
 
     fun getCurrentUserId(): String? = authRepository.getCurrentUserId()
+
+    fun loadUserRole() {
+        viewModelScope.launch {
+            val role = authRepository.getCurrentUserRole()
+            _userRole.value = role
+        }
+    }
+
+    suspend fun getCurrentUserRole(): String? {
+        return authRepository.getCurrentUserRole()
+    }
 
     fun updateUser(user: User, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {

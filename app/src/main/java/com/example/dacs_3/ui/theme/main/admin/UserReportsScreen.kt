@@ -50,6 +50,7 @@ import com.example.dacs_3.model.UserReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.BottomNavBar
+import com.example.dacs_3.utils.ReportSummary
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Check
@@ -132,90 +133,6 @@ fun UserReportsScreen(
 
 }
 
-@Composable
-fun ReportSummary() {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = dimensionResource(R.dimen.spacing_m))
-    ) {
-        ReportSummaryCard(
-            icon = FontAwesomeIcons.Solid.Hourglass,
-            titleLine1 = "Peding",
-            titleLine2 = "Reports",
-            count = "28"
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-        
-        ReportSummaryCard(
-            icon = FontAwesomeIcons.Solid.Check,
-            titleLine1 = "Resolved",
-            titleLine2 = "Reports",
-            count = "126"
-        )
-
-
-    }
-
-}
-
-@Composable
-fun ReportSummaryCard(
-    icon: ImageVector,
-    titleLine1: String,
-    titleLine2: String,
-    count: String
-) {
-    Card(
-        modifier = Modifier
-            .width(160.dp)
-            .height(120.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F0E9)),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(36.dp),
-                    tint = Color(0xFF14462E)
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Column {
-                    Text(
-                        text = titleLine1,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color(0xFF567F67)
-                    )
-                    Text(
-                        text = titleLine2,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color(0xFF567F67)
-                    )
-                }
-            }
-            Text(
-                text = count,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                color = Color(0xFF567F67),
-                modifier = Modifier.padding(start = 48.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun UserReportTableWithReasonDialog(

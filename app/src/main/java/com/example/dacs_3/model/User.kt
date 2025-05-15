@@ -6,5 +6,6 @@ data class User(
     var username: String = "",
     var profileImageUrl: String = "",
     var dayJoin: Long = System.currentTimeMillis(),
-    var location: String = ""
+    var location: String = "",
+    var role : String ="User"
 )

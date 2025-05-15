@@ -4,6 +4,9 @@ import AddRecipeScreen
 import EditProfileScreen
 import MyProfileScreen
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,16 +26,37 @@ import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 import com.example.dacs_3.ui.theme.main.RecipeEditScreen
 import com.example.dacs_3.ui.theme.main.SearchScreen
 import com.example.dacs_3.ui.theme.main.ShareCooksnapScreen
+import com.example.dacs_3.ui.theme.main.admin.CommentReportsScreen
+import com.example.dacs_3.ui.theme.main.admin.CooksnapReportsScreen
+import com.example.dacs_3.ui.theme.main.admin.DashboardScreen
+import com.example.dacs_3.ui.theme.main.admin.RecipeReportsScreen
+import com.example.dacs_3.ui.theme.main.admin.UserReportsScreen
+import com.example.dacs_3.ui.theme.main.admin.ViolationReportsScreen
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
+import com.example.dacs_3.viewmodel.CommentReportsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
+import com.example.dacs_3.viewmodel.RecipeReportsViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.SearchHistoryViewModel
 
 
 @Composable
-fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel,recipeViewModel: RecipeViewModel, commentViewModel: CommentViewModel,collectionsViewModel: CollectionsViewModel,searchHistoryViewModel: SearchHistoryViewModel) {
+fun AppNavigation(navController: NavHostController,
+                  authViewModel: AuthViewModel,
+                  recipeViewModel: RecipeViewModel,
+                  commentViewModel: CommentViewModel,
+                  collectionsViewModel: CollectionsViewModel,
+                  searchHistoryViewModel: SearchHistoryViewModel,
+                  recipeReportsViewModel : RecipeReportsViewModel,
+                  commentReportsViewModel: CommentReportsViewModel
+) {
     val userId = authViewModel.getCurrentUserId().toString() // Get the current user's ID
+    val userRole by authViewModel.userRole.collectAsState()
+
+    LaunchedEffect(Unit) {
+        authViewModel.loadUserRole()
+    }
 
     NavHost(navController, startDestination = "login") {
         composable("login")
@@ -70,7 +94,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         {
                 backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
-            RecipeDetailScreen(navController,id,recipeViewModel,authViewModel, commentViewModel,collectionsViewModel)
+            RecipeDetailScreen(navController,id,recipeViewModel,authViewModel, commentViewModel,collectionsViewModel,recipeReportsViewModel, commentReportsViewModel )
         }
 
         composable("recipe_edit/{id}") { backStackEntry ->
@@ -141,7 +165,52 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
             ShareCooksnapScreen(navController, recipeId, imageUrl)
         }
 
+        composable("admin_dashboard") {
+                 DashboardScreen(
+                     navController,
+                     recipeViewModel ,
+                     authViewModel,
+                     commentReportsViewModel ,
+                     recipeReportsViewModel
+                 )
+            }
 
+        composable("violation_reports") {
+            ViolationReportsScreen(
+                navController = navController,
+                 commentReportsViewModel =commentReportsViewModel,
+                recipeReportsViewModel = recipeReportsViewModel
+
+            ) // Màn hình điều hướng đến
+        }
+        composable("comment_report") {
+            CommentReportsScreen(
+                navController = navController,
+
+
+            )
+        }
+        composable("recipe_report") {
+            RecipeReportsScreen(
+                navController = navController,
+
+
+                )
+        }
+        composable("user_report") {
+            UserReportsScreen(
+                navController = navController,
+
+
+                )
+        }
+        composable("cooksnap_report") {
+            CooksnapReportsScreen(
+                navController = navController,
+
+
+                )
+        }
 
     }
 }

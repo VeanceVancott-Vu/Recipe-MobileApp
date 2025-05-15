@@ -6,6 +6,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,21 +60,38 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.sp
-
+import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.CommentReportsViewModel
+import com.example.dacs_3.viewmodel.RecipeReportsViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 
 
 @Composable
 fun DashboardScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    recipeViewModel: RecipeViewModel,
+    authViewModel: AuthViewModel,
+    commentReportsViewModel: CommentReportsViewModel,
+    recipeReportsViewModel: RecipeReportsViewModel
 ) {
 
     val weeklyData = listOf(3, 5, 2, 8, 6, 7, 4) // Số lượng món mới từ T2 đến CN
 
+    val commentReports by commentReportsViewModel.allReports.collectAsState()
+    val recipeReports by recipeReportsViewModel.allReports.collectAsState()
+
+         val allUser by authViewModel.allUsers.collectAsState()
+        val allRecipe by recipeViewModel.recipes.collectAsState()
+
+    LaunchedEffect(Unit) {
+        commentReportsViewModel.fetchReports()
+        recipeReportsViewModel.loadAllReports()
+        recipeViewModel.fetchRecipes()
+        authViewModel.loadAllUsers()
+    }
+
     Scaffold(
-        bottomBar = {
-            BottomNavBar(navController)
-        },
+
         containerColor = Color(0xFFF7F7F7),
         modifier = Modifier
             .fillMaxSize()
@@ -92,7 +112,12 @@ fun DashboardScreen(
             }
 
             item {
-                DashboardCardsSection()
+                DashboardCardsSection(
+                    commentReports.size+recipeReports.size,
+                    allUser.size,
+                    allRecipe.size,
+                    navController
+                    )
             }
 
             item { WeeklyNewDishesChart(dataPoints = weeklyData) }
@@ -142,7 +167,10 @@ fun DashboardHeader() {
 }
 
 @Composable
-fun DashboardCardsSection() {
+fun DashboardCardsSection(allReportsSize:Int,
+                          allUserSize:Int,
+                          allRecipeSize:Int,
+                          navController: NavController) {
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_l)),
         modifier = Modifier
@@ -151,20 +179,23 @@ fun DashboardCardsSection() {
     ) {
         DashboardCardItem(
             icon = FontAwesomeIcons.Solid.Utensils,
-            title = "New Recipes",
-            number = "28"
+            title = "Recipes",
+            number = allRecipeSize.toString(),
+            {navController.navigate("violation_reports")}
         )
 
         DashboardCardItem(
             icon = FontAwesomeIcons.Solid.Exclamation,
-            title = "New Reports",
-            number = "2"
+            title = "Reports",
+            number = allReportsSize.toString(),
+            {navController.navigate("violation_reports")}
         )
 
         DashboardCardItem(
             icon = FontAwesomeIcons.Solid.User,
-            title = "New Users",
-            number = "8"
+            title = "Users",
+            number = allUserSize.toString(),
+            {navController.navigate("violation_reports")}
         )
     }
 }
@@ -174,11 +205,13 @@ fun DashboardCardsSection() {
 fun DashboardCardItem(
     icon: ImageVector,
     title: String,
-    number: String
+    number: String,
+    onclick: () -> Unit,
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable{onclick()},
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)), // nền trắng
         shape = RoundedCornerShape(dimensionResource(R.dimen.spacing_m)), // bo góc nhỏ hơn spacing_m (ảnh bo tròn nhẹ)
         elevation = CardDefaults.cardElevation(dimensionResource(R.dimen.spacing_s)) // bóng nhẹ
@@ -400,6 +433,6 @@ fun WeeklyNewDishesChart(
 @Composable
 fun DashboardScreenPreview() {
     val navController = rememberNavController()
-    DashboardScreen(navController = navController)
+   // DashboardScreen(navController = navController)
 }
 

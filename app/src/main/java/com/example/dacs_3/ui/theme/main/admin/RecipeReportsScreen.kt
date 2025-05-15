@@ -42,6 +42,7 @@ import com.example.dacs_3.R
 import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
+import com.example.dacs_3.utils.ReportSummary
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.SlidersH
