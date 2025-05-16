@@ -68,6 +68,10 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
     val authResult by authViewModel.authResult.collectAsState()
+    val userRole by authViewModel.userRole.collectAsState()
+    val loginAttempted by authViewModel.loginAttempted.collectAsState()
+
+
 
     Box(
         modifier = Modifier.fillMaxSize().background(Color.White)
@@ -187,6 +191,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                     .height(56.dp)
                     .background(Color(0xe83f764e), RoundedCornerShape(50.dp))
                     .clickable {
+                        authViewModel.logout()
                         Log.d("LoginScreen", "Login button clicked with email: $email")
                         authViewModel.login(email, password)
                     },
@@ -202,9 +207,9 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                     append("Don’t have an account? ")
                     withStyle(
                         style = SpanStyle(
-                            fontWeight = FontWeight.Bold, // In đậm
-                            textDecoration = TextDecoration.Underline, // Gạch chân
-                            color = Color(0xff3b684d) // Giữ nguyên màu
+                            fontWeight = FontWeight.Bold,
+                            textDecoration = TextDecoration.Underline,
+                            color = Color(0xff3b684d)
                         )
                     ) {
                         append("Sign up")
@@ -218,19 +223,40 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             )
         }
 
-        // React to authentication state changes asynchronously
-        LaunchedEffect(authResult) {
-            authResult?.let {
-                if (it.first) {
-                    Log.d("LoginScreen", "Login successful, navigating to homepage...")
-                    navController.navigate("homepage") {
-                        popUpTo("login") { inclusive = true }
+        // Trigger role loading only after login was attempted and successful
+        LaunchedEffect(authResult, loginAttempted) {
+            if (loginAttempted && authResult.first) {
+                authViewModel.loadUserRole()
+            }
+        }
+
+        // Navigate only after role is loaded AND login was user-triggered
+        LaunchedEffect(userRole, loginAttempted) {
+            if (loginAttempted && userRole != null) {
+                when (userRole) {
+                    "Admin" -> {
+                        Log.d("LoginScreen", "Navigating to admin dashboard")
+                        navController.navigate("admin_dashboard") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+
+                    "User" -> {
+                        Log.d("LoginScreen", "Navigating to homepage")
+                        navController.navigate("homepage") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+
+                    else -> {
+                        Log.w("LoginScreen", "Unknown role: $userRole, defaulting to homepage")
+                        navController.navigate("homepage") {
+                            popUpTo("login") { inclusive = true }
+                        }
                     }
                 }
-                else {
-                    Log.e("LoginScreen", "Login failed: ${it.second}")
-                }
             }
+
         }
     }
 }

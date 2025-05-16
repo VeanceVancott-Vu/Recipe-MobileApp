@@ -83,15 +83,19 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Collections
 import com.example.dacs_3.model.Comment
+import com.example.dacs_3.model.CommentReport
 import com.example.dacs_3.model.Instruction
 import com.example.dacs_3.model.Link
 import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.model.User
 import com.example.dacs_3.ui.theme.MistGreen66
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
+import com.example.dacs_3.viewmodel.CommentReportsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
+import com.example.dacs_3.viewmodel.RecipeReportsViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
@@ -118,7 +122,9 @@ fun RecipeDetailScreen(
     recipeViewModel: RecipeViewModel = viewModel(),
     authViewModel: AuthViewModel = viewModel(),
     commentViewModel: CommentViewModel = viewModel(),
-    collectionViewModel: CollectionsViewModel = viewModel()
+    collectionViewModel: CollectionsViewModel = viewModel(),
+    recipeReportsViewModel: RecipeReportsViewModel = viewModel(),
+    commentReportsViewModel: CommentReportsViewModel = viewModel()
 ) {
     Log.e("ID", "id is: $id")
 
@@ -207,6 +213,8 @@ fun RecipeDetailScreen(
             collectionViewModel = collectionViewModel,
             currentUserId = currentUser?.userId?: "",
             recipeId =  selectedRecipe?.recipeId ?: "",
+            recipeReportsViewModel = recipeReportsViewModel,
+            recipeUserId = selectedRecipe?.userId ?: ""
 
         )
 
@@ -249,11 +257,12 @@ fun RecipeDetailScreen(
             currentUser?.let { it1 ->
                 CommentListSection(
                     it1,
-                    recipeId = it.recipeId,
+                    selectedRecipe = it,
                     commentViewModel    ,
                     commentList = comment,
                     onValueChange = { commentText = it },
-                    commentText = commentText
+                    commentText = commentText,
+                    commentReportsViewModel = commentReportsViewModel
                 )
             }
         }
@@ -305,9 +314,17 @@ private fun FeatureIcon(
     collections: List<Collections>,
     collectionViewModel: CollectionsViewModel,
     currentUserId: String,
-    recipeId: String
+    recipeId: String,
+    recipeReportsViewModel: RecipeReportsViewModel,
+    recipeUserId:String
 ) {
     var showDialog by remember { mutableStateOf(false) }
+
+    var showRecipeReportDialog by remember { mutableStateOf(false) }
+    var reportReason by remember { mutableStateOf("") }
+
+    var recipeReportSubmitted by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -429,9 +446,61 @@ private fun FeatureIcon(
                     tint = Color(0xFF3F764E),
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_small))
+                        .clickable(enabled = !recipeReportSubmitted) {
+                            showRecipeReportDialog = true
+                        }
                 )
             }
         }
+
+        if (showRecipeReportDialog) {
+            AlertDialog(
+                onDismissRequest = { showRecipeReportDialog = false },
+                title = {
+                    Text("Report Recipe")
+                },
+                text = {
+                    Column {
+                        Text("Please enter the reason for reporting:")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = reportReason,
+                            onValueChange = { reportReason = it },
+                            placeholder = { Text("Enter reason...") },
+                            singleLine = false,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (reportReason.isNotBlank()) {
+                            val recipeReport = RecipeReport(
+                                reportingUserId = currentUserId,
+                                reportedRecipeId = recipeId,
+                                reportedUserId = recipeUserId,
+                                reason = reportReason
+                            )
+                            recipeReportsViewModel.submitReport(recipeReport)
+                            showRecipeReportDialog = false
+                            recipeReportSubmitted = true
+                            reportReason = ""
+                        }
+                    }) {
+                        Text("Submit")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showRecipeReportDialog = false
+                        reportReason = ""
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
 
         Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
 
@@ -776,11 +845,12 @@ private fun RecipeRatingCard(
 @Composable
 private fun CommentListSection(
     currentUser: User,
-    recipeId: String = "",
+    selectedRecipe : Recipe,
     commentViewModel: CommentViewModel,
     commentText: String,
     onValueChange: (String) -> Unit,
     commentList: List<Comment>,
+    commentReportsViewModel: CommentReportsViewModel,
     modifier: Modifier = Modifier
         .padding(dimensionResource(R.dimen.spacing_m))
 ) {
@@ -853,7 +923,7 @@ private fun CommentListSection(
 
                                 val comment = currentUser?.let {
                                     Comment(
-                                        recipeId = recipeId,
+                                        recipeId = selectedRecipe.recipeId,
                                         userId = it.userId,
                                         username = it.username,
                                         text = commentText,
@@ -866,7 +936,7 @@ private fun CommentListSection(
                                         val newComment = currentUser.let {
                                             Comment(
                                                 commentId = editingCommentId!!,
-                                                recipeId = recipeId,
+                                                recipeId = selectedRecipe.recipeId,
                                                 userId = it.userId,
                                                 username = it.username,
                                                 text = commentText,
@@ -877,7 +947,7 @@ private fun CommentListSection(
 
                                         Log.d(
                                             "CommentListSection/Recipe Detail/Editing",
-                                            "Comment: $newComment from user: $currentUser in recipe: $recipeId"
+                                            "Comment: $newComment from user: $currentUser in recipe: $selectedRecipe"
                                         )
                                         commentViewModel.updateComment(newComment)
                                         isEditing = false
@@ -887,7 +957,7 @@ private fun CommentListSection(
                                     } else {
                                         Log.d(
                                             "CommentListSection/Recipe Detail/Posting",
-                                            "Comment: $commentText from user: $currentUser in recipe: $recipeId"
+                                            "Comment: $commentText from user: $currentUser in recipe: $selectedRecipe"
                                         )
                                         commentViewModel.postComment(comment)
                                         onValueChange("")
@@ -922,10 +992,12 @@ private fun CommentListSection(
                         isEditing = true
                     },
                     onDelete = {
-                        commentViewModel.deleteComment(comment.commentId, recipeId)
+                        commentViewModel.deleteComment(comment.commentId, selectedRecipe.recipeId)
                         Log.d("CommentListSection/Recipe Detail", "Delete comment: $comment")
                     }
-                    , currentUser = currentUser
+                    , currentUser = currentUser,
+                    commentReportsViewModel = commentReportsViewModel,
+                    selectedRecipe = selectedRecipe
                 )
             }
         }
@@ -942,11 +1014,16 @@ fun CommentItem(
     modifier: Modifier = Modifier,
     currentUser: User? = null,
     onEdit: (String) -> Unit, // Callback for edit action
-    onDelete: () -> Unit    // Callback for delete action
+    onDelete: () -> Unit,    // Callback for delete action
+    commentReportsViewModel: CommentReportsViewModel,
+    selectedRecipe : Recipe
 ) {
     var expanded by remember { mutableStateOf(false) }
-
+    var showCommentReportDialog by remember { mutableStateOf(false) }
     val imageUri = currentUser?.profileImageUrl
+    var reportReason by remember { mutableStateOf("") }
+
+
     val painter = if (imageUri?.isNotBlank() == true) {
         rememberAsyncImagePainter(model = imageUri)
     } else {
@@ -1006,24 +1083,91 @@ fun CommentItem(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            offset = DpOffset(x = 0.dp, y = 20.dp) // Adjust position if needed
+            offset = DpOffset(x = 0.dp, y = 20.dp)
         ) {
-            DropdownMenuItem(
-                text = { Text("Edit") },
-                onClick = {
-                    expanded = false
-                    onEdit(comment.text)
+            if (currentUser != null) {
+                if (comment.userId == currentUser.userId) {
+                    // Show Edit & Delete for own comment
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            expanded = false
+                            onEdit(comment.text)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = {
+                            expanded = false
+                            onDelete()
+                        }
+                    )
+                } else {
+                    // Show Report for other users
+                    DropdownMenuItem(
+                        text = { Text("Report") },
+                        onClick = {
+                            expanded = false
+                            showCommentReportDialog = true
+                 }
+                    )
                 }
-            )
-            DropdownMenuItem(
-                text = { Text("Delete") },
-                onClick = {
-                    expanded = false
-                    onDelete()
+            }
+        }
+
+        if (showCommentReportDialog) {
+            AlertDialog(
+                onDismissRequest = { showCommentReportDialog = false },
+                title = {
+                    Text("Report Comment")
+                },
+                text = {
+                    Column {
+                        Text("Please enter the reason for reporting:")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = reportReason,
+                            onValueChange = { reportReason = it },
+                            placeholder = { Text("Enter reason...") },
+                            singleLine = false,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+
+                        val commentReport = currentUser?.let {
+                            CommentReport(
+                                reportingUserId = it.userId,
+                                reportedUserId = selectedRecipe.userId,
+                                reportedCommentId = comment.commentId,
+                                reason = reportReason
+                            )
+                        }
+                        if (commentReport != null) {
+                            commentReportsViewModel.submitReport(commentReport)
+                            showCommentReportDialog = false
+                            reportReason = ""
+                        }
+
+                    }) {
+                        Text("Submit")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showCommentReportDialog = false
+                        reportReason = ""
+                    }) {
+                        Text("Cancel")
+                    }
                 }
             )
         }
+
     }
+
 }
 
 
