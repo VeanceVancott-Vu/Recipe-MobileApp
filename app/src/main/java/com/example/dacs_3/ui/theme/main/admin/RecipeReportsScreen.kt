@@ -46,9 +46,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.model.RecipeReport
+import com.example.dacs_3.model.UserReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.ReportSummary
+import com.example.dacs_3.utils.countRecipeReportStatuses
 import com.example.dacs_3.viewmodel.RecipeReportsViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
@@ -149,14 +151,19 @@ fun RecipeReportsScreen(
             }
         }
 
-        ReportSummary()
+
+        val (pending, resolved) = countRecipeReportStatuses(allRecipeReport)
+
+        ReportSummary(pending.toString(), resolved.toString())
+
 
         RecipeReportTableWithReasonDialog(reports = allRecipeReport, navController = navController,recipeViewModel = recipeViewModel,recipeReportsViewModel = recipeReportsViewModel)
 
+
+        val resolvedReports = allRecipeReport.filter { it.status == "Resolved" }
         DeleteProcessedReportsButton(
             onClick = {
-
-                recipeReportsViewModel.deleteReports(reports = allRecipeReport)
+                recipeReportsViewModel.deleteReports(resolvedReports)
             }
         )
     }
@@ -284,10 +291,10 @@ fun RecipeReportTableWithReasonDialog(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete Report") },
+                        text = { Text("Nothing bad skip Report") },
                         onClick = {
                             expanded = false
-                            recipeReportsViewModel.deleteReport(report.id)
+                            recipeReportsViewModel.updateReportStatus(report.id,"Resolved")
                         }
                     )
                     DropdownMenuItem(
@@ -296,10 +303,9 @@ fun RecipeReportTableWithReasonDialog(
                             expanded = false
                             recipeViewModel.deleteRecipe(report.reportedRecipeId) { isSuccess ->
                                 if (isSuccess) {
-                                    recipeReportsViewModel.deleteReport(report.id)
+                                    recipeReportsViewModel.updateReportStatus(report.id,"Resolved")
                                     showSuccessDialog.value = true
                                 } else {
-                                    // You could show a Snackbar or Dialog for failure here
                                     showSuccessDialog.value = false
                                 }
                             }

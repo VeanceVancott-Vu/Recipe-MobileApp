@@ -1,5 +1,6 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.model.UserReport
 import com.example.dacs_3.repository.UserReportRepository
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +42,7 @@ class UserReportViewModel : ViewModel() {
         }
     }
 
-    fun deleteUserReport(reportId: String) {
+     fun deleteUserReport(reportId: String) {
         viewModelScope.launch {
             val success = repository.deleteUserReport(reportId)
             if (!success) {
@@ -51,6 +52,15 @@ class UserReportViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteReports(reports: List<UserReport>) {
+        viewModelScope.launch {
+            reports.forEach { report ->
+                deleteUserReport(report.id)
+            }
+        }
+    }
+
 
     fun updateUserReportStatus(reportId: String, newStatus: String) {
         viewModelScope.launch {
@@ -72,4 +82,6 @@ class UserReportViewModel : ViewModel() {
     fun clearError() {
         _errorMessage.value = null
     }
+
+
 }

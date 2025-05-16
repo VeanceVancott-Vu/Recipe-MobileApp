@@ -56,6 +56,7 @@ import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.BottomNavBar
 import com.example.dacs_3.utils.ReportSummary
+import com.example.dacs_3.utils.countUserReportStatuses
 import com.example.dacs_3.viewmodel.AuthViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -128,17 +129,27 @@ fun UserReportsScreen(
             }
         }
 
-        ReportSummary()
+        val (pending, resolved) = countUserReportStatuses(allUserReport)
+
+
+        ReportSummary(pending.toString(), resolved.toString())
+
 
         UserReportTableWithReasonDialog(reports = allUserReport, userReportViewModel = userReportViewModel, authViewModel = authViewModel, navController = navController)
 
+
+        val resolvedReports = allUserReport.filter { it.status == "Resolved" }
         DeleteProcessedReportsButton(
-            onClick = {}
+            onClick = {
+                userReportViewModel.deleteReports(resolvedReports)
+            }
         )
 
     }
 
 }
+
+
 
 
 @Composable
@@ -254,10 +265,10 @@ fun UserReportTableWithReasonDialog(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete Report") },
+                        text = { Text("Nothing bad skip Report") },
                         onClick = {
                             expanded = false
-                            userReportViewModel.deleteUserReport(report.id)
+                            userReportViewModel.updateUserReportStatus(report.id,"Resolved")
                         }
                     )
                     DropdownMenuItem(
@@ -266,7 +277,7 @@ fun UserReportTableWithReasonDialog(
                             expanded = false
                             authViewModel.deleteAccount(report.reportedUserId) { isSuccess ->
                                 if (isSuccess) {
-                                    userReportViewModel.deleteUserReport(report.id)
+                                    userReportViewModel.updateUserReportStatus(report.id,"Resolved")
                                     showSuccessDialog.value = true
                                 } else {
                                     // You could show a Snackbar or Dialog for failure here

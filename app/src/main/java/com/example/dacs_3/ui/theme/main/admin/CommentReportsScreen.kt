@@ -51,6 +51,7 @@ import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.ReportSummary
+import com.example.dacs_3.utils.countCommentReportStatuses
 import com.example.dacs_3.viewmodel.CommentReportsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import compose.icons.FontAwesomeIcons
@@ -151,15 +152,22 @@ fun CommentReportsScreen(
             }
         }
 
-         ReportSummary()
+
+        val (pending, resolved) = countCommentReportStatuses(allCommentReports)
+        ReportSummary(pending.toString(), resolved.toString())
+
 
         CommentReportTableWithReasonDialog(reports = allCommentReports,
             navController = navController,
             commentViewModel = commentViewModel,
             commentReportViewModel = commentReportViewModel)
 
+
+        val resolvedReports = allCommentReports.filter { it.status == "Resolved" }
         DeleteProcessedReportsButton(
-            onClick = {}
+            onClick = {
+                commentReportViewModel.deleteReports(resolvedReports)
+            }
         )
     }
 
@@ -286,7 +294,7 @@ fun CommentReportTableWithReasonDialog(
                         text = { Text("Delete Report") },
                         onClick = {
                             expanded = false
-                            commentReportViewModel.deleteCommentReport(report.id)
+                            commentReportViewModel.updateReportStatus(report.id, "Resolved")
                         }
                     )
                     DropdownMenuItem(
@@ -295,7 +303,7 @@ fun CommentReportTableWithReasonDialog(
                             expanded = false
                             commentViewModel.deleteCommentByAdmin(report.reportedCommentId) { isSuccess ->
                                 if (isSuccess) {
-                                    commentReportViewModel.deleteCommentReport(report.id)
+                                    commentReportViewModel.updateReportStatus(report.id, "Resolved")
                                     showSuccessDialog.value = true
                                 } else {
                                     // You could show a Snackbar or Dialog for failure here

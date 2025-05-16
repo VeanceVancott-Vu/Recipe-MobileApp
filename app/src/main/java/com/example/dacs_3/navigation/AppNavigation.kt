@@ -194,7 +194,8 @@ fun AppNavigation(navController: NavHostController,
             ViolationReportsScreen(
                 navController = navController,
                  commentReportsViewModel =commentReportsViewModel,
-                recipeReportsViewModel = recipeReportsViewModel
+                recipeReportsViewModel = recipeReportsViewModel,
+                userReportViewModel = userReportViewModel
 
             ) // Màn hình điều hướng đến
         }

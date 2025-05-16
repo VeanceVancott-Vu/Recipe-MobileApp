@@ -74,7 +74,7 @@ class RecipeReportsViewModel  : ViewModel() {
     fun deleteReports(reports: List<RecipeReport>) {
         viewModelScope.launch {
             reports.forEach { report ->
-                repository.deleteReport(report.id)
+                deleteReport(report.id)
             }
         }
     }
