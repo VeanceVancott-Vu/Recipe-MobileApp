@@ -211,7 +211,7 @@ fun NotificationCard(
         Row(modifier = Modifier.padding(dimensionResource(R.dimen.spacing_m))) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = notification.avatar,
+                    model = "",
                     placeholder = painterResource(R.drawable.loading),
                     error = painterResource(R.drawable.uploadfailed)
                 ),
@@ -227,20 +227,20 @@ fun NotificationCard(
 
             Column {
                 Text(
-                    text = notification.title,
+                    text = notification.type,
                     color = OliverGreen
                 )
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_s)))
 
                 Text(
-                    text = notification.content,
+                    text = notification.message,
                     color = Color.Gray
                 )
 
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
 
                 Text(
-                    text = notification.date,
+                    text = notification.timestamp.toString(),
                     color = Color.Gray
                 )
             }

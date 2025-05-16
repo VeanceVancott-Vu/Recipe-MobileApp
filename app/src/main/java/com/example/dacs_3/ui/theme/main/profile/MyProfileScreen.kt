@@ -34,8 +34,9 @@ import com.example.dacs_3.utils.TopBar
 import com.example.dacs_3.viewmodel.AuthViewModel
 
 @Composable
-fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
-                    navController: NavController
+fun MyProfileScreen(
+    authViewModel: AuthViewModel = viewModel(),
+    navController: NavController
 ) {
 
     val user by authViewModel.currentUser.collectAsState()
@@ -44,6 +45,7 @@ fun MyProfileScreen(authViewModel: AuthViewModel = viewModel(),
     LaunchedEffect(Unit) {
         authViewModel.fetchAndSetCurrentUser()
     }
+
 
     Scaffold(
         topBar = {

@@ -195,7 +195,11 @@ fun DishSuggestionByIngredient(
 
         // Danh sách món ăn
         items(dishes) { dish ->
-            DishCard(dish = dish)
+            DishCard(
+                dish = dish,
+                modifier = Modifier
+                    .padding(horizontal = dimensionResource(R.dimen.spacing_m))
+            )
         }
 
         // Carousel món ăn tương tự
@@ -208,112 +212,110 @@ fun DishSuggestionByIngredient(
 
 @Composable
 fun DishCard(
-    dish: Recipe
+    dish: Recipe,
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier
+
+    Card(
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(Color(0xFFFFFFFF)),
+        shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium)),
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = dimensionResource(R.dimen.spacing_m))
+            .height(170.dp) // Chiều cao cố định cho Card
     ) {
-        Card(
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(Color(0xFFFFFFFF)),
-            shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium)),
+        Row(
             modifier = Modifier
-                .height(170.dp) // Chiều cao cố định cho Card
+                .fillMaxHeight()
         ) {
-            Row(
+            // Cột bên trái: Tên món ăn và nguyên liệu
+            Column(
+                modifier = Modifier
+                    .padding(dimensionResource(R.dimen.spacing_s))
+                    .weight(1f), // Column chiếm không gian còn lại trong Row
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
+            ) {
+                Text(
+                    text = dish.title,
+                    fontSize = 16.sp,
+                    color = Color(0xFF0B3D1F)
+                )
+
+                val ingredientsText = dish.ingredients.joinToString(separator = ", ")
+                Text(
+                    text = ingredientsText,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Người đăng
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_launcher_background),
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(dimensionResource(R.dimen.icon_size_medium))
+                            .clip(CircleShape)
+                    )
+                    Text(
+                        text = "Jamie Lark",
+                        fontSize = 14.sp,
+                        color = Color(0xFF6A6363)
+                    )
+                }
+            }
+
+            // Cột bên phải: Hình ảnh món ăn và icon Bookmark
+            Box(
                 modifier = Modifier
                     .fillMaxHeight()
+                    .width(150.dp) // Hạn chế kích thước của hình ảnh
+                    .padding(dimensionResource(R.dimen.spacing_s))
             ) {
-                // Cột bên trái: Tên món ăn và nguyên liệu
-                Column(
+                // Hình ảnh món ăn
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = dish.resultImages,
+                        placeholder = painterResource(R.drawable.loading),
+                        error = painterResource(R.drawable.uploadfailed)
+                    ),
+                    contentDescription = "Food Image",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .padding(dimensionResource(R.dimen.spacing_s))
-                        .weight(1f), // Column chiếm không gian còn lại trong Row
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m))
-                ) {
-                    Text(
-                        text = dish.title,
-                        fontSize = 16.sp,
-                        color = Color(0xFF0B3D1F)
-                    )
+                        .fillMaxWidth()
+                        .height(170.dp)
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium))) // Bo góc ảnh
+                )
 
-                    val ingredientsText = dish.ingredients.joinToString(separator = ", ")
-                    Text(
-                        text = ingredientsText,
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    // Người đăng
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_m)),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_launcher_background),
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(dimensionResource(R.dimen.icon_size_medium))
-                                .clip(CircleShape)
-                        )
-                        Text(
-                            text = "Jamie Lark",
-                            fontSize = 14.sp,
-                            color = Color(0xFF6A6363)
-                        )
-                    }
-                }
-
-                // Cột bên phải: Hình ảnh món ăn và icon Bookmark
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .width(150.dp) // Hạn chế kích thước của hình ảnh
-                        .padding(dimensionResource(R.dimen.spacing_s))
+                        .align(Alignment.BottomEnd) // Căn chỉnh ở góc phải dưới
+                        .padding(dimensionResource(R.dimen.spacing_s)) // Tạo padding để tách Box ra khỏi Image
+                        .size(dimensionResource(R.dimen.icon_size_medium)) // Kích thước nền tròn
+                        .background(Color.White, shape = CircleShape), // Nền tròn màu trắng
+
                 ) {
-                    // Hình ảnh món ăn
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            model = dish.resultImages,
-                            placeholder = painterResource(R.drawable.loading),
-                            error = painterResource(R.drawable.uploadfailed)
-                        ),
-                        contentDescription = "Food Image",
-                        contentScale = ContentScale.Crop,
+                    Icon(
+                        imageVector = FontAwesomeIcons.Solid.Bookmark,
+                        contentDescription = "Bookmark",
+                        tint = OliverGreen,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(170.dp)
-                            .clip(RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium))) // Bo góc ảnh
+                            .size(dimensionResource(R.dimen.icon_size_small)) // Kích thước Icon
+                            .align(Alignment.Center)
                     )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd) // Căn chỉnh ở góc phải dưới
-                            .padding(dimensionResource(R.dimen.spacing_s)) // Tạo padding để tách Box ra khỏi Image
-                            .size(dimensionResource(R.dimen.icon_size_medium)) // Kích thước nền tròn
-                            .background(Color.White, shape = CircleShape), // Nền tròn màu trắng
-
-                    ) {
-                        Icon(
-                            imageVector = FontAwesomeIcons.Solid.Bookmark,
-                            contentDescription = "Bookmark",
-                            tint = OliverGreen,
-                            modifier = Modifier
-                                .size(dimensionResource(R.dimen.icon_size_small)) // Kích thước Icon
-                                .align(Alignment.Center)
-                        )
-                    }
-
                 }
+
             }
         }
     }
+
 }
 
 @Composable
@@ -396,9 +398,7 @@ fun SimilarDishesCarousel() {
                 }
             }
         }
-
     }
-
 }
 
 @Preview(showBackground = true)

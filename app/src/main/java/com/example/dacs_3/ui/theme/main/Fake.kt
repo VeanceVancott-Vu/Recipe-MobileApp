@@ -1,11 +1,48 @@
 package com.example.dacs_3.ui.theme.main
 import com.example.dacs_3.model.Instruction
-import com.example.dacs_3.model.RatingEntry
 import com.example.dacs_3.model.Recipe
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Random
 
 // Khởi tạo Firestore
 val firestore = FirebaseFirestore.getInstance()
+
+// Hàm cập nhật timestamp giả cho tất cả Recipe trong Firestore
+fun updateRecipeTimestamps() {
+    val db = FirebaseFirestore.getInstance()
+    val recipesCollection = db.collection("recipes")
+
+    // Thời gian bắt đầu (16/05/2024, 1 năm trước)
+    val startTime = 1715839200000L // 16/05/2024 00:00:00 UTC+7
+    // Thời gian kết thúc (hiện tại, 16/05/2025)
+    val endTime = System.currentTimeMillis()
+
+    // Random để tạo timestamp giả
+    val random = Random()
+
+    recipesCollection.get()
+        .addOnSuccessListener { snapshot ->
+            val documents = snapshot.documents
+            for (doc in documents) {
+                // Tạo timestamp giả trong khoảng startTime đến endTime
+                val fakeTimestamp = startTime + ((endTime - startTime) * random.nextDouble()).toLong()
+
+                // Cập nhật document với trường timestamp
+                doc.reference.update("timestamp", fakeTimestamp)
+                    .addOnSuccessListener {
+                        println("Updated timestamp for recipe ${doc.id}: $fakeTimestamp")
+                    }
+                    .addOnFailureListener { e ->
+                        println("Error updating timestamp for recipe ${doc.id}: $e")
+                    }
+            }
+            println("Completed updating timestamps for ${documents.size} recipes")
+        }
+        .addOnFailureListener { e ->
+            println("Error fetching recipes: $e")
+        }
+}
+
 
 // Hàm thêm món ăn vào Firestore và cập nhật recipeId
 fun addRecipeToFirestore(recipe: Recipe, onComplete: (Recipe) -> Unit) {

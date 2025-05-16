@@ -23,6 +23,7 @@ import com.example.dacs_3.ui.theme.main.RecipeDetailScreen
 import com.example.dacs_3.ui.theme.main.RecipeEditScreen
 import com.example.dacs_3.ui.theme.main.SearchScreen
 import com.example.dacs_3.ui.theme.main.ShareCooksnapScreen
+import com.example.dacs_3.ui.theme.main.profile.OtherUserProfileScreen
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
@@ -77,6 +78,15 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
             val id = backStackEntry.arguments?.getString("id") ?: ""
             RecipeEditScreen(navController, id, recipeViewModel, authViewModel)
         }
+
+        composable(
+            "other_user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            OtherUserProfileScreen(navController = navController, userId = userId)
+        }
+
 
         composable("search") {
             SearchScreen(

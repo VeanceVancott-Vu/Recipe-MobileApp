@@ -133,19 +133,7 @@ fun RecipeDetailScreen(
     val comment by commentViewModel.comments.collectAsState()
 
     val collections by collectionViewModel.collections.collectAsState()
-//    val hasVoted = selectedRecipe?.let { recipe ->
-//        currentUser?.let { user ->
-//            recipeViewModel.hasUserVoted(recipe.recipeId, user.userId)
-//        } ?: false
-//    } ?: false
-//
-//    var currentRating by remember {
-//        mutableStateOf(
-//            selectedRecipe?.ratings?.find { rating ->
-//                rating.userId == currentUser?.userId
-//            }?.stars ?: 0f
-//        )
-//    }
+
     // Tính giá trị trung bình của tất cả các đánh giá
     val currentRating = selectedRecipe?.ratings?.map { it.stars }?.average()?.toFloat() ?: 0f
 
@@ -235,8 +223,9 @@ fun RecipeDetailScreen(
 
         RecipeAuthorInfo(
             modifier = Modifier
-                .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l))
-            ,recipeUser = recipeUser
+                .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l)) ,
+            recipeUser = recipeUser,
+            navController = navController
         )
 
 
@@ -607,6 +596,7 @@ private fun DishContent(
 private fun RecipeAuthorInfo(
     modifier: Modifier = Modifier,
     recipeUser: User? = null,
+    navController: NavController
 
 ) {
     val imageUri = recipeUser?.profileImageUrl
@@ -629,6 +619,11 @@ private fun RecipeAuthorInfo(
             modifier = Modifier
                 .size(dimensionResource(R.dimen.icon_size_xl))
                 .clip(CircleShape)
+                .clickable {
+                    recipeUser?.userId?.let { userId ->
+                        navController.navigate("other_user_profile/$userId")
+                    }
+                }
         )
 
 
@@ -909,10 +904,6 @@ private fun CommentListSection(
                     .fillMaxWidth()
                     .height(48.dp)
             )
-
-
-
-
         }
 
 

@@ -2,20 +2,35 @@ package com.example.dacs_3.repository
 
 import com.example.dacs_3.model.Comment
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import kotlin.coroutines.resume
 
 class CommentRepository {
     private val firestore = FirebaseFirestore.getInstance()
     private val commentsCollection = firestore.collection("comments")
 
-    fun addComment(comment: Comment, onResult: (Boolean) -> Unit) {
-        val commentId = UUID.randomUUID().toString()
+//    fun addComment(comment: Comment, onResult: (Boolean) -> Unit) {
+//        val commentId = UUID.randomUUID().toString()
+//        val newComment = comment.copy(commentId = commentId)
+//        commentsCollection.document(commentId)
+//            .set(newComment)
+//            .addOnSuccessListener { onResult(true) }
+//            .addOnFailureListener { onResult(false) }
+//    }
+
+    suspend fun addCommentSuspend(comment: Comment): Boolean = suspendCancellableCoroutine { cont ->
+        val commentId = java.util.UUID.randomUUID().toString()
         val newComment = comment.copy(commentId = commentId)
         commentsCollection.document(commentId)
             .set(newComment)
-            .addOnSuccessListener { onResult(true) }
-            .addOnFailureListener { onResult(false) }
+            .addOnSuccessListener {
+                cont.resume(true)
+            }
+            .addOnFailureListener { e ->
+                cont.resume(false)
+            }
     }
 
     suspend fun deleteComment(commentId: String) {

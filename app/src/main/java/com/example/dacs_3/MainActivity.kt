@@ -20,6 +20,7 @@ import com.example.dacs_3.ui.theme.main.admin.FilterReportScreen
 import com.example.dacs_3.ui.theme.main.admin.RecipeReportsScreen
 import com.example.dacs_3.ui.theme.main.admin.UserReportsScreen
 import com.example.dacs_3.ui.theme.main.recipes
+import com.example.dacs_3.ui.theme.main.updateRecipeTimestamps
 import com.example.dacs_3.ui.theme.uploadSampleRecipeToFirestore
 import com.example.dacs_3.utils.askForLocationPermission
 import com.example.dacs_3.viewmodel.RecipeViewModel
@@ -99,8 +100,9 @@ class MainActivity : ComponentActivity() {
 //                        }
 //                    }
 
+//                    updateRecipeTimestamps()
 
-                    RecipeReportsScreen(navController = navController)
+//                    RecipeReportsScreen(navController = navController)
                 }
             }
 

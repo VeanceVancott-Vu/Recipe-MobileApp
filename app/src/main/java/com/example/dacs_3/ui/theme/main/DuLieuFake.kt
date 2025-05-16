@@ -1,43 +1,67 @@
 package com.example.dacs_3.ui.theme.main
 
-import com.example.dacs_3.R
-import com.example.dacs_3.model.Cooksnap
 import com.example.dacs_3.model.Notification
+import com.example.dacs_3.model.NotificationType
 import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.model.TargetType
 
-fun generateFakeNotifications(): List<Notification> {
-    return listOf(
-        Notification(
-            title = "Fun-Loving Cookpad Admin",
-            content = "A warm welcome to Cookpad!! This is the largest cooking community in Vietnam 🇻🇳, with a massive collection of high-quality recipes ...",
-            date = "26/04/2005",
-            avatar = "https://www.example.com/avatar1.jpg"
+import java.util.UUID
+import kotlin.random.Random
+
+fun generateFakeNotifications(count: Int = 10): List<Notification> {
+    val notificationTypes = NotificationType.entries
+    val targetTypes = TargetType.entries
+    val fakeUsers = listOf("user1", "user2", "user3", "user4", "user5")
+    val fakeMessages = mapOf(
+        NotificationType.VOTE to listOf(
+            "đã thích công thức của bạn",
+            "đã vote cho món ăn của bạn",
+            "thích bài đăng của bạn"
         ),
-        Notification(
-            title = "New Recipe Alert!",
-            content = "Check out the latest recipe for delicious Pho. It's a must-try for food lovers!",
-            date = "27/04/2005",
-            avatar = "https://www.example.com/avatar2.jpg"
+        NotificationType.COMMENT_NEW to listOf(
+            "đã bình luận về công thức của bạn",
+            "đã để lại bình luận mới",
+            "bình luận về món ăn của bạn"
         ),
-        Notification(
-            title = "Join Our Cooking Challenge",
-            content = "Cook and share your favorite recipes in our monthly cooking challenge!",
-            date = "28/04/2005",
-            avatar = "https://www.example.com/avatar3.jpg"
+        NotificationType.RECIPE_DELETED to listOf(
+            "Công thức của bạn đã bị xóa vì vi phạm quy định",
+            "Bài đăng công thức đã bị xóa"
         ),
-        Notification(
-            title = "Recipe of the Day",
-            content = "Today's recipe is a healthy smoothie bowl. Perfect for your morning boost!",
-            date = "29/04/2005",
-            avatar = "https://www.example.com/avatar4.jpg"
+        NotificationType.COMMENT_DELETED to listOf(
+            "Bình luận của bạn đã bị xóa vì nội dung không phù hợp",
+            "Bình luận đã bị gỡ bỏ"
         ),
-        Notification(
-            title = "Community Feedback",
-            content = "We would love to hear your feedback! Let us know your thoughts on the new recipe features.",
-            date = "30/04/2005",
-            avatar = "https://www.example.com/avatar5.jpg"
+        NotificationType.COOKSNAP_DELETED to listOf(
+            "Cooksnap của bạn đã bị xóa do vi phạm chính sách",
+            "Hình ảnh cooksnap đã bị gỡ"
         )
     )
+
+    return List(count) {
+        val type = notificationTypes.random()
+        val targetType = targetTypes.random()
+        val actor = fakeUsers.random()
+        val recipient = fakeUsers.random()
+        val message = fakeMessages[type]?.random() ?: "Thông báo mới"
+        val reason = if (type in listOf(NotificationType.RECIPE_DELETED, NotificationType.COMMENT_DELETED, NotificationType.COOKSNAP_DELETED)) {
+            "Vi phạm chính sách cộng đồng"
+        } else {
+            ""
+        }
+
+        Notification(
+            id = UUID.randomUUID().toString(),
+            recipientId = recipient,
+            actorId = actor,
+            type = type.name.lowercase(),
+            message = "$actor $message",
+            targetId = UUID.randomUUID().toString(),
+            targetType = targetType.name.lowercase(),
+            timestamp = System.currentTimeMillis() - Random.nextLong(0, 7 * 24 * 60 * 60 * 1000), // Trong 7 ngày qua
+            isRead = Random.nextBoolean(),
+            reason = reason
+        )
+    }
 }
 
 fun generateFakeKitchen(): List<Recipe> {

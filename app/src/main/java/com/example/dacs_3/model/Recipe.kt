@@ -15,6 +15,7 @@ data class Recipe(
     var userId: String = "",              // Thêm userId để liên kết với tác giả
     var ratings: List<RatingEntry> = emptyList(),
     val averageRating: Float = 0f,
-    var cooksnaps: List<Cooksnap> = emptyList()
+    var cooksnaps: List<Cooksnap> = emptyList(),
+    val timestamp: Long = System.currentTimeMillis()
 )
 

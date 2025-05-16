@@ -8,8 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
 import com.example.dacs_3.model.Instruction
+import com.example.dacs_3.model.Notification
+import com.example.dacs_3.model.NotificationType
 import com.example.dacs_3.model.RatingEntry
 import com.example.dacs_3.model.Recipe
+import com.example.dacs_3.model.TargetType
 import com.example.dacs_3.repository.RecipeRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -334,7 +337,29 @@ class RecipeViewModel : ViewModel() {
             _selectedRecipe.value = _selectedRecipe.value?.copy(
                 ratings = updatedRatings // Only update ratings
             )
-            onSuccess()
+
+            // Tạm ẩn
+            // onSuccess()
+
+            // Tạo thông báo nếu người vote không phải chủ công thức
+            val recipeOwnerId = _selectedRecipe.value?.userId ?: ""
+            if (userId != recipeOwnerId && recipeOwnerId.isNotEmpty()) {
+                val notification = Notification(
+                    recipientId = recipeOwnerId,
+                    actorId = userId,
+                    type = NotificationType.VOTE.name,
+                    message = "Người dùng $userId đã vote công thức của bạn.",
+                    targetId = recipeId,
+                    targetType = TargetType.RECIPE.name,
+                    timestamp = System.currentTimeMillis(),
+                    isRead = false
+                )
+                createNotification(notification) {
+                    onSuccess()
+                }
+            } else {
+                onSuccess()
+            }
         }.addOnFailureListener {
             Log.e("RecipeViewModel", "Failed to add rating: $it")
         }
@@ -361,7 +386,29 @@ class RecipeViewModel : ViewModel() {
             _selectedRecipe.value = _selectedRecipe.value?.copy(
                 ratings = updatedRatings // Only update ratings
             )
-            onSuccess()
+
+            // Tạm ẩn
+            // onSuccess()
+
+            // Tạo thông báo nếu người vote không phải chủ công thức
+            val recipeOwnerId = _selectedRecipe.value?.userId ?: ""
+            if (userId != recipeOwnerId && recipeOwnerId.isNotEmpty()) {
+                val notification = Notification(
+                    recipientId = recipeOwnerId,
+                    actorId = userId,
+                    type = NotificationType.VOTE.name,
+                    message = "Người dùng $userId đã vote công thức của bạn.",
+                    targetId = recipeId,
+                    targetType = TargetType.RECIPE.name,
+                    timestamp = System.currentTimeMillis(),
+                    isRead = false
+                )
+                createNotification(notification) {
+                    onSuccess()
+                }
+            } else {
+                onSuccess()
+            }
         }.addOnFailureListener {
             Log.e("RecipeViewModel", "Failed to update rating: $it")
         }
@@ -381,6 +428,22 @@ class RecipeViewModel : ViewModel() {
             }
         )
     }
+
+    fun createNotification(notification: Notification, onComplete: () -> Unit = {}) {
+        val firestore = FirebaseFirestore.getInstance()
+        val notificationsRef = firestore.collection("notifications")
+        // Tạo document mới với ID tự động
+        notificationsRef.add(notification)
+            .addOnSuccessListener {
+                Log.d("RecipeViewModel", "Notification created successfully")
+                onComplete()
+            }
+            .addOnFailureListener { e ->
+                Log.e("RecipeViewModel", "Failed to create notification", e)
+                onComplete()
+            }
+    }
+
 
 
 
