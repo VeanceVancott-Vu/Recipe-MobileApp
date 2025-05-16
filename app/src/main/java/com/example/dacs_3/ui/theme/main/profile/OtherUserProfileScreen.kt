@@ -2,7 +2,10 @@ package com.example.dacs_3.ui.theme.main.profile
 
 import BioCard
 import ProfileHeader
+import SectionCard
+import UserReportViewModel
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,16 +18,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,6 +51,10 @@ import com.example.dacs_3.ui.theme.main.DishCard
 import com.example.dacs_3.utils.TopBar
 import com.example.dacs_3.viewmodel.OtherUserProfileViewModel
 import com.example.dacs_3.viewmodel.UserRecipesViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dacs_3.model.UserReport
+import com.example.dacs_3.viewmodel.AuthViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 
 
 @Composable
@@ -51,30 +62,32 @@ fun OtherUserProfileScreen(
     navController: NavController,
     userId: String,
     viewModel: OtherUserProfileViewModel = viewModel(),
-    userRecipesViewModel: UserRecipesViewModel = viewModel()
+    recipeViewModel: RecipeViewModel,
+    userReportViewModel: UserReportViewModel,
+    userViewModel: AuthViewModel,
 ) {
 
     val userState by viewModel.user.collectAsState()
 
-
-    val recipes by userRecipesViewModel.userRecipes.collectAsState()
-    val isLoading by userRecipesViewModel.isLoading.collectAsState()
-    val errorMessage by userRecipesViewModel.errorMessage.collectAsState()
+    val currentUserId = userViewModel.currentUserUid
 
 
-    LaunchedEffect(userId) {
-        userRecipesViewModel.loadRecipesByUser(userId)
-    }
 
     // Load user khi userId thay đổi
     LaunchedEffect(userId) {
         viewModel.loadUser(userId)
     }
+    val userRecipes by recipeViewModel.recipesByUserId.collectAsState()
 
+    LaunchedEffect(Unit) {
+        recipeViewModel.fetchRecipeByUserId(userId)
+    }
 
     var itemsToShow by remember { mutableIntStateOf(3) }
 
 
+    var showDialog by remember { mutableStateOf(false) }
+    var reportReason by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -124,6 +137,20 @@ fun OtherUserProfileScreen(
                         fontSize = 20.sp
                     )
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(
+                    onClick = {showDialog = true},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F764E))
+                ) {
+                    Text(
+                        text = "Report this user",
+                        fontSize = 20.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(40.dp))
 
@@ -143,20 +170,21 @@ fun OtherUserProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         // Hiển thị danh sách các món ăn giới hạn theo itemsToShow
-                        recipes.take(itemsToShow).forEach { dish ->
+                        userRecipes.take(itemsToShow).forEach { dish ->
                             DishCard(
                                 dish,
                                 Modifier.padding(vertical = dimensionResource(R.dimen.spacing_m))
+                                    .clickable { navController.navigate("recipe_detail/${dish.recipeId}") }
                             )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Nút "See more" chỉ hiện khi còn món chưa hiển thị
-                        if (itemsToShow < recipes.size) {
+                        if (itemsToShow < userRecipes.size) {
                             Button(
                                 onClick = {
-                                    itemsToShow = (itemsToShow + 3).coerceAtMost(recipes.size)
+                                    itemsToShow = (itemsToShow + 3).coerceAtMost(userRecipes.size)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                             ) {
@@ -194,6 +222,54 @@ fun OtherUserProfileScreen(
             }
         }
     )
+
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Report User") },
+            text = {
+                Column {
+                    Text("Please enter the reason for reporting:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = reportReason,
+                        onValueChange = { reportReason = it },
+                        placeholder = { Text("Reason...") },
+                        singleLine = false,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    if (reportReason.isNotBlank()) {
+
+                        val report = currentUserId?.let {
+                            UserReport(
+                                reportingUserId = it,
+                                reportedUserId = userId,
+                                reason = reportReason,
+                            )
+                        }
+                        if (report != null) {
+                            userReportViewModel.submitUserReport(report)
+                        }
+                    }
+                }) {
+                    Text("Submit")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Preview(showBackground = true)

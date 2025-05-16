@@ -10,13 +10,18 @@ class CommentReportsRepository {
 
     suspend fun submitCommentReport(report: CommentReport): Result<Unit> {
         return try {
-            val updatedReport = report.copy(date = System.currentTimeMillis())
-            reportCollection.add(updatedReport).await()
+            val docRef = reportCollection.document() // create document with generated ID
+            val updatedReport = report.copy(
+                id = docRef.id, // assign Firebase doc ID
+                date = System.currentTimeMillis()
+            )
+            docRef.set(updatedReport).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
 
     suspend fun getReportsByUser(userId: String): Result<List<CommentReport>> {
         return try {
@@ -52,4 +57,14 @@ class CommentReportsRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun deleteCommentReport(reportId: String): Boolean {
+        return try {
+            reportCollection.document(reportId).delete().await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
 }

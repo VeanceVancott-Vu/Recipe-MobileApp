@@ -140,5 +140,19 @@ class RecipeRepository {
             }
     }
 
+    fun deleteRecipe(recipeId: String, onResult: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("recipes").document(recipeId)
+            .delete()
+            .addOnSuccessListener {
+                onResult(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("RecipeRepository", "Failed to delete recipe: ${e.message}", e)
+                onResult(false)
+            }
+    }
+
+
 
 }

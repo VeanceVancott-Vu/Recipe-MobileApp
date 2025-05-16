@@ -20,6 +20,22 @@ class CommentRepository {
 //            .addOnFailureListener { onResult(false) }
 //    }
 
+    // CommentRepository.kt
+    suspend fun fetchCommentById(commentId: String): Comment? {
+        return try {
+            val snapshot = FirebaseFirestore.getInstance()
+                .collection("comments")
+                .document(commentId)
+                .get()
+                .await()
+
+            snapshot.toObject(Comment::class.java)?.copy(commentId = snapshot.id)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+
     suspend fun addCommentSuspend(comment: Comment): Boolean = suspendCancellableCoroutine { cont ->
         val commentId = java.util.UUID.randomUUID().toString()
         val newComment = comment.copy(commentId = commentId)

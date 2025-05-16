@@ -52,7 +52,7 @@ import compose.icons.fontawesomeicons.solid.Users
 @Composable
     fun TopBar(title: String,
                showRightIcon: Boolean = true,
-               rightIconRes: Int = R.drawable.email,
+               rightIconRes: Int = R.drawable.warning,
                onRightIconClick: () -> Unit = {},
                onBackIconClick: () -> Unit = {},
     ) {
@@ -85,7 +85,9 @@ import compose.icons.fontawesomeicons.solid.Users
                     Icon(
                         painter = painterResource(id = rightIconRes),
                         contentDescription = "Right Icon",
-                        tint =Color(0xff3b684d)
+                        tint =Color(0xff3b684d),
+                        modifier = Modifier
+                            .size(24.dp)
                     )
                 }
             } else {

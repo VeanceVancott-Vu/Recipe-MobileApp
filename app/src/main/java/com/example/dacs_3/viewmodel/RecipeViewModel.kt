@@ -445,6 +445,21 @@ class RecipeViewModel : ViewModel() {
     }
 
 
+    fun deleteRecipe(recipeId: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            repository.deleteRecipe(recipeId) { success ->
+                if (!success) {
+                    _errorMessage.value = "Failed to delete recipe"
+                } else {
+                    fetchRecipes() // Refresh list if needed
+                }
+                onResult(success)
+            }
+        }
+    }
+
+
+
 
 
 }
