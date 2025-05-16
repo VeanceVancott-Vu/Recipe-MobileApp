@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.User
 import com.example.dacs_3.utils.TopBar
@@ -100,14 +101,23 @@ fun ProfileHeader(user: User) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(vertical = 24.dp)
     ) {
+
+        val imageUri = user?.profileImageUrl
+        val painter = if (imageUri?.isNotBlank() == true) {
+            rememberAsyncImagePainter(model = imageUri)
+        } else {
+            painterResource(R.drawable.account)
+        }
+
         Image(
-            painter = painterResource(id = R.drawable.mockrecipeimage),
+            painter = painter,
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(150.dp)
                 .clip(RoundedCornerShape(70.dp))
         )
+
         Spacer(modifier = Modifier.width(30.dp))
         Column(modifier = Modifier.padding(8.dp)) {
             Text(

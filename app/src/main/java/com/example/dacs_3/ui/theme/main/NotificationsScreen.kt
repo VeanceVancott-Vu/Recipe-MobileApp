@@ -41,6 +41,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,19 +64,24 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.Notification
+import com.example.dacs_3.model.NotificationWithActor
 import com.example.dacs_3.model.Recipe
 import com.example.dacs_3.ui.theme.OliverGreen
+import com.example.dacs_3.viewmodel.NotificationViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Bookmark
 import compose.icons.fontawesomeicons.solid.EllipsisV
 import compose.icons.fontawesomeicons.solid.PaperPlane
 import kotlinx.coroutines.launch
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NotificationsAndKitchenBuddies(
-    navController: NavController
+    navController: NavController,
+    viewModel: NotificationViewModel = viewModel()
 ) {
     // Khởi tạo pager state với số lượng tab
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -83,7 +89,8 @@ fun NotificationsAndKitchenBuddies(
     val coroutineScope = rememberCoroutineScope()
 
     // Tạo danh sách dữ liệu giả
-    val notifications = generateFakeNotifications()
+    val notificationsWithActors by viewModel.notificationsWithActors.collectAsState()
+
     val kitchenbuddies = generateFakeKitchen()
 
     Column(
@@ -173,7 +180,7 @@ fun NotificationsAndKitchenBuddies(
                 flingBehavior = PagerDefaults.flingBehavior(state = pagerState) // Điều chỉnh hành vi cuộn khi người dùng vuốt
             ) { page ->
                 when (page) {
-                    0 -> NotificationContent(notifications = notifications) // Truyền danh sách vào
+                    0 -> NotificationContent(notificationsWithActors = notificationsWithActors) // Truyền danh sách vào
                     1 -> KitchenBuddiesContent(kitchenbuddies = kitchenbuddies)
                 }
             }
@@ -182,23 +189,22 @@ fun NotificationsAndKitchenBuddies(
 }
 
 @Composable
-fun NotificationContent(notifications: List<Notification>) {
+fun NotificationContent(notificationsWithActors: List<NotificationWithActor>) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = dimensionResource(R.dimen.spacing_xl)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_l))
     ) {
-        items(notifications) { notification ->
-            NotificationCard(notification = notification)
+        items(notificationsWithActors) { item ->
+            NotificationCardWithActor(item = item)
         }
     }
 }
 
-
 @Composable
-fun NotificationCard(
-    notification: Notification
+fun NotificationCardWithActor(
+    item: NotificationWithActor
 ) {
     Card(
         modifier = Modifier
@@ -211,36 +217,37 @@ fun NotificationCard(
         Row(modifier = Modifier.padding(dimensionResource(R.dimen.spacing_m))) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = "",
+                    model = item.actorUser.profileImageUrl,
                     placeholder = painterResource(R.drawable.loading),
                     error = painterResource(R.drawable.uploadfailed)
                 ),
-                contentDescription = "Avatar",
-                contentScale = ContentScale.Crop,
+                contentDescription = "Actor Avatar",
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape) // Cắt hình ảnh thành hình tròn
-                    .background(Color.Gray)
+                    .clip(CircleShape)
+                    .background(Color.Gray),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.width(dimensionResource(R.dimen.spacing_m)))
 
             Column {
                 Text(
-                    text = notification.type,
+                    text = item.actorUser.username,
+                    fontWeight = FontWeight.Bold,
                     color = OliverGreen
                 )
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_s)))
 
                 Text(
-                    text = notification.message,
+                    text = item.notification.message,
                     color = Color.Gray
                 )
 
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
 
                 Text(
-                    text = notification.timestamp.toString(),
+                    text = java.text.DateFormat.getDateTimeInstance().format(java.util.Date(item.notification.timestamp)),
                     color = Color.Gray
                 )
             }

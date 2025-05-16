@@ -242,11 +242,20 @@ fun DishCard(
                 )
 
                 val ingredientsText = dish.ingredients.joinToString(separator = ", ")
+
+                val maxLength = 80
+                val displayedText = if (ingredientsText.length > maxLength) {
+                    ingredientsText.take(maxLength) + "..."
+                } else {
+                    ingredientsText
+                }
+
                 Text(
-                    text = ingredientsText,
+                    text = displayedText,
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
+
 
                 Spacer(modifier = Modifier.weight(1f))
 

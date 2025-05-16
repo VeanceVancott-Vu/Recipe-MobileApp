@@ -37,6 +37,7 @@ import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
 import com.example.dacs_3.viewmodel.CommentReportsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
+import com.example.dacs_3.viewmodel.NotificationViewModel
 import com.example.dacs_3.viewmodel.RecipeReportsViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.SearchHistoryViewModel
@@ -50,7 +51,8 @@ fun AppNavigation(navController: NavHostController,
                   collectionsViewModel: CollectionsViewModel,
                   searchHistoryViewModel: SearchHistoryViewModel,
                   recipeReportsViewModel : RecipeReportsViewModel,
-                  commentReportsViewModel: CommentReportsViewModel
+                  commentReportsViewModel: CommentReportsViewModel,
+                  notificationViewModel: NotificationViewModel,
 ) {
     val userId = authViewModel.getCurrentUserId().toString() // Get the current user's ID
     val userRole by authViewModel.userRole.collectAsState()
@@ -138,7 +140,8 @@ fun AppNavigation(navController: NavHostController,
 
         composable("notifications_and_kitchen_buddies") {
             NotificationsAndKitchenBuddies(
-                navController = navController
+                navController = navController,
+                viewModel = notificationViewModel
             ) // Màn hình điều hướng đến
         }
 
