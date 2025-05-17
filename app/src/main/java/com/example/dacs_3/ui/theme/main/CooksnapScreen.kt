@@ -114,9 +114,6 @@ fun CooksnapScreen(
         }
     }
 
-    // ... phần UI còn lại giữ nguyên
-
-
     LaunchedEffect(id) {
         viewModel.loadCooksnaps(id)
     }
@@ -221,7 +218,8 @@ fun CooksnapScreen(
         // Gọi hàm hiển thị Grid
         CooksnapGrid(
             cooksnapList = cooksnaps,
-            usersMap = usersMap
+            usersMap = usersMap,
+            navController = navController
         )
 
         // Hiển thị lỗi nếu có
@@ -240,7 +238,8 @@ fun CooksnapScreen(
 @Composable
 fun CooksnapGrid(
     cooksnapList: List<Cooksnap>,
-    usersMap: Map<String, User>
+    usersMap: Map<String, User>,
+    navController: NavController
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -253,7 +252,10 @@ fun CooksnapGrid(
     ) {
         items(cooksnapList) { cooksnap ->
             val user = usersMap[cooksnap.userId]
-            CooksnapItemCard(cooksnap = cooksnap, user = user)
+            CooksnapItemCard(
+                cooksnap = cooksnap,
+                user = user,
+                navController = navController)
         }
     }
 }
@@ -261,7 +263,8 @@ fun CooksnapGrid(
 @Composable
 fun CooksnapItemCard(
     cooksnap: Cooksnap,
-    user: User? // có thể null nếu chưa load kịp
+    user: User?, // có thể null nếu chưa load kịp
+    navController: NavController
 ) {
     Card(
         shape = RoundedCornerShape(dimensionResource(R.dimen.corner_radius_medium)),
@@ -332,11 +335,17 @@ fun CooksnapItemCard(
 
                 Icon(
                     imageVector = FontAwesomeIcons.Solid.EllipsisV,
-                    contentDescription = "",
+                    contentDescription = "Edit Cooksnap",
                     modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_small)),
+                        .size(dimensionResource(R.dimen.icon_size_small))
+                        .clickable {
+                            val encodedImageUrl = Uri.encode(cooksnap.imageResult)
+                            val encodedDescription = Uri.encode(cooksnap.description)
+                            navController.navigate("edit_cooksnap/${cooksnap.cooksnapId}/$encodedImageUrl/$encodedDescription")
+                        },
                     tint = OliverGreen
                 )
+
             }
 
             Text(
@@ -349,30 +358,7 @@ fun CooksnapItemCard(
 
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_s)))
 
-//            Row(
-//                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s)),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                ButtonCard(
-//                    text = cooksnap.hearts.toString(),
-//                    iconResId = R.drawable.heart
-//                )
-//
-//                ButtonCard(
-//                    text = cooksnap.slaps.toString(),
-//                    iconResId = R.drawable.slap
-//                )
-//
-//                ButtonCard(
-//                    text = cooksnap.smiles.toString(),
-//                    iconResId = R.drawable.smile
-//                )
-//
-//                Spacer(modifier = Modifier.weight(1f))
-//
-//
-//
-//            }
+
         }
     }
 }

@@ -1,8 +1,11 @@
 package com.example.dacs_3.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dacs_3.cloudinary.imageupload.CloudinaryUploader
 import com.example.dacs_3.model.Cooksnap
 import com.example.dacs_3.model.Notification
 import com.example.dacs_3.model.NotificationType
@@ -115,6 +118,32 @@ class ShareCooksnapViewModel : ViewModel() {
                 _error.value = "Lỗi gửi dữ liệu: ${e.message}"
             }
     }
+
+    fun uploadImageFromUri(
+        context: Context,
+        uri: Uri,
+        onSuccess: (String) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        _sending.value = true
+        _error.value = null
+
+        CloudinaryUploader.uploadImageFromUri(
+            context = context,
+            uri = uri,
+            uploadPreset = "koylin_unsigned",
+            onSuccess = { imageUrl ->
+                _sending.value = false
+                onSuccess(imageUrl)
+            },
+            onError = { e ->
+                _sending.value = false
+                _error.value = "Upload ảnh thất bại: ${e.message}"
+                onError(e)
+            }
+        )
+    }
+
 
     fun reset() {
         _sending.value = false

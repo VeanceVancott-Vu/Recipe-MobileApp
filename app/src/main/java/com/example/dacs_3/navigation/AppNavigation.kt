@@ -3,6 +3,7 @@ package com.example.dacs_3.navigation
 import AddRecipeScreen
 import EditProfileScreen
 import MyProfileScreen
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,6 +18,7 @@ import com.example.dacs_3.ui.theme.auth.LoginScreen
 import com.example.dacs_3.ui.theme.auth.SignupScreen
 import com.example.dacs_3.ui.theme.main.CooksnapScreen
 import com.example.dacs_3.ui.theme.main.DetailScreen
+import com.example.dacs_3.ui.theme.main.EditCooksnapScreen
 import com.example.dacs_3.ui.theme.main.FilterScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
 import com.example.dacs_3.ui.theme.main.NotificationsAndKitchenBuddies
@@ -177,6 +179,21 @@ fun AppNavigation(navController: NavHostController,
             val imageUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
             ShareCooksnapScreen(navController, recipeId, imageUrl)
         }
+
+        composable(
+            "edit_cooksnap/{cooksnapId}/{imageUrl}/{description}",
+            arguments = listOf(
+                navArgument("cooksnapId") { type = NavType.StringType },
+                navArgument("imageUrl") { type = NavType.StringType },
+                navArgument("description") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val cooksnapId = backStackEntry.arguments?.getString("cooksnapId") ?: ""
+            val imageUrl = Uri.decode(backStackEntry.arguments?.getString("imageUrl") ?: "")
+            val description = Uri.decode(backStackEntry.arguments?.getString("description") ?: "")
+            EditCooksnapScreen(navController, cooksnapId, imageUrl, description)
+        }
+
 
         composable("admin_dashboard") {
                  DashboardScreen(

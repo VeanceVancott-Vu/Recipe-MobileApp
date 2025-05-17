@@ -1,10 +1,11 @@
 package com.example.dacs_3.ui.theme.main
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,39 +43,60 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.ui.theme.OliverGreen
-import com.example.dacs_3.viewmodel.RecipeViewModel
 import com.example.dacs_3.viewmodel.ShareCooksnapViewModel
-import androidx.compose.material3.Text as Text
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.Camera
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dacs_3.viewmodel.EditCooksnapViewModel
 
 @Composable
-fun ShareCooksnapScreen(
+fun EditCooksnapScreen(
     navController: NavController,
-    recipeId: String,
-    imageUrl: String,
-    viewModel: ShareCooksnapViewModel = viewModel(),
+    cooksnapId: String,
+    initialImageUrl: String,
+    initialDescription: String,
+    viewModel: EditCooksnapViewModel = viewModel(), // Hoặc tạo ViewModel riêng cho edit nếu cần
     modifier: Modifier = Modifier
 ) {
-
     val context = LocalContext.current
-    var description by remember { mutableStateOf("") }
 
+    // State để quản lý imageUrl (có thể đổi)
+    var imageUrl by remember { mutableStateOf(initialImageUrl) }
+
+    // State để quản lý mô tả (có thể sửa)
+    var description by remember { mutableStateOf(initialDescription) }
+
+    // Trạng thái gửi, lỗi, thành công
     val sending by viewModel.sending.collectAsState()
     val error by viewModel.error.collectAsState()
     val success by viewModel.success.collectAsState()
 
+    // Launcher chọn ảnh mới từ gallery hoặc camera
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            viewModel.uploadImageFromUri(
+                context = context,
+                uri = it,
+                onSuccess = { uploadedUrl ->
+                    imageUrl = uploadedUrl
+                },
+                onError = { e ->
+                    Toast.makeText(context, "Upload ảnh thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
+    }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
 
         Surface(
@@ -86,20 +109,18 @@ fun ShareCooksnapScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        start = dimensionResource(R.dimen.spacing_m), end = dimensionResource(
-                            R.dimen.spacing_m
-                        )
+                        start = dimensionResource(R.dimen.spacing_m),
+                        end = dimensionResource(R.dimen.spacing_m)
                     ),
                 verticalAlignment = Alignment.CenterVertically
-
             ) {
-                // ← Back icon
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier
                         .clickable {
-                            navController.popBackStack() // Quay lại màn hình trước (SearchScreen)
+                            navController.popBackStack()
+                            viewModel.reset()
                         },
                     tint = OliverGreen
                 )
@@ -107,27 +128,44 @@ fun ShareCooksnapScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Button(
-                    onClick = { viewModel.submitCooksnap(recipeId, imageUrl, description) },
+                    onClick = {
+                        viewModel.updateCooksnap(cooksnapId, imageUrl, description)
+                    },
                     enabled = !sending && description.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(containerColor = OliverGreen)
                 ) {
-                    Text(
-                        text = "Save"
-                    )
+                    Text(text = "Save")
                 }
-
             }
         }
 
+        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
 
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = "Selected Image",
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
-            contentScale = ContentScale.Crop
-        )
+                .height(300.dp)
+        ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Cooksnap Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.Camera,
+                contentDescription = "Change Image",
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .size(36.dp)
+                    .clickable {
+                        pickImageLauncher.launch("image/*")
+                    },
+                tint = OliverGreen
+            )
+        }
 
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_xl)))
 
@@ -135,18 +173,17 @@ fun ShareCooksnapScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = dimensionResource(R.dimen.spacing_m), end = dimensionResource(
-                        R.dimen.spacing_m
-                    )
+                    start = dimensionResource(R.dimen.spacing_m),
+                    end = dimensionResource(R.dimen.spacing_m)
                 ),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                placeholder = { Text("Share your cooking experience ...") },
+                placeholder = { Text("Edit your cooking experience...") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(dimensionResource(R.dimen.spacing_m) * 15)
@@ -168,23 +205,16 @@ fun ShareCooksnapScreen(
             }
 
             error?.let {
-                Text(text = it, color = Color.Red)
+                Text(text = it, color = Color.Red, modifier = Modifier.padding(8.dp))
             }
 
             if (success) {
                 LaunchedEffect(Unit) {
-                    Toast.makeText(context, "Đăng Cooksnap thành công!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Cooksnap đã được cập nhật!", Toast.LENGTH_SHORT).show()
                     navController.popBackStack()
                     viewModel.reset()
                 }
             }
         }
-
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ShareCooksnapPreview() {
-//    ShareCooksnapScreen()
 }

@@ -90,4 +90,14 @@ class CooksnapRepository {
         }
         return allUsers
     }
+
+    suspend fun updateCooksnapDocument(cooksnapId: String, imageUrl: String, description: String) {
+        val docRef = firestore.collection("cooksnaps").document(cooksnapId)
+        val updates = mapOf(
+            "imageResult" to imageUrl,
+            "description" to description
+        )
+        docRef.update(updates).await()
+    }
+
 }

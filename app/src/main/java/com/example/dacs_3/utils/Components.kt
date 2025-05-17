@@ -104,7 +104,7 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Search, "search"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Plus, "addRecipe"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile"),
-        BottomNavItemData(icon = FontAwesomeIcons.Solid.ShieldAlt, "")
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.ShieldAlt, "admin_dashboard")
 
     )
 
