@@ -97,6 +97,7 @@ import com.example.dacs_3.viewmodel.CommentReportsViewModel
 import com.example.dacs_3.viewmodel.CommentViewModel
 import com.example.dacs_3.viewmodel.RecipeReportsViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.collect.MapDifference
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
 import compose.icons.fontawesomeicons.Solid
@@ -110,6 +111,7 @@ import compose.icons.fontawesomeicons.solid.Paperclip
 import compose.icons.fontawesomeicons.solid.Pen
 import compose.icons.fontawesomeicons.solid.Star
 import compose.icons.fontawesomeicons.solid.Thumbtack
+import compose.icons.fontawesomeicons.solid.Utensils
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -150,6 +152,13 @@ fun RecipeDetailScreen(
         }
     }
 
+    val differentUser by remember(selectedRecipe, currentUser) {
+        derivedStateOf {
+            selectedRecipe?.userId == currentUser?.userId
+        }
+    }
+
+
     // Lưu trữ điểm đánh giá mà người dùng chọn (chỉ dùng để gửi, không hiển thị)
     var userSelectedRating by remember { mutableStateOf<Float?>(null) }
 
@@ -189,6 +198,7 @@ fun RecipeDetailScreen(
     ) {
 
 
+
         var commentText by remember { mutableStateOf("") }
 
         selectedRecipe?.let {
@@ -214,7 +224,8 @@ fun RecipeDetailScreen(
             currentUserId = currentUser?.userId?: "",
             recipeId =  selectedRecipe?.recipeId ?: "",
             recipeReportsViewModel = recipeReportsViewModel,
-            recipeUserId = selectedRecipe?.userId ?: ""
+            recipeUserId = selectedRecipe?.userId ?: "",
+            differentUser = differentUser
 
         )
 
@@ -222,7 +233,8 @@ fun RecipeDetailScreen(
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l))
             , recipe = selectedRecipe,
-            recipeUser = recipeUser
+            recipeUser = recipeUser,
+            currentRating = currentRating.toString()
         )
 
 
@@ -267,7 +279,7 @@ fun RecipeDetailScreen(
             }
         }
 
-        SameAuthor()
+
     }
 
 }
@@ -316,7 +328,8 @@ private fun FeatureIcon(
     currentUserId: String,
     recipeId: String,
     recipeReportsViewModel: RecipeReportsViewModel,
-    recipeUserId:String
+    recipeUserId:String,
+    differentUser: Boolean,
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -512,6 +525,7 @@ private fun FeatureIcon(
         ) {
             IconButton(
                 onClick = onClick,
+                enabled = differentUser,
                 modifier = Modifier
                     .size(dimensionResource(R.dimen.icon_size_large)),
                 colors = IconButtonDefaults
@@ -558,7 +572,8 @@ private fun FeatureIcon(
 private fun DishContent(
     recipe: Recipe? = null,
     modifier: Modifier = Modifier,
-    recipeUser: User? = null
+    recipeUser: User? = null,
+    currentRating: String
 ) {
     val ingredientsList = listOf(
         "2 eggs",
@@ -632,7 +647,7 @@ private fun DishContent(
             recipeUser = recipeUser
         )
 
-        DishProperties()
+        DishProperties(currentRating = currentRating, recipe = recipe)
 
         if (recipe != null) {
             DishIngredients(
@@ -1312,7 +1327,8 @@ private fun CreatorInfo(
 @Composable
 private fun DishProperties(
     modifier: Modifier = Modifier,
-    recipe: Recipe? = null
+    recipe: Recipe? = null,
+    currentRating: String
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1338,54 +1354,35 @@ private fun DishProperties(
                         .size(dimensionResource(R.dimen.icon_size_medium))
                 )
             }
-            else
-            {
-                IconAndText(
-                    imageVector = FontAwesomeIcons.Regular.Clock,
-                    color = Color((0xFF3F764E)),
-                    contentDescription = "Cook Time",
-                    text = "30'",
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_medium))
-                )
-            }
 
-            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
+
+            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_l)))
 
             if (recipe != null) {
                 IconAndText(
-                    imageVector = FontAwesomeIcons.Regular.Hourglass,
+                    imageVector = FontAwesomeIcons.Solid.Utensils,
                     color = Color((0xFF3F764E)),
-                    contentDescription = "Serving size Time",
+                    contentDescription = "Serving size ",
                     text = recipe.servingSize,
                     modifier = Modifier
                         .size(dimensionResource(R.dimen.icon_size_medium))
                 )
             }
-            else
-            {
+
+
+            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_l)))
+
+
                 IconAndText(
-                    imageVector = FontAwesomeIcons.Regular.Hourglass,
-                    color = Color((0xFF3F764E)),
-                    contentDescription = "Serving size Time",
-                    text = "4 people",
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size_medium))
-                )
-            }
+                            imageVector = FontAwesomeIcons.Solid.Star,
+                            color = Color(0xFFF1FD4D),
+                            contentDescription = "Rate",
+                            text = currentRating,
+                            modifier = Modifier
+                                .size(dimensionResource(R.dimen.icon_size_medium))
+                        )
 
 
-
-            Spacer(Modifier.width(dimensionResource(R.dimen.spacing_xl)))
-
-            IconAndText(
-                imageVector = FontAwesomeIcons.Solid.Star,
-                color = Color(0xFFF1FD4D),
-                contentDescription = "Rate",
-                text = "3.5",
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_medium))
-            )
         }
 
 

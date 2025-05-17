@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +39,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -103,6 +106,10 @@ fun HomePageScreen(
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
 
+    var newestRecipes = recipes.sortedByDescending { it.timestamp }.take(5)
+
+    var showAll = remember {  mutableStateOf(false) }
+
     // Trigger data load only once
     LaunchedEffect(Unit) {
         recipeViewModel.fetchRecipes()
@@ -136,28 +143,54 @@ fun HomePageScreen(
             }
 
             item {
-                SectionTitle(title = "Featured Recipes")
+                SectionTitle(title = "All time high rating recipes")
             }
 
             item {
-                RecipeRow(recipes,navController)
+                val top5Recipes = recipes
+                    .sortedByDescending { it.averageRating }
+                    .take(4)
+
+                RecipeRow(top5Recipes, navController)
+            }
+
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SectionTitle(title = "Newly added recipes")
+                    Text(
+                        text = if (showAll.value) "Show less" else "Show all",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color(0xFF3B684D),
+                            fontSize = 22.sp
+                        ),
+                        modifier = Modifier.clickable {
+                            showAll.value = !showAll.value
+                        }
+                    )
+                }
             }
 
             item {
-                SectionTitle(title = "Trending Recipes")
+                RecipeRow(
+                    recipes = if (showAll.value) recipes.sortedByDescending { it.timestamp }
+                    else newestRecipes,
+                    navController = navController
+                )
             }
 
-            item {
-                RecipeRow(recipes,navController)
-            }
 
-            item {
-                SectionTitle(title = "Newly added Recipes")
-            }
 
-            item {
-                RecipeRow(recipes,navController)
-            }
+
+
+
+
         }
     }
 }
@@ -204,7 +237,7 @@ fun SectionTitle(title: String) {
         text = title,
         fontSize = 22.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF333333),
+        color = Color(0xFF3B684D),
         modifier = Modifier.padding(horizontal = 16.dp)
     )
 }
@@ -217,13 +250,13 @@ fun RecipeRow(recipes: List<Recipe>,navController: NavController) {
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        recipes.chunked(2).forEach { rowItems ->
+        recipes.chunked(1).forEach { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 for (recipe in rowItems) {
-                    RecipeCard(recipe = recipe, modifier = Modifier.weight(1f), navController)
+                    RecipeCard(recipe = recipe, navController=navController)
                 }
                 // Fill in empty space if row has only 1 item
                 if (rowItems.size == 1) {
@@ -234,52 +267,52 @@ fun RecipeRow(recipes: List<Recipe>,navController: NavController) {
     }
 }
 
-@Composable
-fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier,navController: NavController) {
-    val painter = if (recipe.resultImages.isNotBlank()) {
-        rememberAsyncImagePainter(recipe.resultImages) // Cloudinary URL
-    } else {
-        painterResource(id = R.drawable.mockrecipeimage) // Fallback
-    }
-
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
-            .clickable {
-                Log.d("HomePageScreen", "Recipe clicked: ${recipe.recipeId}")
-
-                navController.navigate("recipe_detail/${recipe.recipeId}") }
-    ) {
-        Image(
-            painter = painter,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Color.Black.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-                )
-                .align(Alignment.BottomCenter)
-                .padding(8.dp)
-        ) {
-            Text(
-                text = recipe.title.ifBlank { "Untitled Recipe" },
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-    }
-}
+//@Composable
+//fun RecipeCard(recipe: Recipe, modifier: Modifier = Modifier,navController: NavController) {
+//    val painter = if (recipe.resultImages.isNotBlank()) {
+//        rememberAsyncImagePainter(recipe.resultImages) // Cloudinary URL
+//    } else {
+//        painterResource(id = R.drawable.mockrecipeimage) // Fallback
+//    }
+//
+//    Box(
+//        modifier = modifier
+//            .aspectRatio(1f)
+//            .clip(RoundedCornerShape(16.dp))
+//            .background(Color.White)
+//            .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
+//            .clickable {
+//                Log.d("HomePageScreen", "Recipe clicked: ${recipe.recipeId}")
+//
+//                navController.navigate("recipe_detail/${recipe.recipeId}") }
+//    ) {
+//        Image(
+//            painter = painter,
+//            contentDescription = null,
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier.fillMaxSize()
+//        )
+//
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .background(
+//                    Color.Black.copy(alpha = 0.4f),
+//                    shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+//                )
+//                .align(Alignment.BottomCenter)
+//                .padding(8.dp)
+//        ) {
+//            Text(
+//                text = recipe.title.ifBlank { "Untitled Recipe" },
+//                color = Color.White,
+//                fontSize = 16.sp,
+//                fontWeight = FontWeight.SemiBold,
+//                modifier = Modifier.align(Alignment.Center)
+//            )
+//        }
+//    }
+//}
 
 @Preview(showBackground = true)
 @Composable
