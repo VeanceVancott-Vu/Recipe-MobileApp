@@ -1,5 +1,7 @@
 package com.example.dacs_3.ui.theme.main.admin
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,11 +19,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,9 +46,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.R
 import com.example.dacs_3.model.RecipeReport
+import com.example.dacs_3.model.UserReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.ReportSummary
+import com.example.dacs_3.utils.countRecipeReportStatuses
+import com.example.dacs_3.viewmodel.RecipeReportsViewModel
+import com.example.dacs_3.viewmodel.RecipeViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.SlidersH
@@ -50,7 +60,9 @@ import compose.icons.fontawesomeicons.solid.SlidersH
 @Composable
 fun RecipeReportsScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recipeReportsViewModel: RecipeReportsViewModel,
+    recipeViewModel: RecipeViewModel
 ) {
     val sampleReports = listOf(
         RecipeReport(
@@ -79,8 +91,11 @@ fun RecipeReportsScreen(
         )
     )
 
+    val allRecipeReport by recipeReportsViewModel.allReports.collectAsState()
 
-
+    LaunchedEffect(Unit) {
+        recipeReportsViewModel.loadAllReports()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -136,12 +151,20 @@ fun RecipeReportsScreen(
             }
         }
 
-        ReportSummary()
 
-        RecipeReportTableWithReasonDialog(reports = sampleReports)
+        val (pending, resolved) = countRecipeReportStatuses(allRecipeReport)
 
+        ReportSummary(pending.toString(), resolved.toString())
+
+
+        RecipeReportTableWithReasonDialog(reports = allRecipeReport, navController = navController,recipeViewModel = recipeViewModel,recipeReportsViewModel = recipeReportsViewModel)
+
+
+        val resolvedReports = allRecipeReport.filter { it.status == "Resolved" }
         DeleteProcessedReportsButton(
-            onClick = {}
+            onClick = {
+                recipeReportsViewModel.deleteReports(resolvedReports)
+            }
         )
     }
 
@@ -150,7 +173,10 @@ fun RecipeReportsScreen(
 @Composable
 fun RecipeReportTableWithReasonDialog(
     reports: List<RecipeReport>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    recipeViewModel: RecipeViewModel,
+    recipeReportsViewModel: RecipeReportsViewModel
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedReason by remember { mutableStateOf("") }
@@ -169,8 +195,8 @@ fun RecipeReportTableWithReasonDialog(
                 .padding(vertical = 8.dp, horizontal = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "Rep. User", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color(0xFF567F67))
             Text(text = "Rpt. Recipe", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color(0xFF567F67))
+            Text(text = "Rep. User", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color(0xFF567F67))
             Text(text = "Reason", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color(0xFF567F67))
             Text(text = "Status", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color(0xFF567F67))
         }
@@ -185,6 +211,22 @@ fun RecipeReportTableWithReasonDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                // Rpt. User, 1 dòng, ellipsis
+                Text(
+                    text = report.reportedRecipeId.let {
+                        if (it.length > 5) it.take(5) + "..." else it
+                    },
+                    modifier = Modifier.weight(1f)
+                        .clickable {
+                            Log.d("RecipeReportsScreen", "Recipe ID: ${report.reportedRecipeId}")
+                            navController.navigate("recipe_detail/${report.reportedRecipeId}")
+                        },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color(0xFF567F67)
+                )
+
                 // Rep. User, 1 dòng, ellipsis
                 Text(
                     text = report.reportingUserId.let {
@@ -196,16 +238,6 @@ fun RecipeReportTableWithReasonDialog(
                     color = Color(0xFF567F67)
                 )
 
-                // Rpt. User, 1 dòng, ellipsis
-                Text(
-                    text = report.reportedRecipeId.let {
-                        if (it.length > 5) it.take(5) + "..." else it
-                    },
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF567F67)
-                )
 
                 // Reason, 1 dòng, ellipsis, có thể nhấn được để mở dialog
                 Text(
@@ -225,11 +257,17 @@ fun RecipeReportTableWithReasonDialog(
                 )
 
                 // Status box
+                var expanded by remember { mutableStateOf(false) }
+                val showSuccessDialog = remember { mutableStateOf(false) }
+
+
+                // This is your clickable Box that shows the status
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFFE6F0E9))
+                        .clickable { expanded = true }
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -240,7 +278,60 @@ fun RecipeReportTableWithReasonDialog(
                         fontSize = 11.sp
                     )
                 }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Mark as Pending") },
+                        onClick = {
+                            expanded = false
+                            recipeReportsViewModel.updateReportStatus(report.id, "Pending")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Nothing bad skip Report") },
+                        onClick = {
+                            expanded = false
+                            recipeReportsViewModel.updateReportStatus(report.id,"Resolved")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete Recipe") },
+                        onClick = {
+                            expanded = false
+                            recipeViewModel.deleteRecipe(report.reportedRecipeId) { isSuccess ->
+                                if (isSuccess) {
+                                    recipeReportsViewModel.updateReportStatus(report.id,"Resolved")
+                                    showSuccessDialog.value = true
+                                } else {
+                                    showSuccessDialog.value = false
+                                }
+                            }
+                        }
+                    )
+                }
+
+                if (showSuccessDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showSuccessDialog.value = false },
+                        title = { Text("Success") },
+                        text = { Text("The recipe has been deleted.") },
+                        confirmButton = {
+                            TextButton(onClick = { showSuccessDialog.value = false }) {
+                                Text("OK")
+                            }
+                        }
+                    )
+
+
+                }
             }
+
+
+
+
 
             Divider(color = Color.LightGray, thickness = 1.dp)
         }
@@ -263,9 +354,10 @@ fun RecipeReportTableWithReasonDialog(
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun URecipeReportsScreenPreview() {
     val navController = rememberNavController()
-    RecipeReportsScreen(navController = navController)
+ //   RecipeReportsScreen(navController = navController)
 }

@@ -1,5 +1,6 @@
 package com.example.dacs_3.ui.theme.main.admin
 
+import UserReportViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,11 +23,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +56,8 @@ import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.BottomNavBar
 import com.example.dacs_3.utils.ReportSummary
+import com.example.dacs_3.utils.countUserReportStatuses
+import com.example.dacs_3.viewmodel.AuthViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Check
@@ -60,14 +67,15 @@ import compose.icons.fontawesomeicons.solid.SlidersH
 @Composable
 fun UserReportsScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    userReportViewModel: UserReportViewModel,
+    authViewModel: AuthViewModel
 ) {
-    val reports = listOf(
-        UserReport(reportingUserId = "ssssaaqq@@1234567890", reportedUserId = "ssssaaqq@@1234567890", reason = "Spadddmaaasp"),
-        UserReport(reportingUserId = "ssssaaqq@@1234567890", reportedUserId = "ssssaaqq@@1234567890", reason = "Spamaaaaaaaaaasp"),
-        UserReport(reportingUserId = "ssssaaqq@@1234567890", reportedUserId = "ssssaaqq@@1234567890", reason = "Spamsaaaaaap"),
-    )
 
+    val allUserReport by userReportViewModel.userReports.collectAsState()
+    LaunchedEffect(Unit) {
+        userReportViewModel.fetchAllReports()
+    }
 
     Column(
         modifier = Modifier
@@ -121,12 +129,20 @@ fun UserReportsScreen(
             }
         }
 
-        ReportSummary()
+        val (pending, resolved) = countUserReportStatuses(allUserReport)
 
-        UserReportTableWithReasonDialog(reports = reports)
 
+        ReportSummary(pending.toString(), resolved.toString())
+
+
+        UserReportTableWithReasonDialog(reports = allUserReport, userReportViewModel = userReportViewModel, authViewModel = authViewModel, navController = navController)
+
+
+        val resolvedReports = allUserReport.filter { it.status == "Resolved" }
         DeleteProcessedReportsButton(
-            onClick = {}
+            onClick = {
+                userReportViewModel.deleteReports(resolvedReports)
+            }
         )
 
     }
@@ -134,10 +150,15 @@ fun UserReportsScreen(
 }
 
 
+
+
 @Composable
 fun UserReportTableWithReasonDialog(
     reports: List<UserReport>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    userReportViewModel: UserReportViewModel,
+    authViewModel: AuthViewModel
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedReason by remember { mutableStateOf("") }
@@ -188,7 +209,9 @@ fun UserReportTableWithReasonDialog(
                     text = report.reportedUserId.let {
                         if (it.length > 5) it.take(5) + "..." else it
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
+                        .clickable { navController.navigate("other_user_profile/${report.reportedUserId}") },
+
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = Color(0xFF567F67)
@@ -212,6 +235,9 @@ fun UserReportTableWithReasonDialog(
                 )
 
                 // Status box
+                var expanded by remember { mutableStateOf(false) }
+                val showSuccessDialog = remember { mutableStateOf(false) }
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -227,6 +253,56 @@ fun UserReportTableWithReasonDialog(
                         fontSize = 11.sp
                     )
                 }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Mark as Pending") },
+                        onClick = {
+                            expanded = false
+                            userReportViewModel.updateUserReportStatus(report.id, "Pending")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Nothing bad skip Report") },
+                        onClick = {
+                            expanded = false
+                            userReportViewModel.updateUserReportStatus(report.id,"Resolved")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete Comment") },
+                        onClick = {
+                            expanded = false
+                            authViewModel.deleteAccount(report.reportedUserId) { isSuccess ->
+                                if (isSuccess) {
+                                    userReportViewModel.updateUserReportStatus(report.id,"Resolved")
+                                    showSuccessDialog.value = true
+                                } else {
+                                    // You could show a Snackbar or Dialog for failure here
+                                    showSuccessDialog.value = false
+                                }
+                            }
+                        }
+                    )
+                }
+
+                if (showSuccessDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showSuccessDialog.value = false },
+                        title = { Text("Success") },
+                        text = { Text("The comment has been deleted.") },
+                        confirmButton = {
+                            TextButton(onClick = { showSuccessDialog.value = false }) {
+                                Text("OK")
+                            }
+                        }
+                    )
+
+
+                }
+
             }
 
             Divider(color = Color.LightGray, thickness = 1.dp)
@@ -267,7 +343,7 @@ fun DeleteProcessedReportsButton(onClick: () -> Unit) {
         )
     ) {
         Text(
-            text = "Delete all processed reports",
+            text = "Delete all reports",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp
         )
@@ -279,5 +355,5 @@ fun DeleteProcessedReportsButton(onClick: () -> Unit) {
 @Composable
 fun UserReportsScreenPreview() {
     val navController = rememberNavController()
-    UserReportsScreen(navController = navController)
+  //  UserReportsScreen(navController = navController)
 }

@@ -1,5 +1,6 @@
 package com.example.dacs_3.ui.theme.main.admin
 
+import UserReportViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,17 +50,18 @@ fun ViolationReportsScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     commentReportsViewModel: CommentReportsViewModel,
-    recipeReportsViewModel: RecipeReportsViewModel
+    recipeReportsViewModel: RecipeReportsViewModel,
+    userReportViewModel: UserReportViewModel
 ) {
 
     val commentReports by commentReportsViewModel.allReports.collectAsState()
     val recipeReports by recipeReportsViewModel.allReports.collectAsState()
-
+    val userReports by userReportViewModel.userReports.collectAsState()
 
     LaunchedEffect(Unit) {
         commentReportsViewModel.fetchReports()
         recipeReportsViewModel.loadAllReports()
-
+        userReportViewModel.fetchAllReports()
     }
 
 
@@ -110,8 +112,9 @@ fun ViolationReportsScreen(
         }
 
         ViolationReportSummary(recipeReports.size,
-                                commentReports.size,
-            navController)
+                            commentReports.size,
+                            userReports.size,
+                            navController)
 
     }
 }
@@ -119,6 +122,7 @@ fun ViolationReportsScreen(
 @Composable
 fun ViolationReportSummary(recipeReportsCount:Int,
                            commentReportsCount:Int,
+                           userReportsCount:Int,
                            navController: NavController
 ) {
     Column(
@@ -142,7 +146,7 @@ fun ViolationReportSummary(recipeReportsCount:Int,
                 icon = FontAwesomeIcons.Solid.User,
                 titleLine1 = "User",
                 titleLine2 = "Reports",
-                count = "126",
+                count = userReportsCount.toString(),
                 onClick =  { navController.navigate("user_report") }
             )
         }
@@ -159,15 +163,7 @@ fun ViolationReportSummary(recipeReportsCount:Int,
                 onClick =  { navController.navigate("comment_report") }
             )
 
-            Spacer(modifier = Modifier.weight(1f))
 
-            ReportSummaryCard(
-                icon = FontAwesomeIcons.Solid.Camera,
-                titleLine1 = "CookSnap",
-                titleLine2 = "Reports",
-                count = "126",
-                onClick =  { navController.navigate("cooksnap_report") }
-            )
         }
     }
 }

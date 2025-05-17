@@ -2,6 +2,7 @@ package com.example.dacs_3
 
 import DACS_3Theme
 import MyProfileScreen
+import UserReportViewModel
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -66,6 +67,8 @@ class MainActivity : ComponentActivity() {
             val commentReportsViewModel: CommentReportsViewModel = viewModel() // Tạo ViewModel
             val notificationViewModel: NotificationViewModel = viewModel()
 
+            val userReportsViewModel: UserReportViewModel = viewModel() // Tạo ViewModel
+
             DACS_3Theme {
                 Surface {
 //                    AppNavigation(navController = navController)
@@ -105,8 +108,10 @@ class MainActivity : ComponentActivity() {
                         collectionsViewModel,
                         searchHistoryViewModel,
                         recipeReportsViewModel,
+                        notificationViewModel,
                         commentReportsViewModel,
-                        notificationViewModel
+                        userReportsViewModel,
+
                     )
 
 //                    for (recipe in recipes) {

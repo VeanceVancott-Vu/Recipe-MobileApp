@@ -11,12 +11,16 @@ class RecipeReportsRepository {
 
     suspend fun submitReport(report: RecipeReport): Boolean {
         return try {
-            reportCollection.add(report).await()
+            val docRef = reportCollection.document() // Generate a document with ID
+            val reportWithId = report.copy(id = docRef.id)
+            docRef.set(reportWithId).await()
             true
         } catch (e: Exception) {
             false
         }
     }
+
+
 
     suspend fun getReportsByUser(userId: String): List<RecipeReport> {
         return try {
@@ -52,4 +56,14 @@ class RecipeReportsRepository {
             false
         }
     }
+    suspend fun deleteReport(reportId: String): Boolean {
+        return try {
+            reportCollection.document(reportId).delete().await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
 }

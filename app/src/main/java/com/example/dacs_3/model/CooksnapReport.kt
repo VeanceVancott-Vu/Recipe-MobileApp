@@ -1,6 +1,7 @@
 package com.example.dacs_3.model
 
 data class CooksnapReport(
+    val id :String = "",
     val reportingUserId: String = "",    // ID người báo cáo
     val reportedUserId: String = "",     // ID người bị báo cáo (người dùng)
     val reportedCooksnapId: String = "",   // ID món ăn bị báo cáo

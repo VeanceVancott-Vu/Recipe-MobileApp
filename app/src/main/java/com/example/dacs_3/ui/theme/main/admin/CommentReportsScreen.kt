@@ -12,16 +12,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +51,9 @@ import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.SectionTitle
 import com.example.dacs_3.utils.ReportSummary
+import com.example.dacs_3.utils.countCommentReportStatuses
+import com.example.dacs_3.viewmodel.CommentReportsViewModel
+import com.example.dacs_3.viewmodel.CommentViewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.SlidersH
@@ -53,7 +61,9 @@ import compose.icons.fontawesomeicons.solid.SlidersH
 @Composable
 fun CommentReportsScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    commentReportViewModel : CommentReportsViewModel,
+    commentViewModel: CommentViewModel
 ) {
     val sampleCommentReports = listOf(
         CommentReport(
@@ -82,6 +92,10 @@ fun CommentReportsScreen(
         )
     )
 
+    val allCommentReports by commentReportViewModel.allReports.collectAsState()
+    LaunchedEffect(Unit) {
+        commentReportViewModel.fetchReports()
+    }
 
     Column(
         modifier = Modifier
@@ -138,12 +152,22 @@ fun CommentReportsScreen(
             }
         }
 
-         ReportSummary()
 
-        CommentReportTableWithReasonDialog(reports = sampleCommentReports)
+        val (pending, resolved) = countCommentReportStatuses(allCommentReports)
+        ReportSummary(pending.toString(), resolved.toString())
 
+
+        CommentReportTableWithReasonDialog(reports = allCommentReports,
+            navController = navController,
+            commentViewModel = commentViewModel,
+            commentReportViewModel = commentReportViewModel)
+
+
+        val resolvedReports = allCommentReports.filter { it.status == "Resolved" }
         DeleteProcessedReportsButton(
-            onClick = {}
+            onClick = {
+                commentReportViewModel.deleteReports(resolvedReports)
+            }
         )
     }
 
@@ -152,10 +176,14 @@ fun CommentReportsScreen(
 @Composable
 fun CommentReportTableWithReasonDialog(
     reports: List<CommentReport>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    commentViewModel: CommentViewModel,
+    commentReportViewModel: CommentReportsViewModel
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedReason by remember { mutableStateOf("") }
+    val comment by commentViewModel.selectedComment.collectAsState()
 
     Column(
         modifier = modifier
@@ -217,6 +245,7 @@ fun CommentReportTableWithReasonDialog(
                     modifier = Modifier
                         .weight(1f)
                         .clickable {
+                            commentViewModel.fetchCommentById(report.reportedCommentId)
                             selectedReason = report.reason
                             showDialog = true
                         },
@@ -227,11 +256,18 @@ fun CommentReportTableWithReasonDialog(
                 )
 
                 // Status box
+                // Status box
+                var expanded by remember { mutableStateOf(false) }
+                val showSuccessDialog = remember { mutableStateOf(false) }
+
+
+                // This is your clickable Box that shows the status
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFFE6F0E9))
+                        .clickable { expanded = true }
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -242,32 +278,96 @@ fun CommentReportTableWithReasonDialog(
                         fontSize = 11.sp
                     )
                 }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Mark as Pending") },
+                        onClick = {
+                            expanded = false
+                            commentReportViewModel.updateReportStatus(report.id, "Pending")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete Report") },
+                        onClick = {
+                            expanded = false
+                            commentReportViewModel.updateReportStatus(report.id, "Resolved")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete Comment") },
+                        onClick = {
+                            expanded = false
+                            commentViewModel.deleteCommentByAdmin(report.reportedCommentId) { isSuccess ->
+                                if (isSuccess) {
+                                    commentReportViewModel.updateReportStatus(report.id, "Resolved")
+                                    showSuccessDialog.value = true
+                                } else {
+                                    // You could show a Snackbar or Dialog for failure here
+                                    showSuccessDialog.value = false
+                                }
+                            }
+                        }
+                    )
+                }
+
+                if (showSuccessDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showSuccessDialog.value = false },
+                        title = { Text("Success") },
+                        text = { Text("The comment has been deleted.") },
+                        confirmButton = {
+                            TextButton(onClick = { showSuccessDialog.value = false }) {
+                                Text("OK")
+                            }
+                        }
+                    )
+
+
+                }
+
             }
 
             Divider(color = Color.LightGray, thickness = 1.dp)
         }
     }
 
+
+
     // Dialog hiện khi nhấn reason
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text(text = "Reason Detail") },
-            text = {
-                Text(text = selectedReason)
-            },
+            text = { Text(text = selectedReason) },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Close")
+                Row {
+                    TextButton(onClick = {
+                        showDialog = false
+                        // Navigate to the recipe screen here
+                        navController.navigate("recipeDetail/${comment?.recipeId}")
+                    }) {
+                        Text("See Recipe")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Close")
+                    }
                 }
             }
         )
     }
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun CommentReportsScreenPreview() {
     val navController = rememberNavController()
-    CommentReportsScreen(navController = navController)
+  //  CommentReportsScreen(navController = navController)
 }

@@ -4,6 +4,7 @@ import AddRecipeScreen
 import EditProfileScreen
 import MyProfileScreen
 import android.net.Uri
+import UserReportViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,8 +54,9 @@ fun AppNavigation(navController: NavHostController,
                   collectionsViewModel: CollectionsViewModel,
                   searchHistoryViewModel: SearchHistoryViewModel,
                   recipeReportsViewModel : RecipeReportsViewModel,
-                  commentReportsViewModel: CommentReportsViewModel,
                   notificationViewModel: NotificationViewModel,
+                  commentReportsViewModel: CommentReportsViewModel,
+                  userReportViewModel: UserReportViewModel
 ) {
     val userId = authViewModel.getCurrentUserId().toString() // Get the current user's ID
     val userRole by authViewModel.userRole.collectAsState()
@@ -112,7 +114,7 @@ fun AppNavigation(navController: NavHostController,
             arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            OtherUserProfileScreen(navController = navController, userId = userId)
+            OtherUserProfileScreen(navController = navController, userId = userId, userReportViewModel = userReportViewModel , recipeViewModel = recipeViewModel,userViewModel = authViewModel)
         }
 
 
@@ -209,13 +211,16 @@ fun AppNavigation(navController: NavHostController,
             ViolationReportsScreen(
                 navController = navController,
                  commentReportsViewModel =commentReportsViewModel,
-                recipeReportsViewModel = recipeReportsViewModel
+                recipeReportsViewModel = recipeReportsViewModel,
+                userReportViewModel = userReportViewModel
 
             ) // Màn hình điều hướng đến
         }
         composable("comment_report") {
             CommentReportsScreen(
                 navController = navController,
+                commentViewModel = commentViewModel,
+                commentReportViewModel = commentReportsViewModel
 
 
             )
@@ -223,14 +228,16 @@ fun AppNavigation(navController: NavHostController,
         composable("recipe_report") {
             RecipeReportsScreen(
                 navController = navController,
-
+                recipeReportsViewModel = recipeReportsViewModel,
+                recipeViewModel = recipeViewModel
 
                 )
         }
         composable("user_report") {
             UserReportsScreen(
                 navController = navController,
-
+                userReportViewModel = userReportViewModel
+                , authViewModel = authViewModel
 
                 )
         }

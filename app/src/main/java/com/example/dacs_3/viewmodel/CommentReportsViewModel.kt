@@ -3,6 +3,7 @@ package com.example.dacs_3.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.model.CommentReport
+import com.example.dacs_3.model.RecipeReport
 import com.example.dacs_3.repository.CommentReportsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,6 +67,9 @@ class CommentReportsViewModel : ViewModel() {
             if (result.isFailure) {
                 _errorMessage.value = result.exceptionOrNull()?.message
             }
+            else{
+                fetchReports()
+            }
         }
     }
 
@@ -79,4 +83,27 @@ class CommentReportsViewModel : ViewModel() {
         object Success : ReportStatus()
         data class Error(val message: String) : ReportStatus()
     }
+
+    fun deleteCommentReport(reportId: String) {
+        viewModelScope.launch {
+            val success = repository.deleteCommentReport(reportId)
+            if (!success) {
+                _errorMessage.value = "Failed to delete comment report"
+            } else {
+                fetchReports() // If you have a method like this to refresh the list
+            }
+        }
+    }
+
+
+    fun deleteReports(reports: List<CommentReport>) {
+        viewModelScope.launch {
+            reports.forEach { report ->
+                deleteCommentReport(report.id)
+            }
+        }
+    }
+
+
+
 }

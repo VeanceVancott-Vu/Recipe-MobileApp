@@ -115,6 +115,19 @@ class CommentViewModel : ViewModel() {
         }
     }
 
+    fun deleteCommentByAdmin(commentId: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.deleteComment(commentId)
+                onResult(true) // Success
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to delete comment: ${e.message}"
+                onResult(false) // Failure
+            }
+        }
+    }
+
+
     fun updateComment(comment: Comment) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -141,4 +154,19 @@ class CommentViewModel : ViewModel() {
                 onComplete()
             }
     }
+
+    // CommentViewModel.kt
+    private val _selectedComment = MutableStateFlow<Comment?>(null)
+    val selectedComment: StateFlow<Comment?> = _selectedComment
+
+    fun fetchCommentById(commentId: String) {
+        viewModelScope.launch {
+            val comment = repository.fetchCommentById(commentId)
+            _selectedComment.value = comment
+            if (comment == null) {
+                _errorMessage.value = "Failed to fetch comment"
+            }
+        }
+    }
+
 }

@@ -180,6 +180,15 @@ class AuthRepository {
     }
 
 
+    suspend fun deleteUserAccountByAdmin(userId: String): Boolean {
+        return try {
+            firestore.collection("users").document(userId).delete().await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     // Fake để test - Q
     // Trong AuthRepository
     suspend fun fetchUserDataByUid(uid: String): User? {

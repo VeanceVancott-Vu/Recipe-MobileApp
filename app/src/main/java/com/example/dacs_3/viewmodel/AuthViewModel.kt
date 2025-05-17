@@ -214,16 +214,18 @@ class AuthViewModel : ViewModel() {
 
 
 
-    fun deleteAccount(password: String) {
+    fun deleteAccount(userId: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                authRepository.deleteUserAccount(password)
-                _deleteAccountStatus.value = Result.success(true)
+                val success = authRepository.deleteUserAccountByAdmin(userId)
+                onResult(success)
             } catch (e: Exception) {
-                _deleteAccountStatus.value = Result.failure(e)
+                _errorMessage.value = "Failed to delete account: ${e.message}"
+                onResult(false)
             }
         }
     }
+
 
     // Q:
 

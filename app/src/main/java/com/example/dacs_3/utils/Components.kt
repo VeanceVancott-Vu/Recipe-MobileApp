@@ -36,6 +36,9 @@ import androidx.navigation.NavDestination
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.dacs_3.R
+import com.example.dacs_3.model.CommentReport
+import com.example.dacs_3.model.RecipeReport
+import com.example.dacs_3.model.UserReport
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Box
@@ -52,7 +55,7 @@ import compose.icons.fontawesomeicons.solid.Users
 @Composable
     fun TopBar(title: String,
                showRightIcon: Boolean = true,
-               rightIconRes: Int = R.drawable.email,
+               rightIconRes: Int = R.drawable.warning,
                onRightIconClick: () -> Unit = {},
                onBackIconClick: () -> Unit = {},
     ) {
@@ -85,7 +88,9 @@ import compose.icons.fontawesomeicons.solid.Users
                     Icon(
                         painter = painterResource(id = rightIconRes),
                         contentDescription = "Right Icon",
-                        tint =Color(0xff3b684d)
+                        tint =Color(0xff3b684d),
+                        modifier = Modifier
+                            .size(24.dp)
                     )
                 }
             } else {
@@ -147,9 +152,25 @@ fun BottomNavItem(icon: ImageVector, navController: NavController, destination: 
     )
 }
 
+fun countUserReportStatuses(reports: List<UserReport>): Pair<Int, Int> {
+    val pendingCount = reports.count { it.status == "Unresolved" }
+    val resolvedCount = reports.count { it.status == "Resolved" }
+    return Pair(pendingCount, resolvedCount)
+}
+fun countRecipeReportStatuses(reports: List<RecipeReport>): Pair<Int, Int> {
+    val pendingCount = reports.count { it.status == "Unresolved" }
+    val resolvedCount = reports.count { it.status == "Resolved" }
+    return Pair(pendingCount, resolvedCount)
+}
+
+fun countCommentReportStatuses(reports: List<CommentReport>): Pair<Int, Int> {
+    val pendingCount = reports.count { it.status == "Unresolved" }
+    val resolvedCount = reports.count { it.status == "Resolved" }
+    return Pair(pendingCount, resolvedCount)
+}
 
 @Composable
-fun ReportSummary() {
+fun ReportSummary(pending: String = "0", resolved: String = "6") {
     Row(
         modifier = Modifier
             .padding(horizontal = dimensionResource(R.dimen.spacing_m))
@@ -158,7 +179,7 @@ fun ReportSummary() {
             icon = FontAwesomeIcons.Solid.Hourglass,
             titleLine1 = "Pending",
             titleLine2 = "Reports",
-            count = "28"
+            count = pending
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -167,7 +188,7 @@ fun ReportSummary() {
             icon = FontAwesomeIcons.Solid.Check,
             titleLine1 = "Resolved",
             titleLine2 = "Reports",
-            count = "126"
+            count = resolved
         )
 
 
