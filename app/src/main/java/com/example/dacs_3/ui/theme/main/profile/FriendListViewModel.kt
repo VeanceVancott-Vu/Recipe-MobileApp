@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 
 class FriendListViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
-    private val followsRef = db.collection("Follows")
-    private val usersRef = db.collection("Users")
+    private val followsRef = db.collection("follows")
+    private val usersRef = db.collection("users")
 
     private val _friendsList = MutableStateFlow<List<UserWithStatus>>(emptyList())
     private val _followingList = MutableStateFlow<List<UserWithStatus>>(emptyList())

@@ -1,61 +1,35 @@
 package com.example.dacs_3.ui.theme.main.profile
 
-import BioCard
 import ProfileHeader
-import SectionCard
+
 import UserReportViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.dacs_3.R
+import com.example.dacs_3.model.UserReport
 import com.example.dacs_3.ui.theme.OliverGreen
 import com.example.dacs_3.ui.theme.main.DishCard
 import com.example.dacs_3.utils.TopBar
 import com.example.dacs_3.viewmodel.OtherUserProfileViewModel
-import com.example.dacs_3.viewmodel.UserRecipesViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dacs_3.model.UserReport
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.RecipeViewModel
-
 
 @Composable
 fun OtherUserProfileScreen(
@@ -71,12 +45,11 @@ fun OtherUserProfileScreen(
 
     val currentUserId = userViewModel.currentUserUid
 
-
-
     // Load user khi userId thay đổi
     LaunchedEffect(userId) {
         viewModel.loadUser(userId)
     }
+
     val userRecipes by recipeViewModel.recipesByUserId.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -85,14 +58,16 @@ fun OtherUserProfileScreen(
 
     var itemsToShow by remember { mutableIntStateOf(3) }
 
-
     var showDialog by remember { mutableStateOf(false) }
     var reportReason by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
-            TopBar("My profile", showRightIcon = false,
-                onBackIconClick = {navController.popBackStack()} )
+            TopBar(
+                title = "My profile",
+                showRightIcon = false,
+                onBackIconClick = { navController.popBackStack() }
+            )
         },
         content = { innerPadding ->
             Column(
@@ -100,13 +75,11 @@ fun OtherUserProfileScreen(
                     .fillMaxSize()
                     .padding(WindowInsets.systemBars.asPaddingValues())
                     .background(Color.White)
-                    .padding(top = innerPadding.calculateTopPadding()-35.dp)
+                    .padding(top = innerPadding.calculateTopPadding() - 35.dp)
                     .padding(horizontal = 24.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-
 
                 userState?.let { user ->
                     ProfileHeader(user)
@@ -119,14 +92,16 @@ fun OtherUserProfileScreen(
                     }
                 }
 
-
-
-                BioCard()
+                BioCardOther(
+                    userId = userId,
+                    currentUserId = currentUserId.toString(),
+                    navController = navController
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
-                    onClick = {},
+                    onClick = { /* TODO: Follow logic */ },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -140,7 +115,7 @@ fun OtherUserProfileScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
-                    onClick = {showDialog = true},
+                    onClick = { showDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -173,8 +148,11 @@ fun OtherUserProfileScreen(
                         userRecipes.take(itemsToShow).forEach { dish ->
                             DishCard(
                                 dish,
-                                Modifier.padding(vertical = dimensionResource(R.dimen.spacing_m))
-                                    .clickable { navController.navigate("recipe_detail/${dish.recipeId}") }
+                                Modifier
+                                    .padding(vertical = dimensionResource(R.dimen.spacing_m))
+                                    .clickable {
+                                        navController.navigate("recipe_detail/${dish.recipeId}")
+                                    }
                             )
                         }
 
@@ -198,84 +176,127 @@ fun OtherUserProfileScreen(
                             }
                         }
                     }
+                }
 
-
-//
-//                    Text(
-//                        text = "Cooksnap",
-//                        fontSize = 24.sp,
-//                        color = OliverGreen,
-//                        fontWeight = FontWeight.Bold
-//                    )
-//                    Box(
-//                        modifier = Modifier.fillMaxWidth()
-//                            .height(300.dp)
-//
-//                    ) {
-//
-//                        CooksnapGrid(
-//                            cooksnapList = cooksnaps,
-//                            usersMap = usersMap
-//                        )
-//                    }
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Report User") },
+                        text = {
+                            Column {
+                                Text("Please enter the reason for reporting:")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                TextField(
+                                    value = reportReason,
+                                    onValueChange = { reportReason = it },
+                                    placeholder = { Text("Reason...") },
+                                    singleLine = false,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showDialog = false
+                                if (reportReason.isNotBlank()) {
+                                    val report = currentUserId?.let {
+                                        UserReport(
+                                            reportingUserId = it,
+                                            reportedUserId = userId,
+                                            reason = reportReason,
+                                        )
+                                    }
+                                    if (report != null) {
+                                        userReportViewModel.submitUserReport(report)
+                                    }
+                                }
+                            }) {
+                                Text("Submit")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                showDialog = false
+                            }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
                 }
             }
         }
     )
-
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Report User") },
-            text = {
-                Column {
-                    Text("Please enter the reason for reporting:")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        value = reportReason,
-                        onValueChange = { reportReason = it },
-                        placeholder = { Text("Reason...") },
-                        singleLine = false,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDialog = false
-                    if (reportReason.isNotBlank()) {
-
-                        val report = currentUserId?.let {
-                            UserReport(
-                                reportingUserId = it,
-                                reportedUserId = userId,
-                                reason = reportReason,
-                            )
-                        }
-                        if (report != null) {
-                            userReportViewModel.submitUserReport(report)
-                        }
-                    }
-                }) {
-                    Text("Submit")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showDialog = false
-                }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 }
 
-@Preview(showBackground = true)
+// Tách riêng @Composable BioCardOther ra ngoài
 @Composable
-private fun OtherUserProfileScreenPreview() {
-//    OtherUserProfileScreen(
-//        navController = rememberNavController()
-//    )
+fun BioCardOther(
+    userId: String,
+    currentUserId: String,
+    navController: NavController
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false)
+            .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?",
+            fontSize = 15.sp,
+            color = Color(0xff0a3d1f)
+        )
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .shadow(8.dp, RoundedCornerShape(16.dp), clip = false)
+                .width(160.dp)
+                .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+                .padding(16.dp)
+                .clickable {
+                    // Điều hướng đến FriendListScreen
+                    navController.navigate("friendlist/$currentUserId/$userId")
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Kitchen Buddy: 01",
+                fontSize = 14.sp,
+                color = Color(0xff0a3d1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(24.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .shadow(8.dp, RoundedCornerShape(16.dp), clip = false)
+                .width(160.dp)
+                .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+                .padding(16.dp)
+                .clickable {
+                    // Điều hướng đến FollowerListScreen
+                    navController.navigate("followerlist/$currentUserId/$userId")
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Follower : 01",
+                fontSize = 14.sp,
+                color = Color(0xff0a3d1f)
+            )
+        }
+    }
 }

@@ -31,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.dacs_3.R
 import com.example.dacs_3.model.User
+
 import com.example.dacs_3.utils.TopBar
 import com.example.dacs_3.viewmodel.AuthViewModel
 
@@ -64,19 +65,30 @@ fun MyProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 user?.let { ProfileHeader(it) }
-                BioCard()
+
+                user?.let {
+                    BioCard(
+                        user = it,
+                        navController = navController
+                    )
+                }
+
+
                 Spacer(modifier = Modifier.height(40.dp))
+
                 SectionCard(
                     iconRes = R.drawable.person,
                     title = "Personal Information",
                     {navController.navigate("edit_profile")}
                 )
+
                 SectionCard(
                     iconRes = R.drawable.settings,
                     title = "Setting",
                     {navController.navigate("edit_profile")}
 
                 )
+
                 SectionCard(
                     iconRes = R.drawable.bookmark,
                     title = "My Recipes",
@@ -150,77 +162,78 @@ fun ProfileHeader(user: User) {
 }
 
 @Composable
-fun BioCard() {
+fun BioCard(
+    user: User,
+    navController: NavController
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
+            .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+            .padding(16.dp)
+
+    ) {
+        Text(
+            text = "Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?",
+            fontSize = 15.sp,
+            color = Color(0xff0a3d1f)
+        )
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+    )
+    {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .shadow(8.dp, RoundedCornerShape(16.dp), clip = false)
+                .width(160.dp)
+                .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
+                .padding(16.dp)
+                .clickable {
+                    navController.navigate("kitchen_buddy/${user.userId}")
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Kitchen Buddy: 01",
+                fontSize = 14.sp,
+                color = Color(0xff0a3d1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(24.dp)) // Adds space between the two boxes
 
 
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
+                .fillMaxHeight()
                 .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
+
+                .width(160.dp)
                 .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
                 .padding(16.dp)
-
-        ) {
+                .clickable {
+                    navController.navigate("following/${user.userId}")
+                },
+            contentAlignment = Alignment.Center
+        )
+        {
             Text(
-                text = "Burned the kitchen 3 times, still call myself a Master Chef. Anyone wanna save my pasta?",
-                fontSize = 15.sp,
+                text = "Follower : 01",
+                fontSize = 14.sp,
                 color = Color(0xff0a3d1f)
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-        )
-        {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
-
-                    .width(160.dp)
-                    .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-
-
-            )
-            {
-                Text(
-                    text = "Kitchen Buddy: 01",
-                    fontSize = 14.sp,
-                    color = Color(0xff0a3d1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(24.dp)) // Adds space between the two boxes
-
-
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .shadow(8.dp, RoundedCornerShape(16.dp), clip = false) // <- shadow here
-
-                    .width(160.dp)
-                    .background(Color(0xffdbe6de), RoundedCornerShape(16.dp))
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-
-
-            )
-            {
-                Text(
-                    text = "Follower : 01",
-                    fontSize = 14.sp,
-                    color = Color(0xff0a3d1f)
-                )
-            }
-
-        }
     }
+}
 
 
 @Composable

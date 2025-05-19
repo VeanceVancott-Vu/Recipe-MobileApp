@@ -52,12 +52,14 @@ import com.example.dacs_3.ui.theme.main.SectionTitle
 
 @Composable
 fun KitchenBuddyScreen(
+    userId: String,
     viewModel: ProfileViewModel = viewModel()
 ) {
     val kitchenBuddies by viewModel.mutualFollows.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
-    val nddn = "user1"
+
+    val nddn = userId
 
     // Load dữ liệu
     LaunchedEffect(Unit) {
@@ -100,6 +102,8 @@ fun KitchenBuddyScreen(
                 )
             }
         }
+
+
 
         when {
             isLoading -> {
@@ -236,9 +240,3 @@ fun UserCardKitchenBuddy(
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun KitchenBuddyScreenPreview() {
-    KitchenBuddyScreen()
-}

@@ -1,5 +1,6 @@
 package com.example.dacs_3.ui.theme.main.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs_3.model.User
@@ -9,11 +10,12 @@ import com.google.android.gms.tasks.Tasks
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ProfileViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
-    private val followsRef = db.collection("Follows")
-    private val usersRef = db.collection("Users")
+    private val followsRef = db.collection("follows")
+    private val usersRef = db.collection("users")
 
     private val _mutualFollows = MutableStateFlow<List<User>>(emptyList()) // Follow lẫn nhau
     private val _oneWayFollowing = MutableStateFlow<List<User>>(emptyList()) // Mình follow họ, họ không follow lại
@@ -28,67 +30,86 @@ class ProfileViewModel : ViewModel() {
     fun loadFollowingAndBuddies(currentUserId: String) {
         viewModelScope.launch {
             _isLoading.value = true
+            Log.d("ProfileViewModel", "Start loadFollowingAndBuddies for userId=$currentUserId")
             try {
-                val followingTask = followsRef.whereEqualTo("followerId", currentUserId).get()
-                val followerTask = followsRef.whereEqualTo("followedId", currentUserId).get()
+                val followingSnapshot = followsRef.whereEqualTo("followerId", currentUserId).get().await()
+                Log.d("ProfileViewModel", "Following snapshot size: ${followingSnapshot.size()}")
 
-                Tasks.whenAllSuccess<QuerySnapshot>(followingTask, followerTask)
-                    .addOnSuccessListener { results ->
-                        val followingIds = results[0].documents.mapNotNull { it.getString("followedId") }
-                        val followerIds = results[1].documents.mapNotNull { it.getString("followerId") }
+                val followerSnapshot = followsRef.whereEqualTo("followedId", currentUserId).get().await()
+                Log.d("ProfileViewModel", "Follower snapshot size: ${followerSnapshot.size()}")
 
-                        val mutualIds = followingIds.intersect(followerIds.toSet()).toList()
-                        val oneWayFollowingIds = followingIds.filterNot { mutualIds.contains(it) }
+                val followingIds = followingSnapshot.documents.mapNotNull { it.getString("followedId") }
+                Log.d("ProfileViewModel", "Following IDs: $followingIds")
 
-                        val allUserIds = (mutualIds + oneWayFollowingIds).distinct()
-                        fetchUsersInBatches(allUserIds) { users ->
-                            _mutualFollows.value = users.filter { mutualIds.contains(it.userId) }
-                            _oneWayFollowing.value = users.filter { oneWayFollowingIds.contains(it.userId) }
-                            _isLoading.value = false
-                        }
-                    }
-                    .addOnFailureListener { exception ->
-                        _mutualFollows.value = emptyList()
-                        _oneWayFollowing.value = emptyList()
-                        _error.value = "Failed to load follows: ${exception.message}"
-                        _isLoading.value = false
-                    }
+                val followerIds = followerSnapshot.documents.mapNotNull { it.getString("followerId") }
+                Log.d("ProfileViewModel", "Follower IDs: $followerIds")
+
+                val mutualIds = followingIds.intersect(followerIds.toSet()).toList()
+                Log.d("ProfileViewModel", "Mutual IDs: $mutualIds")
+
+                val oneWayFollowingIds = followingIds.filterNot { mutualIds.contains(it) }
+                Log.d("ProfileViewModel", "One way following IDs: $oneWayFollowingIds")
+
+                val allUserIds = (mutualIds + oneWayFollowingIds).distinct()
+                Log.d("ProfileViewModel", "All user IDs to fetch: $allUserIds")
+
+                val users = fetchUsers(allUserIds)
+                Log.d("ProfileViewModel", "Fetched users count: ${users.size}")
+
+                _mutualFollows.value = users.filter { mutualIds.contains(it.userId) }
+                _oneWayFollowing.value = users.filter { oneWayFollowingIds.contains(it.userId) }
+
+                _isLoading.value = false
             } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Failed to load follows", e)
                 _mutualFollows.value = emptyList()
                 _oneWayFollowing.value = emptyList()
-                _error.value = "Unexpected error: ${e.message}"
+                _error.value = "Failed to load follows: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
 
+    private suspend fun fetchUsers(userIds: List<String>): List<User> {
+        if (userIds.isEmpty()) {
+            Log.d("ProfileViewModel", "No userIds to fetch")
+            return emptyList()
+        }
+
+        val batchSize = 10
+        val batches = userIds.chunked(batchSize)
+        val users = mutableListOf<User>()
+
+        for (batch in batches) {
+            Log.d("ProfileViewModel", "Fetching users batch: $batch")
+            val snapshot = usersRef.whereIn("userId", batch).get().await()
+            val batchUsers = snapshot.toObjects(User::class.java)
+            Log.d("ProfileViewModel", "Fetched ${batchUsers.size} users in this batch")
+            users.addAll(batchUsers)
+        }
+
+        Log.d("ProfileViewModel", "Total users fetched: ${users.size}")
+        return users
+    }
     fun unfollowUser(currentUserId: String, targetUserId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                followsRef
+                val snapshot = followsRef
                     .whereEqualTo("followerId", currentUserId)
                     .whereEqualTo("followedId", targetUserId)
                     .get()
-                    .addOnSuccessListener { snapshot ->
-                        val deleteTasks = snapshot.documents.map { followsRef.document(it.id).delete() }
-                        Tasks.whenAll(deleteTasks)
-                            .addOnSuccessListener {
-                                _mutualFollows.value = _mutualFollows.value.filterNot { it.userId == targetUserId }
-                                _oneWayFollowing.value = _oneWayFollowing.value.filterNot { it.userId == targetUserId }
-                                _isLoading.value = false
-                            }
-                            .addOnFailureListener { exception ->
-                                _error.value = "Failed to unfollow user: ${exception.message}"
-                                _isLoading.value = false
-                            }
-                    }
-                    .addOnFailureListener { exception ->
-                        _error.value = "Failed to fetch follow data: ${exception.message}"
-                        _isLoading.value = false
-                    }
+                    .await()
+
+                val deleteTasks = snapshot.documents.map { followsRef.document(it.id).delete().await() }
+
+                // Sau khi xóa xong update lại danh sách theo logic bạn muốn
+                _mutualFollows.value = _mutualFollows.value.filterNot { it.userId == targetUserId }
+                _oneWayFollowing.value = _oneWayFollowing.value.filterNot { it.userId == targetUserId }
+                _isLoading.value = false
+
             } catch (e: Exception) {
-                _error.value = "Unexpected error during unfollow: ${e.message}"
+                _error.value = "Failed to unfollow user: ${e.message}"
                 _isLoading.value = false
             }
         }

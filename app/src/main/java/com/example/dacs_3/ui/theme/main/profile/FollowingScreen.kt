@@ -52,13 +52,14 @@ import com.example.dacs_3.ui.theme.main.SectionTitle
 
 @Composable
 fun FollowingScreen(
+    userId: String,
     viewModel: ProfileViewModel = viewModel()
 ) {
     val followingUsers by viewModel.oneWayFollowing.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    val tnn = "user1"
+    val tnn = userId
 
     LaunchedEffect(Unit) {
         viewModel.loadFollowingAndBuddies(tnn) // user đang đăng nhập
@@ -235,8 +236,3 @@ fun UserCard(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun UserCardPreview() {
-    FollowingScreen()
-}
