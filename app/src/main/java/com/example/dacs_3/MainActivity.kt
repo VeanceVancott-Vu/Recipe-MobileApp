@@ -1,6 +1,8 @@
 package com.example.dacs_3
 
 import DACS_3Theme
+import LocationItem
+import MultiUserMapScreen
 import MyProfileScreen
 import UserReportViewModel
 import android.os.Bundle
@@ -11,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.dacs_3.navigation.AppNavigation
@@ -100,20 +103,27 @@ class MainActivity : ComponentActivity() {
 //                    FollowStatusScreen()
 
             //        MyProfileScreen(navController = navController)
-                    AppNavigation(
-                        navController,
-                        authViewModel,
-                        recipeViewModel,
-                        commentViewModel,
-                        collectionsViewModel,
-                        searchHistoryViewModel,
-                        recipeReportsViewModel,
-                        notificationViewModel,
-                        commentReportsViewModel,
-                        userReportsViewModel,
+//                    AppNavigation(
+//                        navController,
+//                        authViewModel,
+//                        recipeViewModel,
+//                        commentViewModel,
+//                        collectionsViewModel,
+//                        searchHistoryViewModel,
+//                        recipeReportsViewModel,
+//                        notificationViewModel,
+//                        commentReportsViewModel,
+//                        userReportsViewModel,
+//
+//                    )
 
+                    MultiUserMapScreen(
+                        listOf(
+                            LocationItem("Người dùng A", "Huế"),
+                            LocationItem("Người dùng B", "Hà Nội"),
+                            LocationItem("Người dùng C", "Thành phố Hồ Chí Minh")
+                        )
                     )
-
 //                    for (recipe in recipes) {
 //                        addRecipeToFirestore(recipe) { updatedRecipe ->
 //                            // In ra hoặc làm gì đó với món ăn đã cập nhật recipeId

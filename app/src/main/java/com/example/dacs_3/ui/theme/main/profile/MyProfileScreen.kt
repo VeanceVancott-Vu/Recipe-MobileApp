@@ -83,12 +83,7 @@ fun MyProfileScreen(
                     {navController.navigate("saved_recipe")}
 
                 )
-                SectionCard(
-                    iconRes = R.drawable.person,
-                    title = "My Statistics",
-                    {navController.navigate("edit_profile")}
 
-                )
             }
         }
     )
