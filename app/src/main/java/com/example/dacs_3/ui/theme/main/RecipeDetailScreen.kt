@@ -1,6 +1,7 @@
 package com.example.dacs_3.ui.theme.main
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,6 +67,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -84,6 +86,7 @@ import com.example.dacs_3.R
 import com.example.dacs_3.model.Collections
 import com.example.dacs_3.model.Comment
 import com.example.dacs_3.model.CommentReport
+import com.example.dacs_3.model.Follow
 import com.example.dacs_3.model.Instruction
 import com.example.dacs_3.model.Link
 import com.example.dacs_3.model.Recipe
@@ -116,6 +119,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun RecipeDetailScreen(
@@ -245,6 +250,7 @@ fun RecipeDetailScreen(
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.spacing_l), end = dimensionResource(R.dimen.spacing_l)) ,
             recipeUser = recipeUser,
+            currentUser = currentUser,
             navController = navController
         )
 
@@ -680,9 +686,12 @@ private fun DishContent(
 private fun RecipeAuthorInfo(
     modifier: Modifier = Modifier,
     recipeUser: User? = null,
+    currentUser: User? = null,
     navController: NavController
 
 ) {
+    val context = LocalContext.current
+
     val imageUri = recipeUser?.profileImageUrl
     val painter = if (imageUri?.isNotBlank() == true) {
         rememberAsyncImagePainter(model = imageUri)
@@ -741,20 +750,36 @@ private fun RecipeAuthorInfo(
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_xl)))
 
         Card(
-            modifier = Modifier
-                .height(45.dp),
+            modifier = Modifier.height(45.dp),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Button(
-                onClick = {},
+                onClick = {
+                    if (currentUser == null || recipeUser == null) {
+                        Toast.makeText(context, "User data is missing", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    val follow = Follow(
+                        followerId = currentUser.userId,
+                        followedId = recipeUser.userId,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    val db = Firebase.firestore
+                    db.collection("follows")
+                        .add(follow)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Followed successfully", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to follow: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(45.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = OliverGreen // hoặc backgroundColor nếu dùng Compose cũ
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = OliverGreen)
             ) {
                 Text("Follow me")
             }

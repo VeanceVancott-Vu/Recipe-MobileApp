@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -35,6 +36,10 @@ import com.example.dacs_3.ui.theme.main.admin.DashboardScreen
 import com.example.dacs_3.ui.theme.main.admin.RecipeReportsScreen
 import com.example.dacs_3.ui.theme.main.admin.UserReportsScreen
 import com.example.dacs_3.ui.theme.main.admin.ViolationReportsScreen
+import com.example.dacs_3.ui.theme.main.profile.FollowerListScreen
+import com.example.dacs_3.ui.theme.main.profile.FollowingScreen
+import com.example.dacs_3.ui.theme.main.profile.FriendListScreen
+import com.example.dacs_3.ui.theme.main.profile.KitchenBuddyScreen
 import com.example.dacs_3.ui.theme.main.profile.OtherUserProfileScreen
 import com.example.dacs_3.viewmodel.AuthViewModel
 import com.example.dacs_3.viewmodel.CollectionsViewModel
@@ -153,18 +158,6 @@ fun AppNavigation(navController: NavHostController,
             PersonalFood(collectionsViewModel = collectionsViewModel, navController = navController, userId = userId, recipeViewModel = recipeViewModel, authViewModel = authViewModel) // Điều hướng đến PersonalFood
         }
 
-//        composable("cooksnap/{id}")
-//        { backStackEntry ->
-//            val id = backStackEntry.arguments?.getString("id") ?: ""
-//            CooksnapScreen(navController, id, recipeViewModel)
-//        }
-//
-//        composable("share_cooksnap/{id}")
-//        { backStackEntry ->
-//            val id = backStackEntry.arguments?.getString("id") ?: ""
-//            ShareCooksnapScreen(navController, id, recipeViewModel)
-//        }
-
         composable("cooksnap/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
             CooksnapScreen(navController, id)
@@ -197,20 +190,70 @@ fun AppNavigation(navController: NavHostController,
         }
 
 
+
+        composable(
+            route = "kitchen_buddy/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            KitchenBuddyScreen(userId = userId ?: "")
+        }
+
+        composable(
+            route = "following/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            FollowingScreen(userId = userId ?: "")
+        }
+
+        composable(
+            route = "friendlist/{currentUserId}/{targetUserId}",
+            arguments = listOf(
+                navArgument("currentUserId") { type = NavType.StringType },
+                navArgument("targetUserId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val currentUserId = backStackEntry.arguments?.getString("currentUserId") ?: ""
+            val targetUserId = backStackEntry.arguments?.getString("targetUserId") ?: ""
+            FriendListScreen(
+                viewModel = viewModel(),
+                currentUserId = currentUserId,
+                targetUserId = targetUserId
+            )
+        }
+
+        composable(
+            route = "followerlist/{currentUserId}/{targetUserId}",
+            arguments = listOf(
+                navArgument("currentUserId") { type = NavType.StringType },
+                navArgument("targetUserId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val currentUserId = backStackEntry.arguments?.getString("currentUserId") ?: ""
+            val targetUserId = backStackEntry.arguments?.getString("targetUserId") ?: ""
+            FollowerListScreen(
+                viewModel = viewModel(),
+                currentUserId = currentUserId,
+                targetUserId = targetUserId
+            )
+        }
+
+
         composable("admin_dashboard") {
-                 DashboardScreen(
-                     navController,
-                     recipeViewModel ,
-                     authViewModel,
-                     commentReportsViewModel ,
-                     recipeReportsViewModel
-                 )
-            }
+            DashboardScreen(
+                navController,
+                recipeViewModel ,
+                authViewModel,
+                commentReportsViewModel ,
+                recipeReportsViewModel
+            )
+        }
 
         composable("violation_reports") {
             ViolationReportsScreen(
                 navController = navController,
-                 commentReportsViewModel =commentReportsViewModel,
+                commentReportsViewModel =commentReportsViewModel,
                 recipeReportsViewModel = recipeReportsViewModel,
                 userReportViewModel = userReportViewModel
 
@@ -231,7 +274,7 @@ fun AppNavigation(navController: NavHostController,
                 recipeReportsViewModel = recipeReportsViewModel,
                 recipeViewModel = recipeViewModel
 
-                )
+            )
         }
         composable("user_report") {
             UserReportsScreen(
@@ -239,7 +282,7 @@ fun AppNavigation(navController: NavHostController,
                 userReportViewModel = userReportViewModel
                 , authViewModel = authViewModel
 
-                )
+            )
         }
         composable("cooksnap_report") {
             CooksnapReportsScreen(
