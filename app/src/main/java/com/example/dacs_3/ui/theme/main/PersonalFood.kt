@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -156,7 +158,8 @@ fun PersonalFood(
         FoodCardGrid(
             recipeList = recipesByUserId,
             modifier = modifier,
-            navController
+            navController,
+            recipeViewModel = recipeViewModel
         )
 
     }
@@ -211,7 +214,7 @@ fun PersonalFoodHeader(
                 contentDescription = "Notifications",
                 tint = OliverGreen,
                 modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_medium))
+                    .size(dimensionResource(R.dimen.icon_size_large))
             )
         }
     }
@@ -491,12 +494,19 @@ fun TagSelector(
 
     Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_m)))
 
-    SectionTitle("Your $selectedTag ")
+    if(selectedTag.isNullOrEmpty()) {
+        SectionTitle("You have no collection create one")
+    }
+    else{
+        SectionTitle("Your $selectedTag collection ")
+
+    }
 
     FoodCardGrid(
         recipeList = recipesByCollection,
         modifier = modifier,
-        navController = navController
+        navController = navController,
+        recipeViewModel = recipeViewModel
     )
 
 }
@@ -505,13 +515,14 @@ fun TagSelector(
 fun FoodCardGrid(
     recipeList: List<Recipe>,
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    recipeViewModel:RecipeViewModel
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacing_s))
     ) {
         items(recipeList) { recipe ->
-            FoodCardItem(recipe = recipe,navController = navController)
+            FoodCardItem(recipe = recipe,navController = navController, recipeViewModel = recipeViewModel, modifier = modifier)
         }
     }
 }
@@ -520,7 +531,8 @@ fun FoodCardGrid(
 fun FoodCardItem(
     recipe: Recipe,
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    recipeViewModel: RecipeViewModel
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.spacing_s)),
@@ -578,9 +590,14 @@ fun FoodCardItem(
                 }
 
                 Spacer(Modifier.weight(1f))
+                var expanded by remember { mutableStateOf(false) }
+                val showSuccessDialog = remember { mutableStateOf(false) }
 
                 IconButton(
-                    onClick = {}
+                    onClick = {
+                        expanded = true
+
+                    }
                 ) {
                     Icon(
                         imageVector = FontAwesomeIcons.Solid.EllipsisV,
@@ -590,12 +607,55 @@ fun FoodCardItem(
                         tint = OliverGreen
                     )
                 }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            expanded = false
+                            navController.navigate("recipe_edit/${recipe.recipeId}")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = {
+                            expanded = false
+                            recipeViewModel.deleteRecipe(recipe.recipeId) { isSuccess ->
+                                showSuccessDialog.value = isSuccess
+                            }
+                        }
+                    )
+
+                    if (showSuccessDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = { showSuccessDialog.value = false },
+                            title = { Text("Success") },
+                            text = { Text("The recipe has been deleted.") },
+                            confirmButton = {
+                                TextButton(onClick = { showSuccessDialog.value = false }) {
+                                    Text("OK")
+                                }
+                            }
+                        )
+
+
+                    }
+
+
+                }
+            }
+
+
+
             }
         }
 
     }
 
-}
+
+
 
 
 @Preview(showBackground = true)

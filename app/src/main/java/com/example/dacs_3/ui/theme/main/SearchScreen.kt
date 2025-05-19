@@ -221,7 +221,7 @@ fun SearchScreen(
 
                 LazyColumn {
                     items(results) { recipe ->
-                        RecipeCard(recipe = recipe)
+                        RecipeCard(recipe = recipe, navController = navController)
                     }
                 }
             }
@@ -301,7 +301,7 @@ fun SearchHistoryList(
 fun RecipeCard(
     recipe: Recipe,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    navController: NavController
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -310,7 +310,8 @@ fun RecipeCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable { onClick() }
+            .clickable {
+                navController.navigate("recipe_detail/${recipe.recipeId}") }
     ) {
         Column {
             // Image Section
@@ -329,7 +330,7 @@ fun RecipeCard(
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black,
+                    color = Color(0xFF3B684D),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -339,7 +340,7 @@ fun RecipeCard(
                 Text(
                     text = recipe.story,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
+                    color = Color(0xFF9AB0A3),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
