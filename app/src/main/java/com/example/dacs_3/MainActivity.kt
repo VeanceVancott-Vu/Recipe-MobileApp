@@ -1,8 +1,7 @@
 package com.example.dacs_3
 
 import DACS_3Theme
-import LocationItem
-import MultiUserMapScreen
+
 import MyProfileScreen
 import UserReportViewModel
 import android.os.Bundle
@@ -103,27 +102,21 @@ class MainActivity : ComponentActivity() {
 //                    FollowStatusScreen()
 
             //        MyProfileScreen(navController = navController)
-//                    AppNavigation(
-//                        navController,
-//                        authViewModel,
-//                        recipeViewModel,
-//                        commentViewModel,
-//                        collectionsViewModel,
-//                        searchHistoryViewModel,
-//                        recipeReportsViewModel,
-//                        notificationViewModel,
-//                        commentReportsViewModel,
-//                        userReportsViewModel,
-//
-//                    )
+                    AppNavigation(
+                        navController,
+                        authViewModel,
+                        recipeViewModel,
+                        commentViewModel,
+                        collectionsViewModel,
+                        searchHistoryViewModel,
+                        recipeReportsViewModel,
+                        notificationViewModel,
+                        commentReportsViewModel,
+                        userReportsViewModel,
 
-                    MultiUserMapScreen(
-                        listOf(
-                            LocationItem("Người dùng A", "Huế"),
-                            LocationItem("Người dùng B", "Hà Nội"),
-                            LocationItem("Người dùng C", "Thành phố Hồ Chí Minh")
-                        )
-                    )
+                   )
+
+
 //                    for (recipe in recipes) {
 //                        addRecipeToFirestore(recipe) { updatedRecipe ->
 //                            // In ra hoặc làm gì đó với món ăn đã cập nhật recipeId

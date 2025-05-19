@@ -22,7 +22,9 @@ import com.example.dacs_3.ui.theme.main.CooksnapScreen
 import com.example.dacs_3.ui.theme.main.DetailScreen
 import com.example.dacs_3.ui.theme.main.EditCooksnapScreen
 import com.example.dacs_3.ui.theme.main.FilterScreen
+import com.example.dacs_3.ui.theme.main.GeoTagScreen
 import com.example.dacs_3.ui.theme.main.HomePageScreen
+import com.example.dacs_3.ui.theme.main.LocationItem
 import com.example.dacs_3.ui.theme.main.NotificationsAndKitchenBuddies
 import com.example.dacs_3.ui.theme.main.PersonalFood
 import com.example.dacs_3.ui.theme.main.PersonalFood
@@ -68,6 +70,7 @@ fun AppNavigation(navController: NavHostController,
 
     LaunchedEffect(Unit) {
         authViewModel.loadUserRole()
+        authViewModel.loadAllUsers()
     }
 
     NavHost(navController, startDestination = "login") {
@@ -291,6 +294,16 @@ fun AppNavigation(navController: NavHostController,
 
                 )
         }
+
+        composable("geotag_screen") {
+            val users by authViewModel.allUsers.collectAsState()
+
+            val locationItems = users.map { user ->
+                LocationItem(name = user.username, address = user.location)
+            }
+            GeoTagScreen(locationItems,navController)
+        }
+
 
     }
 }

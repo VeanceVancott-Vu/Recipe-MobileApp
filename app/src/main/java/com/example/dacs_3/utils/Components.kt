@@ -43,6 +43,7 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Box
 import compose.icons.fontawesomeicons.solid.Check
+import compose.icons.fontawesomeicons.solid.Globe
 import compose.icons.fontawesomeicons.solid.Home
 import compose.icons.fontawesomeicons.solid.Hourglass
 import compose.icons.fontawesomeicons.solid.Plus
@@ -109,7 +110,7 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Search, "search"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.Plus, "addRecipe"),
         BottomNavItemData(icon = FontAwesomeIcons.Solid.User, "my_profile"),
-        BottomNavItemData(icon = FontAwesomeIcons.Solid.ShieldAlt, "admin_dashboard")
+        BottomNavItemData(icon = FontAwesomeIcons.Solid.Globe, "geotag_screen")
 
     )
 
